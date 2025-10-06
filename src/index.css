@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  background-color: transparent;
+}
+
+.blurred {
+  filter: blur(4px);
+  transition: filter 0.3s ease-out;
+}
