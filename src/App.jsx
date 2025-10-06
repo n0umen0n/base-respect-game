@@ -39,7 +39,7 @@ function App() {
       >
         <PixelBlast
           variant="square"
-          pixelSize={24}
+          pixelSize={18}
           color="#F5F5F5"
           patternScale={3}
           patternDensity={0.3}
