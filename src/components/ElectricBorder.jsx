@@ -64,7 +64,7 @@ const ElectricBorder = ({ children, color = '#5227FF', speed = 1, chaos = 1, thi
   useEffect(() => {
     updateAnim();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [speed, chaos]);
+  }, [speed, chaos, filterId]);
 
   useLayoutEffect(() => {
     if (!rootRef.current) return;

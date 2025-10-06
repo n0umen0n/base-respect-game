@@ -323,6 +323,23 @@ const PixelBlast = ({
 
   const threeRef = useRef(null);
   const prevConfigRef = useRef(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (autoPauseOffscreen) {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          visibilityRef.current.visible = entry.isIntersecting;
+        },
+        { threshold: 0 }
+      );
+      observer.observe(container);
+      return () => observer.disconnect();
+    }
+  }, [autoPauseOffscreen]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
