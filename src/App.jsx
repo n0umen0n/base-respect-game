@@ -180,7 +180,7 @@ function App() {
                     style={{
                       width: '100%',
                       height: 'auto',
-                      aspectRatio: '1 / 1.2',
+                      aspectRatio: '1 / 1',
                       objectFit: 'cover',
                       borderRadius: '8px',
                       marginBottom: '1rem'
