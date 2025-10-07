@@ -15,11 +15,13 @@
     "@gsap/react": "^2.1.2",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@privy-io/react-auth": "^3.1.0",
     "gsap": "^3.13.0",
     "postprocessing": "^6.37.8",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "viem": "^2.38.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import AnimatedContent from './components/AnimatedContent';
 import Button from '@mui/material/Button';
 import Shuffle from './components/Shuffle';
@@ -50,6 +51,7 @@ const leaderboardData = [
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { login, logout, user } = usePrivy();
 
   return (
     <>
@@ -127,25 +129,29 @@ function App() {
           delay={0.3}
         >
           <div style={{ display: 'inline-block' }}>
-            <a href="https://x.com" target="_blank" rel="noopener noreferrer">
-              <Button
-                variant="contained"
-                sx={{
-                  fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '1rem',
-                  textTransform: 'uppercase',
-                  backgroundColor: 'black',
-                  color: 'white',
-                  borderRadius: '9999px',
-                  padding: '1rem 2rem',
-                  '&:hover': {
-                    backgroundColor: '#333'
-                  }
-                }}
-              >
-                Log in to play
-              </Button>
-            </a>
+            <Button
+              variant="contained"
+              onClick={user ? logout : login}
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1rem',
+                textTransform: 'uppercase',
+                backgroundColor: 'black',
+                color: 'white',
+                borderRadius: '9999px',
+                padding: '1rem 2rem',
+                '&:hover': {
+                  backgroundColor: '#333'
+                }
+              }}
+            >
+              {user
+                ? `Logout ${user.wallet?.address.slice(
+                    0,
+                    6
+                  )}...${user.wallet?.address.slice(-4)}`
+                : 'Log in to play'}
+            </Button>
           </div>
         </AnimatedContent>
 
