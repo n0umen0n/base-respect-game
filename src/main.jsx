@@ -14,9 +14,23 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         embeddedWallets: {
           createOnLogin: 'users-without-wallets'
         },
-        loginMethods: ['google', 'wallet'],
+        loginMethods: [
+          'email',
+          'sms',
+          'google',
+          'apple',
+          'twitter',
+          'discord',
+          'wallet'
+        ],
         appearance: {
-          walletList: ['metamask']
+          walletList: ['metamask', 'coinbase_wallet', 'walletconnect']
+        },
+        externalWallets: {
+          walletConnect: {
+            // Your WalletConnect project ID
+            projectId: 'replace-with-your-walletconnect-project-id'
+          }
         }
       }}
     >
