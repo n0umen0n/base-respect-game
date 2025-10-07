@@ -1,0 +1,21 @@
+/* Styles for ProfileCard component */
+.verified-tick {
+  width: 18px;
+  height: 18px;
+  color: #00e600;
+  margin-left: 4px;
+}
+
+.profile-card-container {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.profile-card-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.x-link:hover {
+  color: #00008b !important;
+}

@@ -316,7 +316,10 @@ export const StaggeredMenu = ({
   return (
     <div
       className={(className ? className + ' ' : '') + 'staggered-menu-wrapper' + (isFixed ? ' fixed-wrapper' : '')}
-      style={accentColor ? { ['--sm-accent']: accentColor } : undefined}
+      style={{
+        ...(accentColor ? { ['--sm-accent']: accentColor } : {}),
+        pointerEvents: open ? 'auto' : 'none'
+      }}
       data-position={position}
       data-open={open || undefined}
     >
@@ -352,6 +355,7 @@ export const StaggeredMenu = ({
           aria-controls="staggered-menu-panel"
           onClick={toggleMenu}
           type="button"
+          style={{ pointerEvents: 'auto' }}
         >
           <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true">
             <span ref={textInnerRef} className="sm-toggle-textInner">
