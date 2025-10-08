@@ -1,19 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import './index.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { PrivyProvider } from '@privy-io/react-auth';
+import App from './App';
+import HomePage from './components/HomePage';
+import DashboardPage from './components/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import './index.css';
 import { base } from 'viem/chains';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+const root = ReactDOM.createRoot(document.getElementById('root'));
+
+root.render(
   <React.StrictMode>
     <PrivyProvider
       appId="cmggwuowc004rjv0cwhieow2l"
       config={{
         defaultChain: base,
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets'
-        },
         loginMethods: [
           'email',
           'sms',
@@ -24,7 +27,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           'wallet'
         ],
         appearance: {
+          theme: 'light',
+          accentColor: '#676FFF',
           walletList: ['metamask', 'coinbase_wallet', 'walletconnect']
+        },
+        embeddedWallets: {
+          createOnLogin: 'users-without-wallets'
         },
         externalWallets: {
           walletConnect: {
@@ -34,7 +42,16 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         }
       }}
     >
-      <App />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />}>
+            <Route index element={<HomePage />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="dashboard" element={<DashboardPage />} />
+            </Route>
+          </Route>
+        </Routes>
+      </BrowserRouter>
     </PrivyProvider>
   </React.StrictMode>
 );

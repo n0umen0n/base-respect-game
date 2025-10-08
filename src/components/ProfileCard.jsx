@@ -63,10 +63,10 @@ const ProfileCard = ({ rank, name, x, score, style }) => {
             <path
               fill="none"
               stroke="currentColor"
-              stroke-width="2.5"
+              strokeWidth="2.5"
               d="M5 13l4 4L19 7"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
           </svg>
         </p>
