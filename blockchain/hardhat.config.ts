@@ -7,14 +7,16 @@ const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY;
 const BASE_MAINNET_PRIVATE_KEY = process.env.BASE_MAINNET_PRIVATE_KEY;
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.24",
+  solidity: "0.8.22",
   networks: {
     sepolia: {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY || ""}`,
       accounts: SEPOLIA_PRIVATE_KEY ? [SEPOLIA_PRIVATE_KEY] : [],
     },
     "base-mainnet": {
-      url: `https://mainnet.base.org`,
+      url:
+        process.env.BASE_MAINNET_RPC_URL ||
+        "https://base-mainnet.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9",
       accounts: BASE_MAINNET_PRIVATE_KEY ? [BASE_MAINNET_PRIVATE_KEY] : [],
       chainId: 8453,
     },

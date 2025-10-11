@@ -1,9 +1,16 @@
-import React from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import React, { useEffect } from 'react';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { useNavigate } from 'react-router-dom';
+import ProfileCard from './ProfileCard';
+import ContractInteractor from './ContractInteractor.tsx';
 import Button from '@mui/material/Button';
 
-const DashboardPage = () => {
+export default function DashboardPage() {
+  const navigate = useNavigate();
   const { logout, user } = usePrivy();
+  const { wallets } = useWallets();
+
+  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
 
   return (
     <div style={{ paddingTop: '10rem', color: 'black' }}>
@@ -34,8 +41,11 @@ const DashboardPage = () => {
             : 'Logout'}
         </Button>
       </div>
+      {embeddedWallet ? (
+        <ContractInteractor wallet={embeddedWallet} />
+      ) : (
+        <p>Please log in with an embedded wallet to use this feature.</p>
+      )}
     </div>
   );
 };
-
-export default DashboardPage;

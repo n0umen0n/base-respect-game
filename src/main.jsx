@@ -12,46 +12,47 @@ import { base } from 'viem/chains';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
-  <React.StrictMode>
-    <PrivyProvider
-      appId="cmggwuowc004rjv0cwhieow2l"
-      config={{
-        defaultChain: base,
-        loginMethods: [
-          'email',
-          'sms',
-          'google',
-          'apple',
-          'twitter',
-          'discord',
-          'wallet'
-        ],
-        appearance: {
-          theme: 'light',
-          accentColor: '#676FFF',
-          walletList: ['metamask', 'coinbase_wallet', 'walletconnect']
+  <PrivyProvider
+    appId="cmggwuowc004rjv0cwhieow2l"
+    config={{
+      defaultChain: base,
+      loginMethods: [
+        'email',
+        'sms',
+        'google',
+        'apple',
+        'twitter',
+        'discord',
+      ],
+      appearance: {
+        theme: 'light',
+        accentColor: '#676FFF',
+        walletList: ['metamask', 'coinbase_wallet', 'walletconnect']
+      },
+      embeddedWallets: {
+        createOnLogin: 'users-without-wallets',
+        requireUserPasswordOnCreate: true,
+      },
+      mfa: {
+        requireForAppWallets: true,
+      },
+      externalWallets: {
+        walletConnect: {
+          // Your WalletConnect project ID
+          projectId: 'replace-with-your-walletconnect-project-id',
         },
-        embeddedWallets: {
-          createOnLogin: 'users-without-wallets'
-        },
-        externalWallets: {
-          walletConnect: {
-            // Your WalletConnect project ID
-            projectId: 'replace-with-your-walletconnect-project-id'
-          }
-        }
-      }}
-    >
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<App />}>
-            <Route index element={<HomePage />} />
-            <Route element={<ProtectedRoute />}>
-              <Route path="dashboard" element={<DashboardPage />} />
-            </Route>
+      },
+    }}
+  >
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<App />}>
+          <Route index element={<HomePage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="dashboard" element={<DashboardPage />} />
           </Route>
-        </Routes>
-      </BrowserRouter>
-    </PrivyProvider>
-  </React.StrictMode>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </PrivyProvider>
 );

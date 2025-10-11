@@ -5,7 +5,6 @@ import AnimatedContent from './AnimatedContent';
 import Button from '@mui/material/Button';
 import Shuffle from './Shuffle';
 import ProfileCard from './ProfileCard';
-import profileImage from '../assets/profile.jpg';
 
 import {
   Table,
@@ -261,7 +260,7 @@ const HomePage = () => {
                     <TableCell component="th" scope="row" align="center">
                       <Avatar
                         alt={row.name}
-                        src={profileImage}
+                        src={`/src/assets/profile.jpg`}
                         sx={{ borderRadius: '8px', margin: 'auto' }}
                       />
                     </TableCell>

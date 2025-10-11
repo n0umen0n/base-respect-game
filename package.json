@@ -10,18 +10,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@alchemy/aa-accounts": "^3.19.0",
+    "@alchemy/aa-alchemy": "^3.19.0",
+    "@alchemy/aa-core": "^3.19.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@gsap/react": "^2.1.2",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
-    "@privy-io/react-auth": "^3.1.0",
+    "@privy-io/react-auth": "1.75.1",
+    "@tanstack/react-query": "^5.90.2",
+    "@vitejs/plugin-react": "^4.3.1",
+    "alchemy-sdk": "^3.6.5",
+    "ethers": "^6.13.1",
     "gsap": "^3.13.0",
     "postprocessing": "^6.37.8",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.3",
-    "three": "^0.180.0",
+    "three": "^0.168.0",
     "viem": "^2.38.0"
   },
   "devDependencies": {
@@ -29,14 +36,14 @@
     "@tailwindcss/postcss": "^4.1.14",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
-    "@vitejs/plugin-react": "^5.0.4",
+    "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
     "globals": "^16.4.0",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.14",
-    "vite": "^7.1.7"
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.3.5"
   }
 }

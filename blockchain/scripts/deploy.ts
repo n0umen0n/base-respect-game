@@ -7,13 +7,13 @@ async function main(): Promise<void> {
 
   console.log("Deploying with admin address:", adminAddress);
 
-  const DAOProposals = await ethers.getContractFactory(
-    "DAOProposalsImplementation"
+  const SimpleStorage = await ethers.getContractFactory(
+    "SimpleStorageImplementation"
   );
-  console.log("Deploying DAOProposals...");
+  console.log("Deploying SimpleStorageImplementation...");
 
-  const daoProposals = await upgrades.deployProxy(
-    DAOProposals,
+  const simpleStorage = await upgrades.deployProxy(
+    SimpleStorage,
     [adminAddress],
     {
       initializer: "initialize",
@@ -21,8 +21,11 @@ async function main(): Promise<void> {
     }
   );
 
-  await daoProposals.waitForDeployment();
-  console.log("DAOProposals deployed to:", await daoProposals.getAddress());
+  await simpleStorage.waitForDeployment();
+  console.log(
+    "SimpleStorageImplementation deployed to:",
+    await simpleStorage.getAddress()
+  );
 }
 
 main()
