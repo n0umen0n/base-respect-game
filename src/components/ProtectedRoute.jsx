@@ -1,15 +1,15 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { usePrivy } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 
 const ProtectedRoute = () => {
-  const { user, ready } = usePrivy();
+  const { isConnected, isConnecting } = useAccount();
 
-  if (!ready) {
+  if (isConnecting) {
     return <div>Loading...</div>;
   }
 
-  return user ? <Outlet /> : <Navigate to="/" />;
+  return isConnected ? <Outlet /> : <Navigate to="/" />;
 };
 
 export default ProtectedRoute;

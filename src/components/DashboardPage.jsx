@@ -1,16 +1,18 @@
-import React, { useEffect } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import React from 'react';
+import { useAccount, useDisconnect } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
-import ProfileCard from './ProfileCard';
 import ContractInteractor from './ContractInteractor.tsx';
 import Button from '@mui/material/Button';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { logout, user } = usePrivy();
-  const { wallets } = useWallets();
+  const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
 
-  const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+  const handleLogout = () => {
+    disconnect();
+    navigate('/');
+  };
 
   return (
     <div style={{ paddingTop: '10rem', color: 'black' }}>
@@ -19,7 +21,7 @@ export default function DashboardPage() {
       <div style={{ display: 'inline-block', marginTop: '2rem' }}>
         <Button
           variant="contained"
-          onClick={logout}
+          onClick={handleLogout}
           sx={{
             fontFamily: '"Press Start 2P", sans-serif',
             fontSize: '1rem',
@@ -33,18 +35,18 @@ export default function DashboardPage() {
             }
           }}
         >
-          {user
-            ? `Logout ${user.wallet?.address.slice(
+          {address
+            ? `Logout ${address.slice(
                 0,
                 6
-              )}...${user.wallet?.address.slice(-4)}`
+              )}...${address.slice(-4)}`
             : 'Logout'}
         </Button>
       </div>
-      {embeddedWallet ? (
-        <ContractInteractor wallet={embeddedWallet} />
+      {isConnected ? (
+        <ContractInteractor />
       ) : (
-        <p>Please log in with an embedded wallet to use this feature.</p>
+        <p>Please connect your wallet to use this feature.</p>
       )}
     </div>
   );

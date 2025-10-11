@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useSendTransaction } from '@privy-io/react-auth';
-import { isAddress, Abi, encodeFunctionData } from 'viem';
+import { useAccount, useWriteContract } from 'wagmi';
+import { isAddress } from 'viem';
 
 // The ABI for the SimpleStorageImplementation contract, formatted for viem
 const contractABI = [
@@ -22,13 +22,10 @@ const contractABI = [
 // The address of your deployed SimpleStorage contract
 const contractAddress = '0x44aC2daE725b989Df123243A21C9b52b224B4273';
 
-interface ContractInteractorProps {
-    wallet: any;
-}
-
-export default function ContractInteractor({ wallet }: ContractInteractorProps) {
+export default function ContractInteractor() {
   const [number, setNumber] = useState('');
-  const { sendTransaction, isPending, isSuccess, isError, error } = useSendTransaction();
+  const { address } = useAccount();
+  const { writeContract, isPending, isSuccess, isError, error } = useWriteContract();
 
   const handleSendTransaction = async () => {
     if (!isAddress(contractAddress)) {
@@ -37,19 +34,12 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
       );
       return;
     }
-    const txData = encodeFunctionData({
-        abi: contractABI,
-        functionName: 'setNumber',
-        args: [BigInt(number)],
-    });
 
-    sendTransaction({
-        to: contractAddress,
-        data: txData,
-        value: 0,
-    },
-    {
-        sponsor: true
+    writeContract({
+      address: contractAddress,
+      abi: contractABI,
+      functionName: 'setNumber',
+      args: [BigInt(number)],
     });
   };
 
@@ -65,7 +55,7 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
       />
       <button
         onClick={handleSendTransaction}
-        disabled={!number || isPending || !wallet.address}
+        disabled={!number || isPending || !address}
         className="w-full px-4 py-2 mt-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
       >
         {isPending ? 'Sending...' : 'Set Number (Sponsored)'}
@@ -75,7 +65,7 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
           Transaction successful!
         </p>
       )}
-       {isError && (
+      {isError && (
         <p className="mt-2 text-sm text-red-600">
           Transaction failed: {error?.message || 'An unknown error occurred.'}
         </p>

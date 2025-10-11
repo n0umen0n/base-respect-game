@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { useAccount } from 'wagmi';
 import { useNavigate } from 'react-router-dom';
 import AnimatedContent from './AnimatedContent';
 import Button from '@mui/material/Button';
@@ -34,16 +34,16 @@ const leaderboardData = [
   ];
 
 const HomePage = () => {
-  const { login, user, ready } = usePrivy();
+  const { isConnected } = useAccount();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (ready && user) {
+    if (isConnected) {
       navigate('/dashboard');
     }
-  }, [ready, user, navigate]);
+  }, [isConnected, navigate]);
 
-  if (!ready || user) {
+  if (isConnected) {
     return null;
   }
 
@@ -70,40 +70,7 @@ const HomePage = () => {
         triggerOnHover={true}
         respectReducedMotion={true}
       />
-      <AnimatedContent
-        distance={150}
-        direction="vertical"
-        reverse={false}
-        duration={1.2}
-        ease="bounce.out"
-        initialOpacity={0.2}
-        animateOpacity
-        scale={1.1}
-        threshold={0.2}
-        delay={0.3}
-      >
-        <div style={{ display: 'inline-block' }}>
-          <Button
-            variant="contained"
-            onClick={login}
-            sx={{
-              fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '1rem',
-              textTransform: 'uppercase',
-              backgroundColor: 'black',
-              color: 'white',
-              borderRadius: '9999px',
-              padding: '1rem 2rem',
-              '&:hover': {
-                backgroundColor: '#333'
-              }
-            }}
-          >
-            Log in to play
-          </Button>
-        </div>
-      </AnimatedContent>
-
+      
       <div style={{ marginTop: '4rem' }}>
         <AnimatedContent
           distance={150}

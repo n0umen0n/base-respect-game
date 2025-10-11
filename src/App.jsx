@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
 import { Outlet } from 'react-router-dom';
+import { Wallet } from '@coinbase/onchainkit/wallet';
 import StaggeredMenu from './components/StaggeredMenu';
 import PixelBlast from './components/PixelBlast';
 
@@ -22,6 +22,16 @@ function App() {
 
   return (
     <>
+      <div
+        style={{
+          position: 'fixed',
+          top: 16,
+          right: 120,
+          zIndex: 1000,
+        }}
+      >
+        <Wallet />
+      </div>
       <div
         className={isMenuOpen ? 'blurred' : ''}
         style={{
