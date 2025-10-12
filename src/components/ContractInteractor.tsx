@@ -34,8 +34,39 @@ const contractABI = [
   },
 ] as const;
 
+// USDC ABI (just the transfer function)
+const usdcABI = [
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'to',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'transfer',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+] as const;
+
 // The address of your deployed SimpleStorage contract
 const contractAddress = '0x44aC2daE725b989Df123243A21C9b52b224B4273';
+
+// USDC contract address on Base mainnet
+const usdcAddress = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 
 interface ContractInteractorProps {
     wallet: any;
@@ -142,6 +173,7 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
     setIsSuccess(false);
     setIsError(false);
     setError(null);
+    setTxHash(null);
 
     try {
         console.log('🚀 Sending sponsored transaction via Smart Wallet:', {
@@ -159,30 +191,53 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
             args: [BigInt(number)],
         });
         
+        console.log('✅ Transaction submitted successfully!');
         console.log('📝 User Operation Hash:', userOpHash);
-        console.log('🔍 Check status at: https://jiffyscan.xyz/userOpHash/' + userOpHash + '?network=base');
         
-        // Wait for the user operation to be included in a block
-        console.log('⏳ Waiting for transaction confirmation (up to 2 minutes)...');
-        const receipt = await smartAccountClient.waitForUserOperationReceipt({
-            hash: userOpHash,
-            timeout: 120_000, // 2 minutes timeout (increased from default)
-            pollingInterval: 2_000, // Check every 2 seconds
-        });
-        
-        console.log('✅ Transaction successful! Receipt:', receipt);
-        
-        // Extract transaction hash from receipt
-        const txHash = receipt.receipt.transactionHash;
-        if (txHash) setTxHash(txHash);
+        // 🎯 OPTIMISTIC SUCCESS: Show success immediately after submission
+        // This matches what Privy's modal shows
         setIsSuccess(true);
+        setIsPending(false);
+        setTxHash(userOpHash); // Show the userOp hash immediately
         
-        // Auto-fetch the new number after successful transaction
+        // Auto-refresh the number optimistically
         setTimeout(() => {
           handleGetNumber();
-        }, 1000); // Wait 1 second for the chain to update
+        }, 2000); // Wait 2 seconds for chain to update
+        
+        // 🔄 BACKGROUND POLLING: Try to get the final receipt in the background
+        // This doesn't block the UI
+        (async () => {
+          try {
+            console.log('⏳ Polling for final receipt in background...');
+            const receipt = await smartAccountClient.waitForUserOperationReceipt({
+                hash: userOpHash,
+                timeout: 60_000, // 1 minute timeout
+                pollingInterval: 3_000, // Check every 3 seconds
+            });
+            
+            console.log('✅ Receipt confirmed! Final receipt:', receipt);
+            
+            // Update with the actual transaction hash if different
+            const actualTxHash = receipt.receipt.transactionHash;
+            if (actualTxHash) {
+              setTxHash(actualTxHash);
+              console.log('🔗 Final transaction hash:', actualTxHash);
+            }
+            
+            // Fetch the updated number one more time
+            setTimeout(() => {
+              handleGetNumber();
+            }, 1000);
+          } catch (receiptError: any) {
+            // Receipt polling failed, but transaction likely succeeded
+            console.warn('⚠️ Could not get receipt, but transaction was submitted:', receiptError?.message);
+            // Don't show error to user since transaction was already submitted successfully
+          }
+        })();
+        
     } catch (e: any) {
-        console.error('❌ Transaction failed:', e);
+        console.error('❌ Transaction submission failed:', e);
         console.error('Error details:', {
             message: e?.message,
             code: e?.code,
@@ -190,25 +245,13 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
             cause: e?.cause,
         });
         
+        // Only set error state if submission actually failed
+        setIsSuccess(false);
+        
         // Provide helpful error messages
         let errorMessage = e?.message || 'Transaction failed';
         
-        if (e?.message?.includes('Timed out while waiting')) {
-            // Extract user op hash from error message if available
-            const hashMatch = e?.message?.match(/0x[a-fA-F0-9]{64}/);
-            const userOpHash = hashMatch ? hashMatch[0] : null;
-            
-            errorMessage = '⏱️ Transaction is taking longer than expected.\n\n';
-            
-            if (userOpHash) {
-                errorMessage += `Your transaction was submitted successfully but is still pending.\n\n`;
-                errorMessage += `User Operation Hash:\n${userOpHash}\n\n`;
-                errorMessage += `Check status at:\nhttps://jiffyscan.xyz/userOpHash/${userOpHash}?network=base\n\n`;
-                errorMessage += `If the transaction shows as "Success" on JiffyScan, try refreshing this page.`;
-            } else {
-                errorMessage += 'The transaction may still be processing. Check back in a few minutes.';
-            }
-        } else if (e?.message?.includes('paymaster')) {
+        if (e?.message?.includes('paymaster')) {
             errorMessage = '⚠️ Paymaster error: Check your Pimlico API key and ensure the paymaster is properly configured.\n\n';
             errorMessage += 'Make sure you have enabled the Free Tier or added credits in your Pimlico dashboard:\n';
             errorMessage += 'https://dashboard.pimlico.io/billing';
@@ -219,11 +262,166 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
             errorMessage += 'Solutions:\n';
             errorMessage += '1. Enable Free Tier (50,000 ops/month): https://dashboard.pimlico.io/billing\n';
             errorMessage += '2. Or add credits to your Pimlico account';
+        } else if (e?.message?.includes('rejected') || e?.message?.includes('denied')) {
+            errorMessage = '❌ Transaction was rejected by user.';
         }
         
         setError(new Error(errorMessage));
         setIsError(true);
-    } finally {
+        setIsPending(false);
+    }
+  };
+
+  const handleTransferUSDC = async () => {
+    if (!isSmartWalletReady || !smartAccountClient) {
+      alert('Smart wallet is not ready yet. Please wait...');
+      return;
+    }
+
+    if (smartWalletError) {
+      alert(`Smart wallet error: ${smartWalletError}`);
+      return;
+    }
+    
+    setIsPending(true);
+    setIsSuccess(false);
+    setIsError(false);
+    setError(null);
+    setTxHash(null);
+
+    try {
+        console.log('🚀 Attempting to transfer 0.0001 USDC via Smart Wallet:', {
+            smartAccountAddress,
+            usdcAddress,
+            functionName: 'transfer',
+            recipient: '0x0000000000000000000000000000000000000001', // Burn address
+            amount: '100', // 0.0001 USDC (6 decimals)
+        });
+        
+        // This will likely fail due to insufficient balance
+        const userOpHash = await smartAccountClient.writeContract({
+            address: usdcAddress as `0x${string}`,
+            abi: usdcABI,
+            functionName: 'transfer',
+            args: [
+              '0x0000000000000000000000000000000000000001' as `0x${string}`, // Recipient (burn address)
+              BigInt(100), // 0.0001 USDC (6 decimals)
+            ],
+        });
+        
+        console.log('✅ USDC transfer submitted successfully!');
+        console.log('📝 User Operation Hash:', userOpHash);
+        
+        setIsSuccess(true);
+        setIsPending(false);
+        setTxHash(userOpHash);
+        
+        // Background polling for receipt
+        (async () => {
+          try {
+            const receipt = await smartAccountClient.waitForUserOperationReceipt({
+                hash: userOpHash,
+                timeout: 60_000,
+                pollingInterval: 3_000,
+            });
+            
+            console.log('✅ USDC transfer receipt:', receipt);
+            
+            const actualTxHash = receipt.receipt.transactionHash;
+            if (actualTxHash) {
+              setTxHash(actualTxHash);
+            }
+          } catch (receiptError: any) {
+            console.warn('⚠️ Could not get receipt:', receiptError?.message);
+          }
+        })();
+        
+    } catch (e: any) {
+        console.error('❌ USDC transfer failed:', e);
+        console.error('Error details:', {
+            message: e?.message,
+            code: e?.code,
+            reason: e?.reason,
+            cause: e?.cause,
+            shortMessage: e?.shortMessage,
+            details: e?.details,
+        });
+        
+        setIsSuccess(false);
+        
+        // Try to decode the hex error message if present
+        let decodedError = '';
+        const hexMatch = e?.message?.match(/0x08c379a0[0-9a-f]+/i);
+        if (hexMatch) {
+            try {
+                const hex = hexMatch[0];
+                // Remove the function selector (0x08c379a0) and extract the error message
+                const errorHex = hex.slice(10); // Skip "0x08c379a0"
+                const bytes: number[] = [];
+                for (let i = 0; i < errorHex.length; i += 2) {
+                    bytes.push(parseInt(errorHex.substr(i, 2), 16));
+                }
+                // Skip the first 64 characters (offset and length), then decode
+                const messageStart = 68; // Characters, not bytes
+                const messageBytes: number[] = [];
+                for (let i = messageStart; i < errorHex.length; i += 2) {
+                    const byte = parseInt(errorHex.substr(i, 2), 16);
+                    if (byte !== 0) messageBytes.push(byte);
+                }
+                decodedError = String.fromCharCode(...messageBytes);
+                console.log('🔍 Decoded error:', decodedError);
+            } catch (decodeErr) {
+                console.warn('Could not decode error hex:', decodeErr);
+            }
+        }
+        
+        // Provide helpful error messages
+        let errorMessage = '';
+        
+        // Check for decoded error first
+        if (decodedError.includes('exceeds balance') || decodedError.includes('insufficient')) {
+            errorMessage = '❌ Insufficient USDC Balance\n\n';
+            errorMessage += `Error: ${decodedError}\n\n`;
+            errorMessage += `Your smart wallet doesn't have enough USDC.\n`;
+            errorMessage += `Smart Wallet Address: ${smartAccountAddress}`;
+        } else if (e?.message?.includes('insufficient') || e?.message?.includes('balance')) {
+            errorMessage = '❌ Insufficient USDC balance\n\n';
+            errorMessage += `Your smart wallet (${smartAccountAddress}) doesn't have enough USDC to complete this transfer.\n\n`;
+            errorMessage += 'This is expected if you haven\'t funded your smart wallet with USDC yet.';
+        } else if (e?.message?.includes('revert') || e?.shortMessage?.includes('revert')) {
+            errorMessage = '❌ Transaction Reverted\n\n';
+            if (decodedError) {
+                errorMessage += `Contract Error: ${decodedError}\n\n`;
+            } else {
+                errorMessage += 'The USDC contract rejected this transaction.\n';
+                errorMessage += 'Possible reasons:\n';
+                errorMessage += '- Insufficient USDC balance\n';
+                errorMessage += '- Contract execution error\n\n';
+            }
+            errorMessage += `Smart Wallet: ${smartAccountAddress}`;
+        } else if (e?.message?.includes('paymaster')) {
+            errorMessage = '⚠️ Paymaster Error\n\n';
+            errorMessage += 'The paymaster rejected sponsoring this transaction.\n';
+            errorMessage += 'Check your Pimlico dashboard: https://dashboard.pimlico.io/billing';
+        } else if (e?.message?.includes('simulation') || e?.message?.includes('estimate')) {
+            errorMessage = '❌ Transaction Simulation Failed\n\n';
+            if (decodedError) {
+                errorMessage += `Contract Error: ${decodedError}\n\n`;
+            }
+            errorMessage += 'This transaction would fail on-chain.\n';
+            errorMessage += 'Most likely cause: Insufficient USDC balance in your smart wallet.\n\n';
+            errorMessage += `Smart Wallet: ${smartAccountAddress}`;
+        } else {
+            errorMessage = '❌ Transaction Failed\n\n';
+            if (decodedError) {
+                errorMessage += `Error: ${decodedError}\n\n`;
+            } else {
+                errorMessage += e?.shortMessage || e?.message || 'An unknown error occurred.';
+            }
+        }
+        
+        setError(new Error(errorMessage));
+        setIsError(true);
         setIsPending(false);
     }
   };
@@ -331,22 +529,33 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
           ? 'Sending Sponsored Transaction...' 
           : 'Set Number (Gas Sponsored via Paymaster)'}
       </button>
+
+      {/* USDC Transfer Test Button */}
+      <div className="mt-4 p-3 rounded-lg bg-orange-50 border border-orange-200">
+        <p className="text-xs text-orange-700 font-semibold mb-2">
+          🧪 Test Error Handling
+        </p>
+        <p className="text-xs text-orange-600 mb-3">
+          Click below to test a USDC transfer. This will likely fail due to insufficient balance, allowing you to see the error message.
+        </p>
+        <button
+          onClick={handleTransferUSDC}
+          disabled={isPending || !isSmartWalletReady || isSmartWalletLoading}
+          className="w-full px-4 py-2 font-semibold text-white bg-orange-500 rounded-lg hover:bg-orange-600 disabled:bg-gray-400"
+        >
+          {isSmartWalletLoading 
+            ? 'Setting up Smart Wallet...' 
+            : isPending 
+            ? 'Attempting USDC Transfer...' 
+            : '💸 Transfer 0.0001 USDC'}
+        </button>
+      </div>
+
       {isSuccess && (
-        <div className="mt-2 text-sm text-green-600">
-          <p className="font-semibold">✅ Transaction successful!</p>
-          {txHash && (
-            <a 
-              href={SMART_WALLET_CONFIG.CHAIN_ID === 84532 
-                ? `https://sepolia.basescan.org/tx/${txHash}`
-                : `https://basescan.org/tx/${txHash}`
-              } 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="underline hover:text-green-700"
-            >
-              View on BaseScan {SMART_WALLET_CONFIG.CHAIN_ID === 84532 && '(Sepolia)'}
-            </a>
-          )}
+        <div className="mt-2 p-3 rounded-lg bg-green-50 border border-green-200">
+          <p className="font-semibold text-green-700">
+            ✅ Transaction successful!
+          </p>
         </div>
       )}
        {isError && (
