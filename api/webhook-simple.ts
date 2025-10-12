@@ -131,19 +131,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`📦 Processing ${activities.length} activities`);
 
     // Log the full activity structure for debugging
-    console.log('Full activity structure:', JSON.stringify(activities[0], null, 2));
+    console.log(
+      "Full activity structure:",
+      JSON.stringify(activities[0], null, 2)
+    );
 
     const results = [];
 
     // Process each activity
     for (const activity of activities) {
       // Check different possible locations for the contract address
-      const contractAddr = 
-        activity.log?.address || 
-        activity.toAddress || 
+      const contractAddr =
+        activity.log?.address ||
+        activity.toAddress ||
         activity.rawContract?.address;
 
-      console.log('Contract address found:', contractAddr);
+      console.log("Contract address found:", contractAddr);
 
       // Only process events from our contract
       if (!contractAddr || contractAddr.toLowerCase() !== CONTRACT_ADDRESS) {
@@ -156,7 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const transaction = event.transaction || activity;
       const block = event.block || {};
 
-      console.log('Processing event with log:', log);
+      console.log("Processing event with log:", log);
 
       // Process the setNumber event
       const result = await processNumberSetEvent(log, transaction, block);
