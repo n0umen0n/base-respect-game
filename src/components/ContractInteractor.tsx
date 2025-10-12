@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useSendTransaction } from '@privy-io/react-auth';
-import { isAddress, Abi, encodeFunctionData } from 'viem';
-import { base } from 'viem/chains';
+import { isAddress, encodeFunctionData, createPublicClient, http } from 'viem';
+import { base, baseSepolia } from 'viem/chains';
+import { useSmartWallet } from '../hooks/useSmartWallet';
+import { SMART_WALLET_CONFIG } from '../config/smartWallet.config';
 
 // The ABI for the SimpleStorageImplementation contract, formatted for viem
 const contractABI = [
@@ -18,6 +19,19 @@ const contractABI = [
     stateMutability: 'nonpayable',
     type: 'function',
   },
+  {
+    inputs: [],
+    name: 'getNumber',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ] as const;
 
 // The address of your deployed SimpleStorage contract
@@ -29,7 +43,18 @@ interface ContractInteractorProps {
 
 export default function ContractInteractor({ wallet }: ContractInteractorProps) {
   const [number, setNumber] = useState('');
-  const { sendTransaction } = useSendTransaction();
+  const [currentNumber, setCurrentNumber] = useState<string | null>(null);
+  const [isLoadingNumber, setIsLoadingNumber] = useState(false);
+  
+  const { 
+    smartAccountClient, 
+    smartAccountAddress, 
+    embeddedWallet,
+    isLoading: isSmartWalletLoading, 
+    error: smartWalletError,
+    isReady: isSmartWalletReady 
+  } = useSmartWallet();
+  
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -43,6 +68,13 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
       setCurrentChainId(wallet.chainId);
     }
   }, [wallet?.chainId]);
+
+  // Auto-fetch the current number on mount
+  useEffect(() => {
+    if (isSmartWalletReady) {
+      handleGetNumber();
+    }
+  }, [isSmartWalletReady]);
 
   const switchToBase = async () => {
     if (!wallet.switchChain) {
@@ -94,84 +126,102 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
       );
       return;
     }
-    
-    // Check wallet connection and chain
-    const chainIdNum = parseChainId(wallet?.chainId);
-    
-    console.log('📱 Wallet Info:', {
-        address: wallet?.address,
-        walletType: wallet?.walletClientType,
-        chainId: wallet?.chainId,
-        chainIdNum,
-        expectedChainId: 8453, // Base mainnet
-    });
-    
-    // If not on Base, try to switch
-    if (chainIdNum !== 8453) {
-      console.log('⚠️ Not on Base network. Attempting to switch...');
-      const switched = await switchToBase();
-      if (!switched) {
-        return; // Exit if switch failed
-      }
-      // Wait a moment for the network switch to complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Check if smart wallet is ready
+    if (!isSmartWalletReady || !smartAccountClient) {
+      alert('Smart wallet is not ready yet. Please wait...');
+      return;
+    }
+
+    if (smartWalletError) {
+      alert(`Smart wallet error: ${smartWalletError}`);
+      return;
     }
     
-    const txData = encodeFunctionData({
-        abi: contractABI,
-        functionName: 'setNumber',
-        args: [BigInt(number)],
-    });
-
     setIsPending(true);
     setIsSuccess(false);
     setIsError(false);
     setError(null);
 
     try {
-        console.log('🚀 Attempting sponsored transaction with config:', {
-            to: contractAddress,
-            data: txData,
-            sponsor: true,
-            walletAddress: wallet?.address,
-            walletType: wallet?.walletClientType,
-            chainId: wallet?.chainId,
+        console.log('🚀 Sending sponsored transaction via Smart Wallet:', {
+            smartAccountAddress,
+            contractAddress,
+            functionName: 'setNumber',
+            args: [BigInt(number)],
         });
         
-        const receipt = await sendTransaction({
-            to: contractAddress,
-            data: txData,
-        },
-        {
-            sponsor: true,
-        } as any);
+        // Send transaction using the smart account client with paymaster
+        const userOpHash = await smartAccountClient.writeContract({
+            address: contractAddress as `0x${string}`,
+            abi: contractABI,
+            functionName: 'setNumber',
+            args: [BigInt(number)],
+        });
+        
+        console.log('📝 User Operation Hash:', userOpHash);
+        console.log('🔍 Check status at: https://jiffyscan.xyz/userOpHash/' + userOpHash + '?network=base');
+        
+        // Wait for the user operation to be included in a block
+        console.log('⏳ Waiting for transaction confirmation (up to 2 minutes)...');
+        const receipt = await smartAccountClient.waitForUserOperationReceipt({
+            hash: userOpHash,
+            timeout: 120_000, // 2 minutes timeout (increased from default)
+            pollingInterval: 2_000, // Check every 2 seconds
+        });
         
         console.log('✅ Transaction successful! Receipt:', receipt);
-        // Extract transaction hash from receipt if available
-        const hash = typeof receipt === 'string' ? receipt : (receipt as any)?.transactionHash || (receipt as any)?.hash;
-        if (hash) setTxHash(hash);
+        
+        // Extract transaction hash from receipt
+        const txHash = receipt.receipt.transactionHash;
+        if (txHash) setTxHash(txHash);
         setIsSuccess(true);
+        
+        // Auto-fetch the new number after successful transaction
+        setTimeout(() => {
+          handleGetNumber();
+        }, 1000); // Wait 1 second for the chain to update
     } catch (e: any) {
         console.error('❌ Transaction failed:', e);
         console.error('Error details:', {
             message: e?.message,
             code: e?.code,
             reason: e?.reason,
+            cause: e?.cause,
         });
         
-        // Check if it's a sponsorship issue
-        if (e?.message?.includes('insufficient funds')) {
-            const sponsorshipError = new Error(
-                '⚠️ Gas sponsorship is not working. Please check Privy Dashboard:\n' +
-                '1. Enable "Allow transactions from the client"\n' +
-                '2. Ensure Base chain (8453) is enabled\n' +
-                '3. Verify sponsorship wallet has funds\n' +
-                '4. Check spending limits'
-            );
-            setError(sponsorshipError);
-        } else {
-            setError(e as Error);
+        // Provide helpful error messages
+        let errorMessage = e?.message || 'Transaction failed';
+        
+        if (e?.message?.includes('Timed out while waiting')) {
+            // Extract user op hash from error message if available
+            const hashMatch = e?.message?.match(/0x[a-fA-F0-9]{64}/);
+            const userOpHash = hashMatch ? hashMatch[0] : null;
+            
+            errorMessage = '⏱️ Transaction is taking longer than expected.\n\n';
+            
+            if (userOpHash) {
+                errorMessage += `Your transaction was submitted successfully but is still pending.\n\n`;
+                errorMessage += `User Operation Hash:\n${userOpHash}\n\n`;
+                errorMessage += `Check status at:\nhttps://jiffyscan.xyz/userOpHash/${userOpHash}?network=base\n\n`;
+                errorMessage += `If the transaction shows as "Success" on JiffyScan, try refreshing this page.`;
+            } else {
+                errorMessage += 'The transaction may still be processing. Check back in a few minutes.';
+            }
+        } else if (e?.message?.includes('paymaster')) {
+            errorMessage = '⚠️ Paymaster error: Check your Pimlico API key and ensure the paymaster is properly configured.\n\n';
+            errorMessage += 'Make sure you have enabled the Free Tier or added credits in your Pimlico dashboard:\n';
+            errorMessage += 'https://dashboard.pimlico.io/billing';
+        } else if (e?.message?.includes('bundler')) {
+            errorMessage = '⚠️ Bundler error: Check your bundler configuration.';
+        } else if (e?.message?.includes('insufficient') || e?.message?.includes('Insufficient')) {
+            errorMessage = '⚠️ Insufficient Pimlico balance for gas sponsorship.\n\n';
+            errorMessage += 'Solutions:\n';
+            errorMessage += '1. Enable Free Tier (50,000 ops/month): https://dashboard.pimlico.io/billing\n';
+            errorMessage += '2. Or add credits to your Pimlico account';
         }
+        
+        setError(new Error(errorMessage));
         setIsError(true);
     } finally {
         setIsPending(false);
@@ -183,26 +233,84 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
     return chainIdNum === 8453;
   };
 
+  const handleGetNumber = async () => {
+    setIsLoadingNumber(true);
+    try {
+      console.log('📖 Reading number from contract...');
+      
+      // Create a public client for reading (no wallet needed for view functions)
+      const currentChain = SMART_WALLET_CONFIG.CHAIN_ID === 84532 ? baseSepolia : base;
+      const publicClient = createPublicClient({
+        chain: currentChain,
+        transport: http(),
+      });
+      
+      // Read from contract using the public client
+      const result = await publicClient.readContract({
+        address: contractAddress as `0x${string}`,
+        abi: contractABI,
+        functionName: 'getNumber',
+      });
+      
+      console.log('✅ Current number on-chain:', result.toString());
+      setCurrentNumber(result.toString());
+    } catch (e: any) {
+      console.error('❌ Failed to read number:', e);
+      setCurrentNumber('Error: ' + (e?.message || 'Failed to read'));
+    } finally {
+      setIsLoadingNumber(false);
+    }
+  };
+
   return (
     <div className="p-4 bg-white rounded-lg shadow-md text-gray-800 mt-8">
-      <h2 className="text-xl font-bold mb-2">Interact with Smart Contract (Gasless)</h2>
+      <h2 className="text-xl font-bold mb-2">Interact with Smart Contract (Smart Wallet + Paymaster)</h2>
       
-      {/* Network Status Indicator */}
-      <div className={`mb-3 p-2 rounded-lg text-sm ${isOnBaseNetwork() ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-        {isOnBaseNetwork() ? (
-          <span>✅ Connected to Base Network</span>
-        ) : (
+      {/* Smart Wallet Status */}
+      {isSmartWalletLoading && (
+        <div className="mb-3 p-2 rounded-lg text-sm bg-blue-100 text-blue-800">
+          <span>🔄 Setting up smart wallet...</span>
+        </div>
+      )}
+      
+      {smartWalletError && (
+        <div className="mb-3 p-2 rounded-lg text-sm bg-red-100 text-red-800">
+          <span>❌ Smart Wallet Error: {smartWalletError}</span>
+        </div>
+      )}
+
+      {isSmartWalletReady && smartAccountAddress && (
+        <div className="mb-3 p-2 rounded-lg text-sm bg-green-100 text-green-800">
+          <p className="font-semibold">✅ Smart Wallet Ready</p>
+          <p className="text-xs mt-1 break-all">
+            Address: {smartAccountAddress}
+          </p>
+          <p className="text-xs mt-1">
+            Signer: {embeddedWallet?.address.slice(0, 6)}...{embeddedWallet?.address.slice(-4)}
+          </p>
+        </div>
+      )}
+
+      {/* Current Number Display */}
+      <div className="mb-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+        <div className="flex items-center justify-between">
           <div>
-            <span>⚠️ Not on Base Network</span>
-            <button
-              onClick={switchToBase}
-              disabled={isSwitchingNetwork}
-              className="ml-2 px-2 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:bg-gray-400"
-            >
-              {isSwitchingNetwork ? 'Switching...' : 'Switch to Base'}
-            </button>
+            <p className="text-sm font-semibold text-gray-700">Current Number On-Chain:</p>
+            <p className="text-2xl font-bold text-blue-600 mt-1">
+              {currentNumber !== null ? currentNumber : '---'}
+            </p>
           </div>
-        )}
+          <button
+            onClick={handleGetNumber}
+            disabled={isLoadingNumber}
+            className="px-4 py-2 text-sm font-semibold text-white bg-gray-600 rounded-lg hover:bg-gray-700 disabled:bg-gray-400"
+          >
+            {isLoadingNumber ? '🔄 Loading...' : '🔍 Get Number'}
+          </button>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          Click "Get Number" to check the current value stored in the contract
+        </p>
       </div>
 
       <input
@@ -214,22 +322,29 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
       />
       <button
         onClick={handleSendTransaction}
-        disabled={!number || isPending || !wallet.address || isSwitchingNetwork}
+        disabled={!number || isPending || !isSmartWalletReady || isSmartWalletLoading}
         className="w-full px-4 py-2 mt-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:bg-gray-400"
       >
-        {isSwitchingNetwork ? 'Switching Network...' : isPending ? 'Sending...' : 'Set Number (Sponsored)'}
+        {isSmartWalletLoading 
+          ? 'Setting up Smart Wallet...' 
+          : isPending 
+          ? 'Sending Sponsored Transaction...' 
+          : 'Set Number (Gas Sponsored via Paymaster)'}
       </button>
       {isSuccess && (
         <div className="mt-2 text-sm text-green-600">
           <p className="font-semibold">✅ Transaction successful!</p>
           {txHash && (
             <a 
-              href={`https://basescan.org/tx/${txHash}`} 
+              href={SMART_WALLET_CONFIG.CHAIN_ID === 84532 
+                ? `https://sepolia.basescan.org/tx/${txHash}`
+                : `https://basescan.org/tx/${txHash}`
+              } 
               target="_blank" 
               rel="noopener noreferrer"
               className="underline hover:text-green-700"
             >
-              View on BaseScan
+              View on BaseScan {SMART_WALLET_CONFIG.CHAIN_ID === 84532 && '(Sepolia)'}
             </a>
           )}
         </div>
