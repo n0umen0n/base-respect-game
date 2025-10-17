@@ -8,6 +8,9 @@ interface IRespectGameCore {
     event MemberJoined(
         address indexed member,
         string name,
+        string profileUrl,
+        string description,
+        string xAccount,
         uint256 timestamp,
         bool autoApproved
     );
@@ -18,7 +21,8 @@ interface IRespectGameCore {
         uint256 timestamp
     );
     event MemberApproved(address indexed member, uint256 timestamp);
-    event MemberBanned(address indexed member, uint256 timestamp);
+    // event MemberBanned(address indexed member, uint256 timestamp);
+    event MemberRemoved(address indexed member, uint256 timestamp);
 
     // Contribution Events
     event ContributionSubmitted(
@@ -117,9 +121,13 @@ interface IRespectGameCore {
 
     function approveMemberByGovernance(address member) external;
 
-    function banMemberByGovernance(address member) external;
+    // function banMemberByGovernance(address member) external;
 
     function setGovernanceContract(address _governance) external;
+
+    // ==================== OWNER FUNCTIONS ====================
+
+    function removeMember(address member) external;
 
     // ==================== VIEW FUNCTIONS ====================
 
@@ -168,9 +176,9 @@ interface IRespectGameCore {
 
     function getNextStageTimestamp() external view returns (uint256);
 
-    function getMemberCount() external view returns (uint256);
+    // function getMemberCount() external view returns (uint256);
 
-    function getApprovedMemberCount() external view returns (uint256);
+    // function getApprovedMemberCount() external view returns (uint256);
 
     function isTopMember(address member) external view returns (bool);
 }

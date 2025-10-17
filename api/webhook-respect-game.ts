@@ -24,7 +24,7 @@ const RESPECT_GAME_GOVERNANCE_ADDRESS =
 
 // Contract ABIs - Event signatures only
 const RESPECT_GAME_CORE_EVENTS = [
-  "event MemberJoined(address indexed member, string name, uint256 timestamp, bool autoApproved)",
+  "event MemberJoined(address indexed member, string name, string profileUrl, string description, string xAccount, uint256 timestamp, bool autoApproved)",
   "event ContributionSubmitted(address indexed contributor, uint256 indexed gameNumber, string[] contributions, string[] links, uint256 timestamp)",
   "event RankingSubmitted(address indexed ranker, uint256 indexed gameNumber, uint256 indexed groupId, address[] rankedAddresses, uint256 timestamp)",
   "event RespectDistributed(address indexed member, uint256 indexed gameNumber, uint256 rank, uint256 respectAmount, uint256 newAverageRespect)",
@@ -71,7 +71,7 @@ function decodeUint256(topic: string): number {
  * Event Handlers
  */
 
-// MemberJoined(address indexed member, string name, uint256 timestamp, bool autoApproved)
+// MemberJoined(address indexed member, string name, string profileUrl, string description, string xAccount, uint256 timestamp, bool autoApproved)
 async function handleMemberJoined(log: any, txHash: string) {
   try {
     // Decode using ethers
@@ -82,6 +82,9 @@ async function handleMemberJoined(log: any, txHash: string) {
 
     const memberAddress = decoded.args.member.toLowerCase();
     const name = decoded.args.name;
+    const profileUrl = decoded.args.profileUrl;
+    const description = decoded.args.description;
+    const xAccount = decoded.args.xAccount;
     const timestamp = Number(decoded.args.timestamp);
     const autoApproved = decoded.args.autoApproved;
 
@@ -92,6 +95,10 @@ async function handleMemberJoined(log: any, txHash: string) {
       memberAddress,
       "Name:",
       name,
+      "Profile URL:",
+      profileUrl || "(none)",
+      "X Account:",
+      xAccount || "(none)",
       "Auto-approved:",
       autoApproved
     );
@@ -104,21 +111,30 @@ async function handleMemberJoined(log: any, txHash: string) {
       .single();
 
     if (existingMember) {
-      console.log("Member already exists, updating approval status");
-      // Update approval status if changed
+      console.log("Member already exists, updating data");
+      // Update member data
       const { error: updateError } = await supabase
         .from("members")
-        .update({ is_approved: autoApproved })
+        .update({
+          name: name,
+          profile_url: profileUrl || null,
+          description: description || null,
+          x_account: xAccount || null,
+          is_approved: autoApproved
+        })
         .eq("wallet_address", memberAddress);
 
       if (updateError) throw updateError;
       return { success: true, action: "updated" };
     }
 
-    // Insert new member
+    // Insert new member with all profile data
     const { data, error } = await supabase.from("members").insert({
       wallet_address: memberAddress,
       name: name,
+      profile_url: profileUrl || null,
+      description: description || null,
+      x_account: xAccount || null,
       is_approved: autoApproved,
       is_banned: false,
       joined_at: blockTimestamp,
@@ -623,7 +639,7 @@ async function processEventLog(
     console.log("🔍 Raw log data:", {
       topics: log.topics,
       data: log.data,
-      topicsLength: log.topics?.length
+      topicsLength: log.topics?.length,
     });
 
     // Try to parse the log
@@ -634,7 +650,10 @@ async function processEventLog(
         data: log.data,
       });
     } catch (parseError) {
-      console.log("⏭️ Could not parse event, skipping. Error:", parseError.message);
+      console.log(
+        "⏭️ Could not parse event, skipping. Error:",
+        parseError.message
+      );
       console.log("📋 Log details:", JSON.stringify(log, null, 2));
       return null;
     }

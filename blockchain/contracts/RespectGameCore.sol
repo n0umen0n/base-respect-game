@@ -113,7 +113,7 @@ contract RespectGameCore is
             memberList.push(msg.sender);
             approvedMemberCount++;
 
-            emit MemberJoined(msg.sender, name, block.timestamp, true);
+            emit MemberJoined(msg.sender, name, profileUrl, description, xAccount, block.timestamp, true);
         } else {
             // Create proposal for new member
             memberProposals.push(
@@ -151,7 +151,7 @@ contract RespectGameCore is
                 name,
                 block.timestamp
             );
-            emit MemberJoined(msg.sender, name, block.timestamp, false);
+            emit MemberJoined(msg.sender, name, profileUrl, description, xAccount, block.timestamp, false);
         }
     }
 
@@ -186,19 +186,59 @@ contract RespectGameCore is
      * @notice Ban a member (called by governance contract)
      * @param member Address of member to ban
      */
-    function banMemberByGovernance(
-        address member
-    ) external override onlyGovernance {
-        require(members[member].wallet != address(0), "Not member");
-        require(!members[member].isBanned, "Already banned");
+    // function banMemberByGovernance(
+    //     address member
+    // ) external override onlyGovernance {
+    //     require(members[member].wallet != address(0), "Not member");
+    //     require(!members[member].isBanned, "Already banned");
 
-        members[member].isBanned = true;
-        members[member].averageRespect = 0;
+    //     members[member].isBanned = true;
+    //     members[member].averageRespect = 0;
 
-        // Clear respect history
-        delete members[member].respectHistory;
+    //     // Clear respect history
+    //     delete members[member].respectHistory;
 
-        emit MemberBanned(member, block.timestamp);
+    //     emit MemberBanned(member, block.timestamp);
+    // }
+
+    /**
+     * @notice Remove a member completely from the system (called by owner)
+     * @param member Address of member to remove
+     * @dev This will delete all member-related data from storage
+     */
+    function removeMember(address member) external onlyOwner {
+        require(members[member].wallet != address(0), "Not a member");
+
+        // Decrement approved member count if they were approved
+        if (members[member].isApproved) {
+            approvedMemberCount--;
+        }
+
+        // Remove from memberList array
+        for (uint256 i = 0; i < memberList.length; i++) {
+            if (memberList[i] == member) {
+                memberList[i] = memberList[memberList.length - 1];
+                memberList.pop();
+                break;
+            }
+        }
+
+        // Remove from topSixMembers if present
+        for (uint256 i = 0; i < 6; i++) {
+            if (topSixMembers[i] == member) {
+                topSixMembers[i] = address(0);
+                break;
+            }
+        }
+
+        // Delete member data
+        delete members[member];
+
+        // Note: We don't delete historical game data (contributions, rankings, results)
+        // as this would require iterating through potentially thousands of games
+        // and would be extremely gas-intensive. Historical data can remain.
+
+        emit MemberRemoved(member, block.timestamp);
     }
 
     // ==================== CONTRIBUTION FUNCTIONS ====================
@@ -987,13 +1027,13 @@ contract RespectGameCore is
         return nextStageTimestamp;
     }
 
-    function getMemberCount() external view override returns (uint256) {
-        return memberList.length;
-    }
+    // function getMemberCount() external view override returns (uint256) {
+    //     return memberList.length;
+    // }
 
-    function getApprovedMemberCount() external view override returns (uint256) {
-        return approvedMemberCount;
-    }
+    // function getApprovedMemberCount() external view override returns (uint256) {
+    //     return approvedMemberCount;
+    // }
 
     function isTopMember(address member) public view override returns (bool) {
         for (uint256 i = 0; i < 6; i++) {

@@ -157,6 +157,7 @@ export default function RespectGameContainer() {
     description: string,
     xAccount: string
   ) => {
+    // Submit to blockchain - webhook will save all data from the event
     await becomeMember(name, profileUrl, description, xAccount);
   };
 

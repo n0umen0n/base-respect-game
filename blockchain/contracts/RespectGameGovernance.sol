@@ -299,14 +299,15 @@ contract RespectGameGovernance is
 
         bool canExecute = false;
 
-        if (proposal.proposalType == ProposalType.BanMember) {
-            canExecute = proposal.votesFor >= 3;
-            if (canExecute) {
-                IRespectGameCore(coreContract).banMemberByGovernance(
-                    proposal.targetMember
-                );
-            }
-        } else if (proposal.proposalType == ProposalType.ApproveMember) {
+        // if (proposal.proposalType == ProposalType.BanMember) {
+        //     canExecute = proposal.votesFor >= 3;
+        //     if (canExecute) {
+        //         IRespectGameCore(coreContract).banMemberByGovernance(
+        //             proposal.targetMember
+        //         );
+        //     }
+        // } else
+        if (proposal.proposalType == ProposalType.ApproveMember) {
             canExecute = proposal.votesFor >= 2;
             if (canExecute) {
                 IRespectGameCore(coreContract).approveMemberByGovernance(
