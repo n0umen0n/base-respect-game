@@ -11,9 +11,12 @@ import {
   Fade,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ProfilePictureUpload from './ProfilePictureUpload';
+import { uploadProfilePicture } from '../lib/supabase-respect';
 
 interface ProfileCreationProps {
   onSuccess: () => void;
+  walletAddress: string;
   onBecomeMember: (
     name: string,
     profileUrl: string,
@@ -24,6 +27,7 @@ interface ProfileCreationProps {
 
 export default function ProfileCreation({
   onSuccess,
+  walletAddress,
   onBecomeMember,
 }: ProfileCreationProps) {
   const [formData, setFormData] = useState({
@@ -32,9 +36,11 @@ export default function ProfileCreation({
     description: '',
     xAccount: '',
   });
+  const [profileImage, setProfileImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -57,20 +63,39 @@ export default function ProfileCreation({
 
     try {
       setIsSubmitting(true);
+      let profileUrl = formData.profileUrl.trim();
+
+      // Upload profile image if one was selected
+      if (profileImage) {
+        setUploadProgress('Uploading profile picture...');
+        try {
+          profileUrl = await uploadProfilePicture(profileImage, walletAddress);
+        } catch (uploadErr: any) {
+          console.error('Error uploading profile picture:', uploadErr);
+          setError('Failed to upload profile picture. Please try again.');
+          setIsSubmitting(false);
+          setUploadProgress(null);
+          return;
+        }
+      }
+
+      setUploadProgress('Creating profile on blockchain...');
       
       // Call the contract function
       await onBecomeMember(
         formData.name.trim(),
-        formData.profileUrl.trim(),
+        profileUrl,
         formData.description.trim(),
         formData.xAccount.trim()
       );
 
       // Show success modal
       setShowSuccessModal(true);
+      setUploadProgress(null);
     } catch (err: any) {
       console.error('Error creating profile:', err);
       setError(err.message || 'Failed to create profile. Please try again.');
+      setUploadProgress(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -146,15 +171,9 @@ export default function ProfileCreation({
               placeholder="Your display name"
             />
 
-            <TextField
-              label="Profile Picture URL"
-              fullWidth
-              value={formData.profileUrl}
-              onChange={(e) => handleChange('profileUrl', e.target.value)}
-              sx={{ marginBottom: 3 }}
-              disabled={isSubmitting}
-              placeholder="https://..."
-              helperText="Optional: Link to your profile picture"
+            <ProfilePictureUpload
+              onImageSelect={setProfileImage}
+              currentImageUrl={formData.profileUrl}
             />
 
             <TextField
@@ -199,9 +218,11 @@ export default function ProfileCreation({
               }}
             >
               {isSubmitting ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
-                  <span>CREATING PROFILE...</span>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexDirection: 'column' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <CircularProgress size={24} sx={{ color: 'white' }} />
+                    <span>{uploadProgress || 'CREATING PROFILE...'}</span>
+                  </Box>
                 </Box>
               ) : (
                 'CREATE PROFILE'

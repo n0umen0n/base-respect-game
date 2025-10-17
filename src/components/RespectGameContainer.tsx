@@ -205,8 +205,9 @@ export default function RespectGameContainer() {
 
   return (
     <>
-      {currentView === 'profile-creation' && (
+      {currentView === 'profile-creation' && smartAccountAddress && (
         <ProfileCreation
+          walletAddress={smartAccountAddress}
           onSuccess={handleProfileCreated}
           onBecomeMember={handleBecomeMember}
         />

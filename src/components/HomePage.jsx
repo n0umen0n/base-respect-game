@@ -177,6 +177,7 @@ const HomePage = () => {
                   name={member.name}
                   x={member.x_account || ''}
                   score={member.average_respect}
+                  profileUrl={member.profile_url}
                   style={{ flex: '0 1 340px' }}
                 />
               ))

@@ -386,3 +386,45 @@ export async function getVouchedForMembers(
 
   return data || [];
 }
+
+/**
+ * Upload a profile picture to Supabase Storage
+ * @param file - The image file to upload
+ * @param walletAddress - The wallet address of the user (used for unique file naming)
+ * @returns The public URL of the uploaded image
+ */
+export async function uploadProfilePicture(
+  file: File,
+  walletAddress: string
+): Promise<string> {
+  try {
+    // Create a unique file name using wallet address and timestamp
+    const timestamp = Date.now();
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${walletAddress.toLowerCase()}-${timestamp}.${fileExt}`;
+    const filePath = `profile-pictures/${fileName}`;
+
+    // Upload file to Supabase Storage
+    const { data, error } = await supabase.storage
+      .from("respect-game-profiles")
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) {
+      console.error("Error uploading file:", error);
+      throw new Error("Failed to upload profile picture: " + error.message);
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from("respect-game-profiles")
+      .getPublicUrl(filePath);
+
+    return urlData.publicUrl;
+  } catch (error: any) {
+    console.error("Error in uploadProfilePicture:", error);
+    throw error;
+  }
+}

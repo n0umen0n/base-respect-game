@@ -2,7 +2,7 @@ import React from 'react';
 import profileImage from '../assets/profile.jpg';
 import './ProfileCard.css';
 
-const ProfileCard = ({ rank, name, x, score, style }) => {
+const ProfileCard = ({ rank, name, x, score, profileUrl, style }) => {
   const handleCardClick = () => {
     window.open('https://google.com', '_blank', 'noopener,noreferrer');
   };
@@ -28,7 +28,7 @@ const ProfileCard = ({ rank, name, x, score, style }) => {
       }}
     >
       <img
-        src={profileImage}
+        src={profileUrl || profileImage}
         alt={name}
         style={{
           width: '90px',
