@@ -619,6 +619,13 @@ async function processEventLog(
         ? coreInterface
         : governanceInterface;
 
+    // Debug: Log the raw log data
+    console.log("🔍 Raw log data:", {
+      topics: log.topics,
+      data: log.data,
+      topicsLength: log.topics?.length
+    });
+
     // Try to parse the log
     let decoded;
     try {
@@ -627,7 +634,14 @@ async function processEventLog(
         data: log.data,
       });
     } catch (parseError) {
-      console.log("⏭️ Could not parse event, skipping:", parseError);
+      console.log("⏭️ Could not parse event, skipping. Error:", parseError.message);
+      console.log("📋 Log details:", JSON.stringify(log, null, 2));
+      return null;
+    }
+
+    if (!decoded) {
+      console.log("⏭️ Decoded is null, skipping");
+      console.log("📋 Log details:", JSON.stringify(log, null, 2));
       return null;
     }
 
