@@ -12,6 +12,7 @@ import {
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ProfilePictureUpload from './ProfilePictureUpload';
+import XAccountConnect from './XAccountConnect';
 import { uploadProfilePicture } from '../lib/supabase-respect';
 
 interface ProfileCreationProps {
@@ -34,8 +35,9 @@ export default function ProfileCreation({
     name: '',
     profileUrl: '',
     description: '',
-    xAccount: '',
   });
+  const [xAccount, setXAccount] = useState('');
+  const [xVerified, setXVerified] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +88,7 @@ export default function ProfileCreation({
         formData.name.trim(),
         profileUrl,
         formData.description.trim(),
-        formData.xAccount.trim()
+        xAccount.trim()
       );
 
       // Show success modal
@@ -189,15 +191,14 @@ export default function ProfileCreation({
               helperText="Optional: A brief description about you"
             />
 
-            <TextField
-              label="X (Twitter) Account"
-              fullWidth
-              value={formData.xAccount}
-              onChange={(e) => handleChange('xAccount', e.target.value)}
-              sx={{ marginBottom: 3 }}
+            <XAccountConnect
+              onConnect={(account, verified) => {
+                setXAccount(account);
+                setXVerified(verified);
+              }}
+              currentAccount={xAccount}
+              currentVerified={xVerified}
               disabled={isSubmitting}
-              placeholder="@username"
-              helperText="Optional: Your X/Twitter handle (you can verify it later)"
             />
 
             <Button
