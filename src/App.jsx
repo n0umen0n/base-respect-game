@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import StaggeredMenu from './components/StaggeredMenu';
 import PixelBlast from './components/PixelBlast';
 
@@ -19,6 +19,16 @@ const socialItems = [
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { logout, user } = usePrivy();
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const isHomePage = location.pathname === '/';
+  
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
     <>
@@ -64,6 +74,38 @@ function App() {
       >
         <Outlet />
       </div>
+      {!isHomePage && user && (
+        <button
+          onClick={handleLogout}
+          style={{
+            position: 'fixed',
+            top: '2rem',
+            left: '2rem',
+            zIndex: 9999,
+            pointerEvents: 'auto',
+            background: '#1a1a1a',
+            color: 'white',
+            border: 'none',
+            borderRadius: '9999px',
+            padding: '0.75rem 1.5rem',
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '0.8rem',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#333';
+            e.currentTarget.style.transform = 'scale(1.05)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = '#1a1a1a';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          LOGOUT
+        </button>
+      )}
       <StaggeredMenu
         position="right"
         isFixed={true}
