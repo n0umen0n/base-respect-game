@@ -113,7 +113,15 @@ contract RespectGameCore is
             memberList.push(msg.sender);
             approvedMemberCount++;
 
-            emit MemberJoined(msg.sender, name, profileUrl, description, xAccount, block.timestamp, true);
+            emit MemberJoined(
+                msg.sender,
+                name,
+                profileUrl,
+                description,
+                xAccount,
+                block.timestamp,
+                true
+            );
         } else {
             // Create proposal for new member
             memberProposals.push(
@@ -151,7 +159,15 @@ contract RespectGameCore is
                 name,
                 block.timestamp
             );
-            emit MemberJoined(msg.sender, name, profileUrl, description, xAccount, block.timestamp, false);
+            emit MemberJoined(
+                msg.sender,
+                name,
+                profileUrl,
+                description,
+                xAccount,
+                block.timestamp,
+                false
+            );
         }
     }
 
