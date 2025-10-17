@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { parseEther, formatEther } from 'viem';
+import { CONTRACTS } from '../config/contracts.config';
 
 // Contract ABIs (simplified - add full ABIs in production)
 const RESPECT_GAME_CORE_ABI = [
@@ -145,10 +146,10 @@ const RESPECT_GAME_GOVERNANCE_ABI = [
   },
 ] as const;
 
-// Contract addresses from environment variables
-const RESPECT_GAME_CORE_ADDRESS = import.meta.env.VITE_RESPECT_GAME_CORE_ADDRESS as `0x${string}`;
-const RESPECT_TOKEN_ADDRESS = import.meta.env.VITE_RESPECT_TOKEN_ADDRESS as `0x${string}`;
-const RESPECT_GAME_GOVERNANCE_ADDRESS = import.meta.env.VITE_RESPECT_GAME_GOVERNANCE_ADDRESS as `0x${string}`;
+// Contract addresses (imported from centralized config)
+const RESPECT_GAME_CORE_ADDRESS = CONTRACTS.RESPECT_GAME_CORE;
+const RESPECT_TOKEN_ADDRESS = CONTRACTS.RESPECT_TOKEN;
+const RESPECT_GAME_GOVERNANCE_ADDRESS = CONTRACTS.RESPECT_GAME_GOVERNANCE;
 
 interface UseRespectGameProps {
   smartAccountClient: any;
