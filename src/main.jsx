@@ -5,6 +5,7 @@ import { PrivyProvider } from '@privy-io/react-auth';
 import App from './App';
 import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
+import RespectGameContainer from './components/RespectGameContainer';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 import { base } from 'viem/chains';
@@ -50,6 +51,7 @@ root.render(
           <Route index element={<HomePage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="game" element={<RespectGameContainer />} />
           </Route>
         </Route>
       </Routes>

@@ -2,6 +2,7 @@
 DEPLOY:
 
 npx hardhat run scripts/deploy.ts --network base-mainnet
+npx hardhat run scripts/respect-game-split.deploy.ts --network base-mainnet
 
 UPGRADE:
 
@@ -20,3 +21,60 @@ ADDRESSES:
 Deploying with admin address: 0xC8188af6eeC396E9278d1BD90C0e7Cf43EC45f6B
 Deploying SimpleStorageImplementation...
 SimpleStorageImplementation deployed to: 0x44aC2daE725b989Df123243A21C9b52b224B4273
+
+
+
+
+➜  blockchain git:(main) ✗ npx hardhat run scripts/respect-game-split.deploy.ts --network base-mainnet
+
+Deploying Respect Game System (Split Architecture)...
+Deploying with account: 0xC8188af6eeC396E9278d1BD90C0e7Cf43EC45f6B
+Account balance: 0.001112130901632926 ETH
+
+1. Deploying RespectToken...
+RespectToken deployed to: 0xef655aA8760d889BB0972903842D8929C80Ba3Fd
+
+2. Deploying Executor...
+Executor deployed to: 0xEe9b38Ee8ddF3ab5F63D1183e6c9Db5640af2B18
+
+3. Deploying RespectGameCore...
+RespectGameCore deployed to: 0x8a8dbE61A0368855a455eeC806bCFC40C9e95c29
+
+4. Deploying RespectGameGovernance...
+RespectGameGovernance deployed to: 0x354d6b039f6d463b706a63f18227eb34d4fc93aA
+
+5. Configuring permissions...
+Adding RespectGameCore as minter...
+RespectGameCore added as minter
+Setting governance contract in core...
+Governance contract set in core
+Setting governance as proposal manager...
+Governance set as proposal manager
+Note: Executor ownership remains with deployer for admin purposes
+
+==================== DEPLOYMENT COMPLETE ====================
+RespectToken: 0xef655aA8760d889BB0972903842D8929C80Ba3Fd
+Executor: 0xEe9b38Ee8ddF3ab5F63D1183e6c9Db5640af2B18
+RespectGameCore: 0x8a8dbE61A0368855a455eeC806bCFC40C9e95c29
+RespectGameGovernance: 0x354d6b039f6d463b706a63f18227eb34d4fc93aA
+Treasury (deprecated): 0xC8188af6eeC396E9278d1BD90C0e7Cf43EC45f6B
+
+Configuration:
+- Members without approval: 10
+- Periods for average: 12
+- RESPECT distribution: [ 210000, 130000, 80000, 50000, 30000 ]
+- Contribution submission length: 600 seconds
+- Contribution ranking length: 600 seconds
+
+Current game number: 1n
+Current stage: 0n (0=Submission, 1=Ranking)
+Next stage timestamp: 1760625173n
+===========================================================
+
+
+Deployment Info:
+TypeError: Do not know how to serialize a BigInt
+    at JSON.stringify (<anonymous>)
+    at main (/Users/vlad/untitled folder/vladrespect/blockchain/scripts/respect-game-split.deploy.ts:201:20)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+➜  blockchain git:(main) ✗ 

@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import AnimatedContent from './AnimatedContent';
 import Button from '@mui/material/Button';
 import Shuffle from './Shuffle';
 import ProfileCard from './ProfileCard';
+import { getTopSixMembers } from '../lib/supabase-respect';
 
 import {
   Table,
@@ -15,31 +16,34 @@ import {
   TableRow,
   Paper,
   Avatar,
-  Link
+  Link,
+  CircularProgress
 } from '@mui/material';
-
-const leaderboardData = [
-    { rank: 1, name: 'Vlad', x: '@cxvznk', score: 12 },
-    { rank: 2, name: 'Based', x: '@based', score: 11 },
-    { rank: 3, name: 'Chad', x: '@chad', score: 10 },
-    { rank: 4, name: 'Anon', x: '@anon', score: 9 },
-    { rank: 5, name: 'Mog', x: '@mog', score: 8 },
-    { rank: 6, name: 'Looksmaxx', x: '@looksmaxx', score: 7 },
-    { rank: 7, name: 'User7', x: '@user7', score: 6 },
-    { rank: 8, name: 'User8', x: '@user8', score: 5 },
-    { rank: 9, name: 'User9', x: '@user9', score: 4 },
-    { rank: 10, name: 'User10', x: '@user10', score: 3 },
-    { rank: 11, name: 'User11', x: '@user11', score: 2 },
-    { rank: 12, name: 'User12', x: '@user12', score: 1 }
-  ];
 
 const HomePage = () => {
   const { login, user, ready } = usePrivy();
   const navigate = useNavigate();
+  const [topMembers, setTopMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadTopMembers();
+  }, []);
+
+  const loadTopMembers = async () => {
+    try {
+      const members = await getTopSixMembers();
+      setTopMembers(members);
+    } catch (error) {
+      console.error('Error loading top members:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (ready && user) {
-      navigate('/dashboard');
+      navigate('/game');
     }
   }, [ready, user, navigate]);
 
@@ -163,16 +167,24 @@ const HomePage = () => {
               justifyContent: 'center'
             }}
           >
-            {leaderboardData.slice(0, 6).map((player, index) => (
-              <ProfileCard
-                key={index}
-                rank={player.rank}
-                name={player.name}
-                x={player.x}
-                score={player.score}
-                style={{ flex: '0 1 340px' }}
-              />
-            ))}
+            {loading ? (
+              <CircularProgress />
+            ) : topMembers.length > 0 ? (
+              topMembers.map((member, index) => (
+                <ProfileCard
+                  key={member.wallet_address}
+                  rank={member.rank}
+                  name={member.name}
+                  x={member.x_account || ''}
+                  score={member.average_respect}
+                  style={{ flex: '0 1 340px' }}
+                />
+              ))
+            ) : (
+              <p style={{ fontFamily: '"Press Start 2P", sans-serif', fontSize: '0.8rem' }}>
+                No members yet. Be the first to join!
+              </p>
+            )}
           </div>
         </AnimatedContent>
 
@@ -210,12 +222,6 @@ const HomePage = () => {
                     align="center"
                     sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
                   >
-                    Profile
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
-                  >
                     Rank
                   </TableCell>
                   <TableCell
@@ -239,61 +245,13 @@ const HomePage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {leaderboardData.slice(6).map((row) => (
-                  <TableRow
-                    key={row.name}
-                    onClick={() =>
-                      window.open(
-                        'https://google.com',
-                        '_blank',
-                        'noopener,noreferrer'
-                      )
-                    }
-                    sx={{
-                      '&:last-child td, &:last-child th': { border: 0 },
-                      cursor: 'pointer',
-                      '&:hover': {
-                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                      }
-                    }}
-                  >
-                    <TableCell component="th" scope="row" align="center">
-                      <Avatar
-                        alt={row.name}
-                        src={`/src/assets/profile.jpg`}
-                        sx={{ borderRadius: '8px', margin: 'auto' }}
-                      />
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontFamily: 'inherit' }}>
-                      {row.rank}
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontFamily: 'inherit' }}>
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="center">
-                      <Link
-                        href={`https://x.com/${row.x.substring(1)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        sx={{
-                          color: '#1da1f2',
-                          textDecoration: 'none',
-                          fontFamily: '"Press Start 2P", sans-serif',
-                          fontSize: 'inherit',
-                          '&:hover': {
-                            color: '#00008b'
-                          }
-                        }}
-                      >
-                        {row.x}
-                      </Link>
-                    </TableCell>
-                    <TableCell align="center" sx={{ fontFamily: 'inherit' }}>
-                      {row.score}
+                {!loading && topMembers.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center">
+                      No members yet
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </TableContainer>
