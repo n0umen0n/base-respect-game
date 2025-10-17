@@ -16,13 +16,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Alchemy webhook signing key
 const ALCHEMY_SIGNING_KEY = process.env.ALCHEMY_WEBHOOK_SIGNING_KEY!;
 
-// Contract addresses (lowercase for comparison)
-const RESPECT_GAME_CORE_ADDRESS = (
-  process.env.RESPECT_GAME_CORE_ADDRESS || ""
-).toLowerCase();
-const RESPECT_GAME_GOVERNANCE_ADDRESS = (
-  process.env.RESPECT_GAME_GOVERNANCE_ADDRESS || ""
-).toLowerCase();
+// Contract addresses (hardcoded - public on blockchain)
+const RESPECT_GAME_CORE_ADDRESS =
+  "0x8a8dbE61A0368855a455eeC806bCFC40C9e95c29".toLowerCase();
+const RESPECT_GAME_GOVERNANCE_ADDRESS =
+  "0x354d6b039f6d463b706a63f18227eb34d4fc93aA".toLowerCase();
 
 // Contract ABIs - Event signatures only
 const RESPECT_GAME_CORE_EVENTS = [
@@ -605,6 +603,10 @@ async function processEventLog(
 ) {
   try {
     console.log("📝 Processing event log from:", contractAddress);
+    console.log("🔍 Expected addresses:", {
+      core: RESPECT_GAME_CORE_ADDRESS,
+      governance: RESPECT_GAME_GOVERNANCE_ADDRESS,
+    });
 
     if (!log.topics || log.topics.length < 1) {
       console.log("⏭️ Not enough topics, skipping");
@@ -698,14 +700,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       for (const log of logs) {
         const contractAddr = log.account?.address?.toLowerCase();
+        console.log("🔍 Checking log from:", contractAddr);
 
         if (
           contractAddr === RESPECT_GAME_CORE_ADDRESS ||
           contractAddr === RESPECT_GAME_GOVERNANCE_ADDRESS
         ) {
+          console.log("✅ Address matches! Processing...");
           const txHash = log.transaction?.hash || log.transactionHash;
           const result = await processEventLog(log, txHash, contractAddr);
           if (result) results.push(result);
+        } else {
+          console.log("⏭️ Address doesn't match, skipping");
         }
       }
     }
@@ -717,11 +723,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       for (const activity of activities) {
         if (activity.log && activity.log.topics) {
           const contractAddr = activity.log.address?.toLowerCase();
+          console.log("🔍 Checking activity from:", contractAddr);
 
           if (
             contractAddr === RESPECT_GAME_CORE_ADDRESS ||
             contractAddr === RESPECT_GAME_GOVERNANCE_ADDRESS
           ) {
+            console.log("✅ Address matches! Processing...");
             const txHash = activity.hash || activity.log.transactionHash;
             const result = await processEventLog(
               activity.log,
@@ -729,6 +737,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               contractAddr
             );
             if (result) results.push(result);
+          } else {
+            console.log("⏭️ Address doesn't match, skipping");
           }
         }
       }
