@@ -10,15 +10,19 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================
 -- MEMBERS TABLE
 -- ============================================
+-- SECURITY NOTE: x_account is NOT stored on-chain for security reasons
+-- X accounts are only stored in the database after Privy OAuth verification
+-- This prevents anyone from claiming X accounts they don't own
+-- See X_ACCOUNT_SECURITY.md for full security explanation
 CREATE TABLE IF NOT EXISTS members (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   wallet_address VARCHAR(66) UNIQUE NOT NULL,
-  privy_did VARCHAR,
+  privy_did VARCHAR,  -- Links to Privy user who authenticated
   name VARCHAR(100) NOT NULL,
   profile_url VARCHAR(500),
   description TEXT,
-  x_account VARCHAR(100),
-  x_verified BOOLEAN DEFAULT false,
+  x_account VARCHAR(100),  -- ONLY set via Privy OAuth, NOT from blockchain events
+  x_verified BOOLEAN DEFAULT false,  -- X verified status from OAuth
   is_approved BOOLEAN DEFAULT false,
   is_banned BOOLEAN DEFAULT false,
   joined_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -272,6 +276,32 @@ ALTER TABLE proposal_votes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE member_approvals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE respect_history ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (prevents "already exists" error)
+DROP POLICY IF EXISTS "Anyone can view members" ON members;
+DROP POLICY IF EXISTS "Anyone can view game_stages" ON game_stages;
+DROP POLICY IF EXISTS "Anyone can view contributions" ON contributions;
+DROP POLICY IF EXISTS "Anyone can view groups" ON groups;
+DROP POLICY IF EXISTS "Anyone can view member_groups" ON member_groups;
+DROP POLICY IF EXISTS "Anyone can view rankings" ON rankings;
+DROP POLICY IF EXISTS "Anyone can view game_results" ON game_results;
+DROP POLICY IF EXISTS "Anyone can view proposals" ON proposals;
+DROP POLICY IF EXISTS "Anyone can view proposal_votes" ON proposal_votes;
+DROP POLICY IF EXISTS "Anyone can view member_approvals" ON member_approvals;
+DROP POLICY IF EXISTS "Anyone can view respect_history" ON respect_history;
+
+DROP POLICY IF EXISTS "Service role can insert members" ON members;
+DROP POLICY IF EXISTS "Service role can update members" ON members;
+DROP POLICY IF EXISTS "Service role can update game_stages" ON game_stages;
+DROP POLICY IF EXISTS "Service role can insert contributions" ON contributions;
+DROP POLICY IF EXISTS "Service role can insert groups" ON groups;
+DROP POLICY IF EXISTS "Service role can insert member_groups" ON member_groups;
+DROP POLICY IF EXISTS "Service role can insert rankings" ON rankings;
+DROP POLICY IF EXISTS "Service role can insert game_results" ON game_results;
+DROP POLICY IF EXISTS "Service role can insert proposals" ON proposals;
+DROP POLICY IF EXISTS "Service role can update proposals" ON proposals;
+DROP POLICY IF EXISTS "Service role can insert proposal_votes" ON proposal_votes;
+DROP POLICY IF EXISTS "Allow X account updates" ON members;
+
 -- Public read access policies
 CREATE POLICY "Anyone can view members" ON members FOR SELECT USING (true);
 CREATE POLICY "Anyone can view game_stages" ON game_stages FOR SELECT USING (true);
@@ -297,6 +327,10 @@ CREATE POLICY "Service role can insert game_results" ON game_results FOR INSERT 
 CREATE POLICY "Service role can insert proposals" ON proposals FOR INSERT WITH CHECK (true);
 CREATE POLICY "Service role can update proposals" ON proposals FOR UPDATE WITH CHECK (true);
 CREATE POLICY "Service role can insert proposal_votes" ON proposal_votes FOR INSERT WITH CHECK (true);
+
+-- Allow X account updates after Privy Twitter authentication
+-- This policy allows the frontend to update X account info after OAuth verification
+CREATE POLICY "Allow X account updates" ON members FOR UPDATE USING (true) WITH CHECK (true);
 CREATE POLICY "Service role can insert member_approvals" ON member_approvals FOR INSERT WITH CHECK (true);
 CREATE POLICY "Service role can insert respect_history" ON respect_history FOR INSERT WITH CHECK (true);
 

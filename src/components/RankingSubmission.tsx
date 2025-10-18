@@ -18,6 +18,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import {
@@ -115,28 +116,43 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
             >
               {member.name}
             </Typography>
-            {member.xAccount && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: 0.5 }}>
-                <Link
-                  href={`https://x.com/${member.xAccount.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    fontSize: '0.85rem',
-                    color: '#1da1f2',
-                    textDecoration: 'none',
-                    '&:hover': {
-                      textDecoration: 'underline',
-                    },
-                  }}
-                >
-                  {member.xAccount}
-                </Link>
-                {member.xVerified && (
-                  <VerifiedIcon sx={{ fontSize: 16, color: '#1da1f2' }} />
-                )}
-              </Box>
-            )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: 0.5 }}>
+              {member.xAccount ? (
+                <>
+                  <Link
+                    href={`https://x.com/${member.xAccount.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      fontSize: '0.85rem',
+                      color: '#1da1f2',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
+                    {member.xAccount}
+                  </Link>
+                  {member.xVerified && (
+                    <CheckCircleIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
+                  )}
+                </>
+              ) : (
+                <>
+                  <Typography
+                    sx={{
+                      fontSize: '0.75rem',
+                      color: '#9e9e9e',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    missing
+                  </Typography>
+                  <CancelIcon sx={{ fontSize: 16, color: '#f44336' }} />
+                </>
+              )}
+            </Box>
           </Box>
 
           <IconButton

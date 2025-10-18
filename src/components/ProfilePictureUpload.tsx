@@ -35,9 +35,9 @@ export default function ProfilePictureUpload({
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image size must be less than 5MB');
+    // Validate file size (max 20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      setError('Image size must be less than 20MB');
       return;
     }
 
@@ -160,7 +160,7 @@ export default function ProfilePictureUpload({
             textAlign: 'center',
           }}
         >
-          Optional: JPG, PNG or GIF (Max 5MB)
+          Optional: JPG, PNG or GIF (Max 20MB)
         </Typography>
 
         {error && (

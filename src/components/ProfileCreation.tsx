@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { usePrivy } from '@privy-io/react-auth';
 import {
   Box,
   TextField,
@@ -9,11 +10,14 @@ import {
   Alert,
   Modal,
   Fade,
+  Chip,
+  IconButton,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import XIcon from '@mui/icons-material/X';
+import CancelIcon from '@mui/icons-material/Cancel';
 import ProfilePictureUpload from './ProfilePictureUpload';
-import XAccountConnect from './XAccountConnect';
-import { uploadProfilePicture } from '../lib/supabase-respect';
+import { uploadProfilePicture, updateMemberXAccount } from '../lib/supabase-respect';
 
 interface ProfileCreationProps {
   onSuccess: () => void;
@@ -31,21 +35,87 @@ export default function ProfileCreation({
   walletAddress,
   onBecomeMember,
 }: ProfileCreationProps) {
-  const [formData, setFormData] = useState({
-    name: '',
-    profileUrl: '',
-    description: '',
+  const { user, linkTwitter, unlinkTwitter } = usePrivy();
+  const [formData, setFormData] = useState(() => {
+    // Try to restore form data from sessionStorage
+    const saved = sessionStorage.getItem('profile_form_data');
+    return saved ? JSON.parse(saved) : {
+      name: '',
+      profileUrl: '',
+      description: '',
+    };
   });
-  const [xAccount, setXAccount] = useState('');
-  const [xVerified, setXVerified] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [savedImagePreview, setSavedImagePreview] = useState<string | null>(() => {
+    // Restore image preview from sessionStorage
+    return sessionStorage.getItem('profile_image_preview');
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
+  const [linkingTwitter, setLinkingTwitter] = useState(false);
+
+  // Save form data to sessionStorage whenever it changes
+  React.useEffect(() => {
+    sessionStorage.setItem('profile_form_data', JSON.stringify(formData));
+  }, [formData]);
+
+  // Save image preview when image changes
+  const handleImageSelect = (file: File | null) => {
+    setProfileImage(file);
+    
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result as string;
+        setSavedImagePreview(dataUrl);
+        sessionStorage.setItem('profile_image_preview', dataUrl);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setSavedImagePreview(null);
+      sessionStorage.removeItem('profile_image_preview');
+    }
+  };
+
+  // Clear saved form data on success
+  React.useEffect(() => {
+    if (showSuccessModal) {
+      sessionStorage.removeItem('profile_form_data');
+      sessionStorage.removeItem('profile_image_preview');
+    }
+  }, [showSuccessModal]);
+
+  // Get Twitter account from Privy user object
+  const twitterAccount = user?.twitter?.username 
+    ? `@${user.twitter.username}` 
+    : '';
+  const twitterVerified = user?.twitter?.verified || false;
+
+  // Debug: Log Privy user data
+  React.useEffect(() => {
+    if (user) {
+      console.log('Privy user data:', {
+        id: user.id,
+        hasTwitter: !!user.twitter,
+        twitterUsername: user.twitter?.username,
+        twitterVerified: user.twitter?.verified,
+        twitterSubject: user.twitter?.subject,
+        fullTwitterObject: user.twitter
+      });
+    }
+  }, [user]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Helper to convert data URL back to File
+  const dataURLtoFile = async (dataUrl: string, filename: string): Promise<File> => {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    return new File([blob], filename, { type: blob.type });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,28 +138,99 @@ export default function ProfileCreation({
       let profileUrl = formData.profileUrl.trim();
 
       // Upload profile image if one was selected
+      console.log('Image upload check:', {
+        hasProfileImage: !!profileImage,
+        hasSavedPreview: !!savedImagePreview,
+        profileImageType: profileImage?.type,
+        profileImageSize: profileImage?.size
+      });
+
       if (profileImage) {
-        setUploadProgress('Uploading profile picture...');
+        setUploadProgress('Uploading image...');
+        console.log('Uploading profile image:', profileImage.name);
         try {
           profileUrl = await uploadProfilePicture(profileImage, walletAddress);
+          console.log('✅ Profile picture uploaded successfully:', profileUrl);
         } catch (uploadErr: any) {
-          console.error('Error uploading profile picture:', uploadErr);
+          console.error('❌ Error uploading profile picture:', uploadErr);
           setError('Failed to upload profile picture. Please try again.');
           setIsSubmitting(false);
           setUploadProgress(null);
           return;
         }
+      } else if (savedImagePreview) {
+        // If we have a saved preview but no file (after Privy OAuth redirect),
+        // convert the data URL back to a File
+        setUploadProgress('Uploading image...');
+        console.log('Converting saved image preview to file');
+        try {
+          const file = await dataURLtoFile(savedImagePreview, 'profile-picture.jpg');
+          console.log('Converted file:', file.name, file.size, file.type);
+          profileUrl = await uploadProfilePicture(file, walletAddress);
+          console.log('✅ Profile picture uploaded from preview:', profileUrl);
+        } catch (uploadErr: any) {
+          console.error('❌ Error uploading saved profile picture:', uploadErr);
+          // Don't fail - just skip the image upload
+        }
+      } else {
+        console.log('No profile image to upload');
       }
 
-      setUploadProgress('Creating profile on blockchain...');
+      setUploadProgress('Creating profile...');
       
       // Call the contract function
+      // NOTE: We pass empty string for X account to contract since we'll store it securely in DB
       await onBecomeMember(
         formData.name.trim(),
         profileUrl,
         formData.description.trim(),
-        xAccount.trim()
+        '' // Don't store X account on-chain, only in DB for security
       );
+
+      // If user authenticated with X via Privy, save it to database
+      // This is secure because it comes from Privy's verified OAuth
+      if (twitterAccount && user?.twitter) {
+        setUploadProgress('Saving X account...');
+        
+        console.log('Attempting to save X account:', {
+          walletAddress,
+          twitterAccount,
+          twitterVerified,
+          privyId: user.id
+        });
+        
+        // Wait for webhook to create member in database (takes 2-5 seconds)
+        // Then update with X account info
+        let retries = 0;
+        const maxRetries = 10;
+        let saved = false;
+        
+        while (retries < maxRetries && !saved) {
+          try {
+            // Wait 2 seconds before each attempt
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            await updateMemberXAccount(
+              walletAddress,
+              twitterAccount,
+              twitterVerified,
+              user.id // Privy DID - proves this X account belongs to this Privy user
+            );
+            
+            console.log('✅ X account saved to database successfully!');
+            saved = true;
+          } catch (xError: any) {
+            retries++;
+            console.log(`Attempt ${retries}/${maxRetries} to save X account:`, xError.message);
+            
+            if (retries >= maxRetries) {
+              console.error('❌ Failed to save X account after all retries:', xError);
+              // Show a warning but don't fail the profile creation
+              setError('Profile created but X account could not be saved. Please refresh and try linking X again.');
+            }
+          }
+        }
+      }
 
       // Show success modal
       setShowSuccessModal(true);
@@ -139,7 +280,7 @@ export default function ProfileCreation({
               marginBottom: 3,
             }}
           >
-            CREATE YOUR PROFILE
+            PROFILE CREATION
           </Typography>
 
           <Typography
@@ -152,7 +293,7 @@ export default function ProfileCreation({
               lineHeight: 1.8,
             }}
           >
-            Join the Respect Game and start earning RESPECT tokens
+            PLEASE LET OTHERS KNOW WHO ARE THEY PLAYING WITH
           </Typography>
 
           {error && (
@@ -163,19 +304,26 @@ export default function ProfileCreation({
 
           <form onSubmit={handleSubmit}>
             <TextField
-              label="Name"
+              label="Nickname"
               fullWidth
               required
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              sx={{ marginBottom: 3 }}
+              sx={{ 
+                marginBottom: 3,
+                '& .MuiInputBase-input::placeholder': {
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.7rem',
+                  opacity: 0.6,
+                }
+              }}
               disabled={isSubmitting}
               placeholder="Your display name"
             />
 
             <ProfilePictureUpload
-              onImageSelect={setProfileImage}
-              currentImageUrl={formData.profileUrl}
+              onImageSelect={handleImageSelect}
+              currentImageUrl={savedImagePreview || formData.profileUrl}
             />
 
             <TextField
@@ -185,21 +333,154 @@ export default function ProfileCreation({
               rows={4}
               value={formData.description}
               onChange={(e) => handleChange('description', e.target.value)}
-              sx={{ marginBottom: 3 }}
+              sx={{ 
+                marginBottom: 3,
+                '& .MuiInputBase-input::placeholder': {
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.7rem',
+                  opacity: 0.6,
+                }
+              }}
               disabled={isSubmitting}
               placeholder="Tell us about yourself..."
               helperText="Optional: A brief description about you"
+              FormHelperTextProps={{
+                sx: {
+                  fontSize: '0.65rem',
+                }
+              }}
             />
 
-            <XAccountConnect
-              onConnect={(account, verified) => {
-                setXAccount(account);
-                setXVerified(verified);
-              }}
-              currentAccount={xAccount}
-              currentVerified={xVerified}
-              disabled={isSubmitting}
-            />
+            {/* Twitter Account Connection via Privy */}
+            <Box sx={{ marginBottom: 3 }}>
+              {!twitterAccount && (
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.7rem',
+                    marginBottom: 2,
+                  }}
+                >
+                  ADD X ACCOUNT TO PROFILE
+                </Typography>
+              )}
+
+              {!twitterAccount ? (
+                <Box>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        setLinkingTwitter(true);
+                        await linkTwitter();
+                      } catch (err) {
+                        console.error('Failed to link Twitter:', err);
+                      } finally {
+                        setLinkingTwitter(false);
+                      }
+                    }}
+                    disabled={isSubmitting || linkingTwitter}
+                    variant="outlined"
+                    startIcon={linkingTwitter ? <CircularProgress size={20} /> : <XIcon />}
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.65rem',
+                      padding: '0.75rem 1.5rem',
+                      borderColor: '#000',
+                      color: '#000',
+                      '&:hover': {
+                        borderColor: '#333',
+                        backgroundColor: 'rgba(0,0,0,0.05)',
+                      },
+                    }}
+                  >
+                    {linkingTwitter ? 'CONNECTING...' : 'Connect'}
+                  </Button>
+
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: 'block',
+                      marginTop: 1,
+                      fontSize: '0.65rem',
+                      color: 'text.secondary',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Optional: but it is a way to prove that it is you.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 2,
+                    padding: 2.5,
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: 2,
+                    border: '2px solid #4CAF50',
+                  }}
+                >
+                  {/* Left side: X icon and username */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <XIcon sx={{ fontSize: 36, color: '#000' }} />
+                    
+                    <Typography
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.85rem',
+                        color: '#000',
+                      }}
+                    >
+                      {twitterAccount}
+                    </Typography>
+                    
+                    {twitterVerified && (
+                      <CheckCircleIcon sx={{ fontSize: 20, color: '#1da1f2' }} />
+                    )}
+                  </Box>
+                  
+                  {/* Right side: AUTHENTICATED chip and disconnect icon */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Chip
+                      label="AUTHENTICATED"
+                      size="small"
+                      color="success"
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.6rem',
+                        height: 26,
+                      }}
+                    />
+                    
+                    <IconButton
+                      onClick={async () => {
+                        try {
+                          await unlinkTwitter(user?.twitter?.subject || '');
+                        } catch (err) {
+                          console.error('Failed to unlink Twitter:', err);
+                        }
+                      }}
+                      disabled={isSubmitting}
+                      size="small"
+                      sx={{
+                        backgroundColor: '#ffebee',
+                        color: '#d32f2f',
+                        width: 32,
+                        height: 32,
+                        '&:hover': {
+                          backgroundColor: '#ffcdd2',
+                        },
+                      }}
+                    >
+                      <CancelIcon sx={{ fontSize: 20 }} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              )}
+            </Box>
 
             <Button
               type="submit"
@@ -215,35 +496,32 @@ export default function ProfileCreation({
                 '&:hover': {
                   backgroundColor: '#333',
                 },
-                marginTop: 2,
               }}
             >
               {isSubmitting ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexDirection: 'column' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <CircularProgress size={24} sx={{ color: 'white' }} />
-                    <span>{uploadProgress || 'CREATING PROFILE...'}</span>
-                  </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <CircularProgress size={24} sx={{ color: 'white' }} />
+                  <span>{uploadProgress || 'CREATING...'}</span>
                 </Box>
               ) : (
                 'CREATE PROFILE'
               )}
             </Button>
-          </form>
 
-          <Typography
-            variant="caption"
-            sx={{
-              display: 'block',
-              marginTop: 3,
-              textAlign: 'center',
-              fontSize: '0.65rem',
-              lineHeight: 1.6,
-            }}
-          >
-            By creating a profile, you agree to participate in the Respect Game.
-            Your profile will be stored on-chain.
-          </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                marginTop: 2,
+                textAlign: 'center',
+                fontSize: '0.65rem',
+                lineHeight: 1.6,
+                color: 'text.secondary',
+              }}
+            >
+              By creating a profile, you agree to nothing, this is just a game.
+            </Typography>
+          </form>
         </Paper>
       </Box>
 

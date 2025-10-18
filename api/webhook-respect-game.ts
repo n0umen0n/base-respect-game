@@ -113,14 +113,16 @@ async function handleMemberJoined(log: any, txHash: string) {
     if (existingMember) {
       console.log("Member already exists, updating data");
       // Update member data
+      // NOTE: We do NOT update x_account from blockchain events (security)
+      // X accounts are only saved after Privy OAuth verification
       const { error: updateError } = await supabase
         .from("members")
         .update({
           name: name,
           profile_url: profileUrl || null,
           description: description || null,
-          x_account: xAccount || null,
-          is_approved: autoApproved
+          // x_account: INTENTIONALLY OMITTED - only updated via Privy OAuth
+          is_approved: autoApproved,
         })
         .eq("wallet_address", memberAddress);
 
@@ -129,12 +131,15 @@ async function handleMemberJoined(log: any, txHash: string) {
     }
 
     // Insert new member with all profile data
+    // NOTE: x_account is NOT saved from blockchain (anyone can fake it)
+    // X accounts are only saved after Privy Twitter OAuth verification
     const { data, error } = await supabase.from("members").insert({
       wallet_address: memberAddress,
       name: name,
       profile_url: profileUrl || null,
       description: description || null,
-      x_account: xAccount || null,
+      // x_account: INTENTIONALLY OMITTED - only saved via Privy OAuth (see updateMemberXAccount)
+      x_verified: false, // Default to false until verified via Privy
       is_approved: autoApproved,
       is_banned: false,
       joined_at: blockTimestamp,

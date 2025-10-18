@@ -7,7 +7,6 @@ import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
 import RespectGameContainer from './components/RespectGameContainer';
 import ProtectedRoute from './components/ProtectedRoute';
-import XAuthCallback from './components/XAuthCallback';
 import './index.css';
 import { base } from 'viem/chains';
 
@@ -55,8 +54,6 @@ root.render(
             <Route path="game" element={<RespectGameContainer />} />
           </Route>
         </Route>
-        {/* X OAuth Callback Route - outside of App layout */}
-        <Route path="/auth/x/callback" element={<XAuthCallback />} />
       </Routes>
     </BrowserRouter>
   </PrivyProvider>

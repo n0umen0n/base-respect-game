@@ -398,11 +398,20 @@ export async function uploadProfilePicture(
   walletAddress: string
 ): Promise<string> {
   try {
+    console.log("🖼️ Starting profile picture upload:", {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      walletAddress: walletAddress.substring(0, 10) + "...",
+    });
+
     // Create a unique file name using wallet address and timestamp
     const timestamp = Date.now();
     const fileExt = file.name.split(".").pop();
     const fileName = `${walletAddress.toLowerCase()}-${timestamp}.${fileExt}`;
     const filePath = `profile-pictures/${fileName}`;
+
+    console.log("📁 Upload path:", filePath);
 
     // Upload file to Supabase Storage
     const { data, error } = await supabase.storage
@@ -413,18 +422,81 @@ export async function uploadProfilePicture(
       });
 
     if (error) {
-      console.error("Error uploading file:", error);
+      console.error("❌ Supabase storage error:", error);
       throw new Error("Failed to upload profile picture: " + error.message);
     }
+
+    console.log("✅ Upload successful, getting public URL...");
 
     // Get public URL
     const { data: urlData } = supabase.storage
       .from("respect-game-profiles")
       .getPublicUrl(filePath);
 
+    console.log("🔗 Public URL:", urlData.publicUrl);
+
     return urlData.publicUrl;
   } catch (error: any) {
-    console.error("Error in uploadProfilePicture:", error);
+    console.error("❌ Error in uploadProfilePicture:", error);
+    throw error;
+  }
+}
+
+/**
+ * Update member's verified X account in database
+ * This should ONLY be called after Privy Twitter authentication
+ * @param walletAddress - The member's wallet address
+ * @param xAccount - The verified X account (e.g., "@username")
+ * @param xVerified - Whether the X account is verified
+ * @param privyDid - The Privy DID to link the X account to this specific user
+ */
+export async function updateMemberXAccount(
+  walletAddress: string,
+  xAccount: string,
+  xVerified: boolean,
+  privyDid: string
+): Promise<void> {
+  try {
+    console.log("Updating X account in database:", {
+      walletAddress: walletAddress.toLowerCase(),
+      xAccount,
+      xVerified,
+      privyDid: privyDid.substring(0, 20) + "...",
+    });
+
+    // First check if member exists
+    const { data: member, error: checkError } = await supabase
+      .from("members")
+      .select("wallet_address, x_account")
+      .eq("wallet_address", walletAddress.toLowerCase())
+      .single();
+
+    if (checkError) {
+      console.error("Member not found in database yet:", checkError);
+      throw new Error("Member not found - webhook may not have processed yet");
+    }
+
+    console.log("Member found, current X account:", member.x_account);
+
+    // Update member with X account
+    const { error } = await supabase
+      .from("members")
+      .update({
+        x_account: xAccount,
+        x_verified: xVerified,
+        privy_did: privyDid,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("wallet_address", walletAddress.toLowerCase());
+
+    if (error) {
+      console.error("Error updating X account:", error);
+      throw new Error("Failed to update X account: " + error.message);
+    }
+
+    console.log("✅ X account updated successfully in database");
+  } catch (error: any) {
+    console.error("❌ Error in updateMemberXAccount:", error);
     throw error;
   }
 }
