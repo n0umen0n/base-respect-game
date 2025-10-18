@@ -89,63 +89,47 @@ export async function buildAuthorizationUrl(): Promise<{
 }
 
 /**
- * Exchange authorization code for access token
+ * Exchange authorization code for access token and get user info
+ * Uses backend API to avoid CORS issues
  */
-export async function exchangeCodeForToken(
+export async function exchangeCodeAndGetUser(
   code: string,
   codeVerifier: string
 ): Promise<{
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  scope: string;
-}> {
-  const response = await fetch(X_OAUTH_CONFIG.tokenEndpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: new URLSearchParams({
-      code,
-      grant_type: "authorization_code",
-      client_id: X_OAUTH_CONFIG.clientId,
-      redirect_uri: X_OAUTH_CONFIG.redirectUri,
-      code_verifier: codeVerifier,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to exchange code for token: ${error}`);
-  }
-
-  return response.json();
-}
-
-/**
- * Get X user information
- */
-export async function getXUserInfo(accessToken: string): Promise<{
   id: string;
   name: string;
   username: string;
   profile_image_url?: string;
   verified?: boolean;
 }> {
-  const response = await fetch(
-    `${X_OAUTH_CONFIG.userEndpoint}?user.fields=profile_image_url,verified`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
+  // Call our backend API endpoint (Vercel serverless function)
+  const response = await fetch("/api/x-token-exchange", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      code,
+      codeVerifier,
+      redirectUri: X_OAUTH_CONFIG.redirectUri,
+      clientId: X_OAUTH_CONFIG.clientId,
+    }),
+  });
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Failed to get user info: ${error}`);
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: "Unknown error" }));
+    throw new Error(
+      errorData.error || `Failed to exchange code: ${response.status}`
+    );
   }
 
   const data = await response.json();
-  return data.data;
+
+  if (!data.success || !data.user) {
+    throw new Error("Invalid response from token exchange API");
+  }
+
+  return data.user;
 }

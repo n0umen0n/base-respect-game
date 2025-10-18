@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, CircularProgress, Typography, Alert } from '@mui/material';
-import { exchangeCodeForToken, getXUserInfo } from '../config/xAuth.config';
+import { exchangeCodeAndGetUser } from '../config/xAuth.config';
 
 /**
  * X OAuth Callback Handler
@@ -8,12 +8,26 @@ import { exchangeCodeForToken, getXUserInfo } from '../config/xAuth.config';
  * and sends the verified account info back to the parent window
  */
 export default function XAuthCallback() {
+  // Debug: Log component mount
+  console.log('XAuthCallback component mounted!', {
+    url: window.location.href,
+    search: window.location.search,
+    timestamp: new Date().toISOString()
+  });
+
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [message, setMessage] = useState('Processing X authentication...');
+  const [hasRun, setHasRun] = useState(false);
 
   useEffect(() => {
+    console.log('XAuthCallback useEffect running', { hasRun });
+    
+    // Prevent multiple executions
+    if (hasRun) return;
+    setHasRun(true);
+    
     handleCallback();
-  }, []);
+  }, [hasRun]);
 
   const handleCallback = async () => {
     try {
@@ -30,8 +44,17 @@ export default function XAuthCallback() {
         hasState: !!state,
         error,
         errorDescription,
-        fullUrl: window.location.href
+        fullUrl: window.location.href,
+        hasOpener: !!window.opener,
+        isPopup: window.opener && !window.opener.closed
       });
+
+      // Check if we're in a popup context
+      if (!window.opener) {
+        console.warn('No window.opener detected - this may not be a popup');
+        // Try to use the page normally even without opener
+        // This can happen if X redirects in a way that breaks the opener reference
+      }
 
       // Check for OAuth errors
       if (error) {
@@ -55,43 +78,50 @@ export default function XAuthCallback() {
         throw new Error('Code verifier not found');
       }
 
-      setMessage('Exchanging authorization code...');
+      setMessage('Exchanging authorization code and fetching user info...');
 
-      // Exchange code for access token
-      const tokenResponse = await exchangeCodeForToken(code, codeVerifier);
-
-      setMessage('Fetching X account information...');
-
-      // Get user information
-      const userInfo = await getXUserInfo(tokenResponse.access_token);
+      // Exchange code for token and get user info (via backend API)
+      const userInfo = await exchangeCodeAndGetUser(code, codeVerifier);
 
       setMessage('Verifying account...');
+      console.log('User info received:', userInfo);
 
       // Send success message to parent window
-      if (window.opener) {
-        window.opener.postMessage(
-          {
-            type: 'X_OAUTH_SUCCESS',
-            username: userInfo.username,
-            verified: userInfo.verified || false,
-            name: userInfo.name,
-            id: userInfo.id,
-          },
-          window.location.origin
-        );
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.postMessage(
+            {
+              type: 'X_OAUTH_SUCCESS',
+              username: userInfo.username,
+              verified: userInfo.verified || false,
+              name: userInfo.name,
+              id: userInfo.id,
+            },
+            window.location.origin
+          );
+          console.log('Successfully sent message to parent window');
+        } catch (err) {
+          console.error('Failed to send message to parent:', err);
+        }
+      } else {
+        console.warn('No parent window available to send message to');
       }
 
       setStatus('success');
-      setMessage('Successfully connected! Closing window...');
+      setMessage('Successfully connected! You can close this window.');
 
       // Clean up session storage
       sessionStorage.removeItem('x_oauth_state');
       sessionStorage.removeItem('x_oauth_code_verifier');
       sessionStorage.removeItem('x_oauth_in_progress');
 
-      // Close window after a short delay
+      // Try to close window after a short delay
       setTimeout(() => {
-        window.close();
+        try {
+          window.close();
+        } catch (err) {
+          console.log('Could not auto-close window, user can close manually');
+        }
       }, 2000);
 
     } catch (err: any) {
@@ -101,14 +131,18 @@ export default function XAuthCallback() {
       setMessage(err.message || 'Failed to connect X account');
 
       // Send error message to parent window
-      if (window.opener) {
-        window.opener.postMessage(
-          {
-            type: 'X_OAUTH_ERROR',
-            error: err.message || 'Authentication failed',
-          },
-          window.location.origin
-        );
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.postMessage(
+            {
+              type: 'X_OAUTH_ERROR',
+              error: err.message || 'Authentication failed',
+            },
+            window.location.origin
+          );
+        } catch (postErr) {
+          console.error('Failed to send error to parent:', postErr);
+        }
       }
 
       // Clean up and close after delay
@@ -116,7 +150,11 @@ export default function XAuthCallback() {
         sessionStorage.removeItem('x_oauth_state');
         sessionStorage.removeItem('x_oauth_code_verifier');
         sessionStorage.removeItem('x_oauth_in_progress');
-        window.close();
+        try {
+          window.close();
+        } catch (closeErr) {
+          console.log('Could not auto-close window');
+        }
       }, 3000);
     }
   };

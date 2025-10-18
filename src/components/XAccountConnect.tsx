@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Button,
@@ -32,8 +32,31 @@ export default function XAccountConnect({
   const [connectedAccount, setConnectedAccount] = useState(currentAccount || '');
   const [isVerified, setIsVerified] = useState(currentVerified || false);
 
+  // Clean up stuck OAuth state on mount
+  React.useEffect(() => {
+    const startTime = sessionStorage.getItem('x_oauth_start_time');
+    if (startTime) {
+      const elapsed = Date.now() - parseInt(startTime);
+      // If OAuth was started more than 10 minutes ago, clear it
+      if (elapsed > 10 * 60 * 1000) {
+        console.log('Clearing stale OAuth state');
+        sessionStorage.removeItem('x_oauth_in_progress');
+        sessionStorage.removeItem('x_oauth_state');
+        sessionStorage.removeItem('x_oauth_code_verifier');
+        sessionStorage.removeItem('x_oauth_start_time');
+      }
+    }
+  }, []);
+
   const handleConnect = async () => {
     try {
+      // Prevent multiple simultaneous OAuth attempts
+      if (sessionStorage.getItem('x_oauth_in_progress') === 'true') {
+        console.warn('OAuth already in progress, please wait');
+        setError('Authentication already in progress. Please wait or close any open popups.');
+        return;
+      }
+
       setLoading(true);
       setError(null);
 
@@ -44,6 +67,7 @@ export default function XAccountConnect({
         clientId: url.includes('client_id') ? 'present' : 'missing',
         redirectUri: url.includes('redirect_uri') ? 'present' : 'missing',
         state: state.substring(0, 8) + '...',
+        timestamp: new Date().toISOString(),
       });
 
       // Store state and code verifier in sessionStorage for verification
@@ -52,6 +76,7 @@ export default function XAccountConnect({
       
       // Store callback flag to know we need to handle the callback
       sessionStorage.setItem('x_oauth_in_progress', 'true');
+      sessionStorage.setItem('x_oauth_start_time', Date.now().toString());
 
       // Open X OAuth in popup window
       const width = 600;
@@ -77,6 +102,8 @@ export default function XAccountConnect({
         if (event.data.type === 'X_OAUTH_SUCCESS') {
           const { username, verified } = event.data;
           
+          console.log('Received success message:', { username, verified });
+          
           setConnectedAccount(`@${username}`);
           setIsVerified(verified || false);
           setIsConnected(true);
@@ -86,11 +113,23 @@ export default function XAccountConnect({
           onConnect(`@${username}`, verified || false);
           
           // Clean up
+          sessionStorage.removeItem('x_oauth_in_progress');
+          sessionStorage.removeItem('x_oauth_state');
+          sessionStorage.removeItem('x_oauth_code_verifier');
+          sessionStorage.removeItem('x_oauth_start_time');
           window.removeEventListener('message', handleMessage);
           popup?.close();
         } else if (event.data.type === 'X_OAUTH_ERROR') {
+          console.error('Received error message:', event.data.error);
+          
           setError(event.data.error || 'Failed to connect X account');
           setLoading(false);
+          
+          // Clean up
+          sessionStorage.removeItem('x_oauth_in_progress');
+          sessionStorage.removeItem('x_oauth_state');
+          sessionStorage.removeItem('x_oauth_code_verifier');
+          sessionStorage.removeItem('x_oauth_start_time');
           window.removeEventListener('message', handleMessage);
           popup?.close();
         }
@@ -98,15 +137,56 @@ export default function XAccountConnect({
 
       window.addEventListener('message', handleMessage);
 
-      // Check if popup was closed
+      // Check if popup was closed or timeout
+      const startTime = Date.now();
+      const timeout = 5 * 60 * 1000; // 5 minutes timeout
+      
       const checkClosed = setInterval(() => {
         if (popup.closed) {
           clearInterval(checkClosed);
           window.removeEventListener('message', handleMessage);
+          sessionStorage.removeItem('x_oauth_in_progress');
+          sessionStorage.removeItem('x_oauth_start_time');
           if (loading) {
             setLoading(false);
             setError('Authentication cancelled');
           }
+          return;
+        }
+        
+      // Try to log popup URL (may fail due to cross-origin)
+      try {
+        const popupUrl = popup.location.href;
+        console.log('Popup URL:', popupUrl);
+        
+        // If popup stays on twitter.com for too long, it might be an error page
+        if (popupUrl.includes('twitter.com') || popupUrl.includes('x.com')) {
+          const timeOnX = Date.now() - startTime;
+          if (timeOnX > 30000) { // 30 seconds on X without redirect = likely error
+            console.warn('Popup has been on X for 30+ seconds, likely rate limited or error');
+            clearInterval(checkClosed);
+            window.removeEventListener('message', handleMessage);
+            sessionStorage.removeItem('x_oauth_in_progress');
+            sessionStorage.removeItem('x_oauth_start_time');
+            setLoading(false);
+            setError('X authorization timed out. You may be rate-limited. Try incognito mode or wait 15 minutes.');
+            popup.close();
+          }
+        }
+      } catch (e) {
+        // Cross-origin - popup is on different domain (X)
+        // This is normal and expected
+      }
+        
+        // Timeout after 5 minutes
+        if (Date.now() - startTime > timeout) {
+          clearInterval(checkClosed);
+          window.removeEventListener('message', handleMessage);
+          sessionStorage.removeItem('x_oauth_in_progress');
+          sessionStorage.removeItem('x_oauth_start_time');
+          popup.close();
+          setLoading(false);
+          setError('Authentication timed out. Please try again.');
         }
       }, 1000);
 
