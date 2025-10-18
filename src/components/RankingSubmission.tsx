@@ -21,6 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import XIcon from '@mui/icons-material/X';
 import {
   DndContext,
   closestCenter,
@@ -75,56 +76,81 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
       sx={{
         marginBottom: 2,
         cursor: 'grab',
+        position: 'relative',
+        zIndex: 1,
+        backgroundColor: '#fafafa',
+        border: '2px solid #e0e0e0',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        '&:hover': {
+          backgroundColor: '#f5f5f5',
+          border: '2px solid #bdbdbd',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+        },
         '&:active': {
           cursor: 'grabbing',
         },
       }}
     >
-      <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box {...attributes} {...listeners}>
-            <DragIndicatorIcon sx={{ color: 'text.secondary', cursor: 'grab' }} />
+      <CardContent sx={{ padding: '20px !important' }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '170px 1fr 150px', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <DragIndicatorIcon sx={{ color: '#757575', cursor: 'grab', fontSize: 28 }} />
+            
+            <Typography
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1.1rem',
+                color: '#000',
+              }}
+            >
+              #{rank}
+            </Typography>
+
+            <Avatar
+              src={member.profileUrl}
+              alt={member.name}
+              sx={{
+                width: 60,
+                height: 60,
+                borderRadius: 2,
+                border: '2px solid #e0e0e0',
+              }}
+            />
           </Box>
 
-          <Typography
-            sx={{
-              fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '1rem',
-              minWidth: '2rem',
-            }}
-          >
-            #{rank}
-          </Typography>
-
-          <Avatar
-            src={member.profileUrl}
-            alt={member.name}
-            sx={{
-              width: 50,
-              height: 50,
-              borderRadius: 2,
-            }}
-          />
-
-          <Box sx={{ flex: 1 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', justifyContent: 'center' }} {...attributes} {...listeners}>
             <Typography
               variant="h6"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '0.9rem',
+                fontSize: '1rem',
+                color: '#000',
+                lineHeight: 1.4,
               }}
             >
               {member.name}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, marginTop: 0.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, justifyContent: 'center' }}>
               {member.xAccount ? (
                 <>
+                  <XIcon sx={{ fontSize: 16, color: '#000' }} />
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.65rem',
+                      color: '#000',
+                    }}
+                  >
+                    :
+                  </Typography>
                   <Link
                     href={`https://x.com/${member.xAccount.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     sx={{
-                      fontSize: '0.85rem',
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.65rem',
                       color: '#1da1f2',
                       textDecoration: 'none',
                       '&:hover': {
@@ -134,56 +160,79 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                   >
                     {member.xAccount}
                   </Link>
-                  {member.xVerified && (
-                    <CheckCircleIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
-                  )}
+                  <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />
                 </>
               ) : (
                 <>
+                  <XIcon sx={{ fontSize: 16, color: '#9e9e9e' }} />
                   <Typography
                     sx={{
-                      fontSize: '0.75rem',
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.65rem',
+                      color: '#000',
+                    }}
+                  >
+                    :
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.65rem',
                       color: '#9e9e9e',
-                      fontStyle: 'italic',
                     }}
                   >
                     missing
                   </Typography>
-                  <CancelIcon sx={{ fontSize: 16, color: '#f44336' }} />
+                  <CancelIcon sx={{ fontSize: 18, color: '#f44336' }} />
                 </>
               )}
             </Box>
           </Box>
 
-          <IconButton
-            onClick={() => setExpanded(!expanded)}
-            sx={{
-              transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
-              transition: '0.3s',
-            }}
-          >
-            <ExpandMoreIcon />
-          </IconButton>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <IconButton
+              onClick={(e) => {
+                e.stopPropagation();
+                setExpanded(!expanded);
+              }}
+              sx={{
+                transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: '0.3s',
+                backgroundColor: '#f5f5f5',
+                '&:hover': {
+                  backgroundColor: '#e0e0e0',
+                },
+              }}
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </Box>
         </Box>
 
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box sx={{ marginTop: 2, paddingTop: 2, borderTop: '1px solid #eee' }}>
+          <Box sx={{ marginTop: 2, paddingTop: 2, borderTop: '2px solid #e0e0e0', backgroundColor: '#f9f9f9', padding: 2, borderRadius: 2 }}>
             <Typography
               variant="subtitle2"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
                 fontSize: '0.7rem',
                 marginBottom: 2,
+                color: '#000',
               }}
             >
               CONTRIBUTIONS
             </Typography>
             {member.contributions.length > 0 ? (
               member.contributions.map((contribution, index) => (
-                <Box key={index} sx={{ marginBottom: 2 }}>
+                <Box key={index} sx={{ marginBottom: 2, padding: 1.5, backgroundColor: '#fff', borderRadius: 1, border: '1px solid #e0e0e0' }}>
                   <Typography
                     variant="body2"
-                    sx={{ marginBottom: 1, fontSize: '0.85rem' }}
+                    sx={{ 
+                      marginBottom: 1, 
+                      fontSize: '0.75rem',
+                      lineHeight: 1.6,
+                      color: '#333',
+                    }}
                   >
                     {contribution}
                   </Typography>
@@ -193,8 +242,14 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{
-                        fontSize: '0.75rem',
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.6rem',
                         wordBreak: 'break-all',
+                        color: '#1da1f2',
+                        textDecoration: 'none',
+                        '&:hover': {
+                          textDecoration: 'underline',
+                        },
                       }}
                     >
                       {member.links[index]}
@@ -203,7 +258,14 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                 </Box>
               ))
             ) : (
-              <Typography variant="body2" color="text.secondary">
+              <Typography 
+                variant="body2" 
+                sx={{
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.65rem',
+                  color: '#9e9e9e',
+                }}
+              >
                 No contributions submitted
               </Typography>
             )}
@@ -225,6 +287,11 @@ export default function RankingSubmission({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Sync members state when groupMembers prop changes
+  useEffect(() => {
+    setMembers(groupMembers);
+  }, [groupMembers]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -288,16 +355,24 @@ export default function RankingSubmission({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 3,
+          padding: '0 50px',
+          marginTop: '-200px',
         }}
       >
         <Paper
           elevation={3}
           sx={{
             padding: 4,
-            maxWidth: 800,
             width: '100%',
+            maxWidth: 'none',
+            minWidth: '1200px',
             borderRadius: 4,
+            position: 'relative',
+            zIndex: 1,
+            '@media (max-width: 1300px)': {
+              minWidth: 'auto',
+              width: 'calc(100vw - 100px)',
+            },
           }}
         >
           <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
@@ -311,9 +386,23 @@ export default function RankingSubmission({
                 marginBottom: 2,
               }}
             >
-              RANK YOUR GROUP
+              CONTRIBUTION RANKING
             </Typography>
 
+            <Typography
+              variant="body1"
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '0.7rem',
+                marginBottom: 1,
+                lineHeight: 1.8,
+              }}
+            >
+              Drag and drop to rank members from 1st (best) to last.
+            </Typography>
+            
+            <Box sx={{ height: '1rem' }} />
+            
             <Typography
               variant="body1"
               sx={{
@@ -323,8 +412,7 @@ export default function RankingSubmission({
                 lineHeight: 1.8,
               }}
             >
-              Drag and drop to rank members from 1st (best) to last. Click cards to view
-              contributions.
+              Click cards to view contributions.
             </Typography>
           </Box>
 

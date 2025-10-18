@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import StaggeredMenu from './components/StaggeredMenu';
 import PixelBlast from './components/PixelBlast';
+import Shuffle from './components/Shuffle';
 
 const menuItems = [
   { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
@@ -19,6 +20,8 @@ const socialItems = [
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const { logout, user } = usePrivy();
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,6 +32,31 @@ function App() {
     await logout();
     navigate('/');
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY < 50) {
+        // Always show at the top
+        setShowHeader(true);
+      } else if (currentScrollY > lastScrollY) {
+        // Scrolling down - hide header
+        setShowHeader(false);
+      } else {
+        // Scrolling up - show header
+        setShowHeader(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
 
   return (
     <>
@@ -74,54 +102,110 @@ function App() {
       >
         <Outlet />
       </div>
-      {!isHomePage && user && (
-        <button
-          onClick={handleLogout}
-          style={{
-            position: 'fixed',
-            top: '2rem',
-            left: '2rem',
-            zIndex: 9999,
-            pointerEvents: 'auto',
-            background: '#1a1a1a',
-            color: 'white',
-            border: 'none',
-            borderRadius: '9999px',
-            padding: '0.75rem 1.5rem',
-            fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '0.8rem',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#333';
-            e.currentTarget.style.transform = 'scale(1.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = '#1a1a1a';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          LOGOUT
-        </button>
+      {!isHomePage && (
+        <>
+          {user && (
+            <button
+              onClick={handleLogout}
+              style={{
+                position: 'fixed',
+                top: '2em',
+                right: 'calc(2em + 140px)',
+                zIndex: 9999,
+                pointerEvents: showHeader ? 'auto' : 'none',
+                background: 'transparent',
+                color: '#1a1a1a',
+                border: 'none',
+                padding: 0,
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+                fontWeight: '500',
+                lineHeight: 1,
+                display: 'flex',
+                alignItems: 'center',
+                transform: showHeader ? 'translateY(0)' : 'translateY(-150%)',
+                opacity: showHeader ? 1 : 0
+              }}
+              onMouseEnter={(e) => {
+                if (showHeader) e.currentTarget.style.opacity = '0.7';
+              }}
+              onMouseLeave={(e) => {
+                if (showHeader) e.currentTarget.style.opacity = '1';
+              }}
+            >
+              Logout
+            </button>
+          )}
+          <div
+            onClick={() => navigate('/')}
+            style={{
+              position: 'fixed',
+              top: '2em',
+              left: '2em',
+              zIndex: 50,
+              pointerEvents: showHeader ? 'auto' : 'none',
+              cursor: 'pointer',
+              transition: 'transform 0.3s ease, opacity 0.3s ease',
+              transform: showHeader ? 'translateY(0)' : 'translateY(-150%)',
+              opacity: showHeader ? 1 : 0
+            }}
+          >
+            <Shuffle
+              text="RESPECT GAME"
+              tag="div"
+              style={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1rem',
+                lineHeight: 1,
+                color: '#1a1a1a'
+              }}
+              shuffleDirection="right"
+              duration={0.35}
+              animationMode="evenodd"
+              shuffleTimes={1}
+              ease="power3.out"
+              stagger={0.03}
+              threshold={0.1}
+              triggerOnce={false}
+              triggerOnHover={true}
+              respectReducedMotion={true}
+            />
+          </div>
+        </>
       )}
-      <StaggeredMenu
-        position="right"
-        isFixed={true}
-        items={menuItems}
-        socialItems={socialItems}
-        displaySocials={true}
-        displayItemNumbering={true}
-        menuButtonColor="#1a1a1a"
-        openMenuButtonColor="#1a1a1a"
-        changeMenuColorOnOpen={true}
-        colors={['#80A8FF', '#0052FF']}
-        logoUrl={null}
-        accentColor="#0052FF"
-        onMenuOpen={() => setIsMenuOpen(true)}
-        onMenuClose={() => setIsMenuOpen(false)}
-      />
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 40,
+          transition: 'transform 0.3s ease, opacity 0.3s ease',
+          transform: showHeader ? 'translateY(0)' : 'translateY(-150%)',
+          opacity: showHeader ? 1 : 0,
+          pointerEvents: isMenuOpen ? 'auto' : 'none'
+        }}
+      >
+        <StaggeredMenu
+          position="right"
+          isFixed={false}
+          items={menuItems}
+          socialItems={socialItems}
+          displaySocials={true}
+          displayItemNumbering={true}
+          menuButtonColor="#1a1a1a"
+          openMenuButtonColor="#1a1a1a"
+          changeMenuColorOnOpen={true}
+          colors={['#80A8FF', '#0052FF']}
+          logoUrl={null}
+          accentColor="#0052FF"
+          onMenuOpen={() => setIsMenuOpen(true)}
+          onMenuClose={() => setIsMenuOpen(false)}
+        />
+      </div>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { CircularProgress, Box } from '@mui/material';
 import { useSmartWallet } from '../hooks/useSmartWallet';
@@ -36,6 +36,12 @@ export default function RespectGameContainer() {
   const [currentView, setCurrentView] = useState<View | null>(null);
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileRefreshTrigger, setProfileRefreshTrigger] = useState<number>(Date.now());
+  const [supabaseGameData, setSupabaseGameData] = useState<{
+    gameNumber: number;
+    stage: string;
+    nextStageTimestamp: Date;
+  } | null>(null);
 
   useEffect(() => {
     if (!walletLoading && !gameLoading && authenticated && smartAccountAddress) {
@@ -47,84 +53,104 @@ export default function RespectGameContainer() {
     try {
       setLoading(true);
 
-      // Check if user is a member
-      if (!memberInfo?.exists) {
+      if (!smartAccountAddress) {
+        setLoading(false);
+        return;
+      }
+
+      // Check if user has a profile in Supabase (NOT blockchain)
+      const memberData = await getMember(smartAccountAddress);
+      
+      if (!memberData) {
+        // No profile in Supabase, show profile creation
         setCurrentView('profile-creation');
         setLoading(false);
         return;
       }
 
       // Check if member is banned
-      if (memberInfo.isBanned) {
+      if (memberData.is_banned) {
         setCurrentView('profile');
         setLoading(false);
         return;
       }
 
       // If not approved, show profile
-      if (!memberInfo.isApproved) {
+      if (!memberData.is_approved) {
         setCurrentView('profile');
         setLoading(false);
         return;
       }
 
-      // Determine view based on game stage
-      if (gameState) {
-        const { currentGameNumber, currentStage } = gameState;
+      // Get current game stage from Supabase
+      const gameStageData = await getCurrentGameStage();
+      
+      if (!gameStageData) {
+        // No game stage data, show profile
+        setCurrentView('profile');
+        setLoading(false);
+        return;
+      }
 
-        if (currentStage === 0) {
-          // Contribution Submission Stage
-          // Check if user already submitted
-          const contribution = await getMemberContribution(
-            smartAccountAddress!,
-            currentGameNumber
-          );
+      const { current_game_number, current_stage, next_stage_timestamp } = gameStageData;
+      
+      // Store game data for component props
+      setSupabaseGameData({
+        gameNumber: current_game_number,
+        stage: current_stage,
+        nextStageTimestamp: new Date(next_stage_timestamp),
+      });
 
-          if (contribution) {
-            // Already submitted, show profile
-            setCurrentView('profile');
-          } else {
-            // Show contribution form
-            setCurrentView('contribution');
-          }
+      if (current_stage === 'ContributionSubmission') {
+        // Contribution Submission Stage
+        // Check if user already submitted in Supabase
+        const contribution = await getMemberContribution(
+          smartAccountAddress,
+          current_game_number
+        );
+
+        if (contribution) {
+          // Already submitted, show profile
+          setCurrentView('profile');
         } else {
-          // Ranking Stage
-          // Get user's group and check if already ranked
-          try {
-            const group = await getMyGroup(currentGameNumber);
-            
-            if (group && group.members.length > 0) {
-              // Fetch member details and contributions for all group members
-              const membersWithData = await Promise.all(
-                group.members.map(async (memberAddress: string) => {
-                  const memberData = await getMember(memberAddress);
-                  const contributionData = await getContribution(
-                    currentGameNumber,
-                    memberAddress
-                  );
+          // Has not submitted, show contribution form
+          setCurrentView('contribution');
+        }
+      } else {
+        // Ranking Stage ('ContributionRanking')
+        // Check if user has a group assigned in Supabase
+        const groupData = await getMemberGroup(
+          smartAccountAddress,
+          current_game_number
+        );
 
-                  return {
-                    address: memberAddress,
-                    name: memberData?.name || 'Unknown',
-                    profileUrl: memberData?.profile_url,
-                    xAccount: memberData?.x_account,
-                    xVerified: memberData?.x_verified || false,
-                    contributions: contributionData?.contributions || [],
-                    links: contributionData?.links || [],
-                  };
-                })
+        if (groupData && groupData.members.length > 0) {
+          // Has a group, fetch member details and contributions for all group members
+          const membersWithData = await Promise.all(
+            groupData.members.map(async (memberAddress: string) => {
+              const memberInfo = await getMember(memberAddress);
+              const contributionData = await getMemberContribution(
+                memberAddress,
+                current_game_number
               );
 
-              setGroupMembers(membersWithData);
-              setCurrentView('ranking');
-            } else {
-              // No group assigned yet
-              setCurrentView('profile');
-            }
-          } catch (error) {
-            console.error('Error fetching group:', error);
-            setCurrentView('profile');
-          }
+              return {
+                address: memberAddress,
+                name: memberInfo?.name || 'Unknown',
+                profileUrl: memberInfo?.profile_url,
+                xAccount: memberInfo?.x_account,
+                xVerified: memberInfo?.x_verified || false,
+                contributions: contributionData?.contributions || [],
+                links: contributionData?.links || [],
+              };
+            })
+          );
+
+          setGroupMembers(membersWithData);
+          setCurrentView('ranking');
+        } else {
+          // No group assigned yet, show profile
+          setCurrentView('profile');
         }
       }
 
@@ -138,17 +164,35 @@ export default function RespectGameContainer() {
 
   const handleProfileCreated = async () => {
     await refreshData();
+    
+    // Wait a bit for webhook to process and update Supabase
+    // Then check Supabase and determine appropriate view
+    await new Promise(resolve => setTimeout(resolve, 2000));
     await determineView();
   };
 
   const handleContributionSubmitted = async () => {
     await refreshData();
-    setCurrentView('profile');
+    
+    // Wait for webhook to update Supabase
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Trigger profile refresh to show new contribution
+    setProfileRefreshTrigger(Date.now());
+    
+    await determineView();
   };
 
   const handleRankingSubmitted = async () => {
     await refreshData();
-    setCurrentView('profile');
+    
+    // Wait for webhook to update Supabase
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Trigger profile refresh
+    setProfileRefreshTrigger(Date.now());
+    
+    await determineView();
   };
 
   const handleBecomeMember = async (
@@ -213,20 +257,20 @@ export default function RespectGameContainer() {
         />
       )}
 
-      {currentView === 'contribution' && gameState && (
+      {currentView === 'contribution' && supabaseGameData && (
         <ContributionSubmission
-          gameNumber={gameState.currentGameNumber}
-          nextStageTimestamp={new Date(gameState.nextStageTimestamp * 1000)}
+          gameNumber={supabaseGameData.gameNumber}
+          nextStageTimestamp={supabaseGameData.nextStageTimestamp}
           onSubmitContribution={handleSubmitContribution}
           onNavigate={handleContributionSubmitted}
         />
       )}
 
-      {currentView === 'ranking' && gameState && (
+      {currentView === 'ranking' && supabaseGameData && (
         <RankingSubmission
-          gameNumber={gameState.currentGameNumber}
+          gameNumber={supabaseGameData.gameNumber}
           groupMembers={groupMembers}
-          nextSubmissionStageDate={new Date(gameState.nextStageTimestamp * 1000)}
+          nextSubmissionStageDate={supabaseGameData.nextStageTimestamp}
           onSubmitRanking={handleSubmitRanking}
           onNavigate={handleRankingSubmitted}
         />
@@ -236,6 +280,8 @@ export default function RespectGameContainer() {
         <ProfilePage
           walletAddress={smartAccountAddress}
           respectBalance={respectBalance}
+          refreshTrigger={profileRefreshTrigger}
+          currentUserAddress={smartAccountAddress}
         />
       )}
 

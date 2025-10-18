@@ -6,6 +6,7 @@ import App from './App';
 import HomePage from './components/HomePage';
 import DashboardPage from './components/DashboardPage';
 import RespectGameContainer from './components/RespectGameContainer';
+import ProfilePageWrapper from './components/ProfilePageWrapper';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
 import { base } from 'viem/chains';
@@ -49,6 +50,7 @@ root.render(
       <Routes>
         <Route path="/" element={<App />}>
           <Route index element={<HomePage />} />
+          <Route path="profile/:address" element={<ProfilePageWrapper />} />
           <Route element={<ProtectedRoute />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="game" element={<RespectGameContainer />} />

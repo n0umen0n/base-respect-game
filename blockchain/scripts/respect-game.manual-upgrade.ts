@@ -25,11 +25,9 @@ async function main(): Promise<void> {
   const proxy = await ethers.getContractAt("RespectGameCore", PROXY_ADDRESS);
   const currentGameNumber = await proxy.currentGameNumber();
   const currentStage = await proxy.getCurrentStage();
-  const memberCount = await proxy.getMemberCount();
-  const approvedMemberCount = await proxy.getApprovedMemberCount();
+  const approvedMemberCount = await proxy.approvedMemberCount();
   console.log("  Current game number:", currentGameNumber.toString());
   console.log("  Current stage:", currentStage.toString());
-  console.log("  Total members:", memberCount.toString());
   console.log("  Approved members:", approvedMemberCount.toString());
 
   let upgradedContract;
@@ -134,19 +132,15 @@ async function main(): Promise<void> {
   console.log("\n📊 Verifying state after upgrade:");
   const newGameNumber = await upgradedContract.currentGameNumber();
   const newStage = await upgradedContract.getCurrentStage();
-  const newMemberCount = await upgradedContract.getMemberCount();
-  const newApprovedMemberCount =
-    await upgradedContract.getApprovedMemberCount();
+  const newApprovedMemberCount = await upgradedContract.approvedMemberCount();
   console.log("  Current game number:", newGameNumber.toString());
   console.log("  Current stage:", newStage.toString());
-  console.log("  Total members:", newMemberCount.toString());
   console.log("  Approved members:", newApprovedMemberCount.toString());
 
   // Verify state preservation
   if (
     currentGameNumber.toString() === newGameNumber.toString() &&
     currentStage.toString() === newStage.toString() &&
-    memberCount.toString() === newMemberCount.toString() &&
     approvedMemberCount.toString() === newApprovedMemberCount.toString()
   ) {
     console.log("✅✅✅ SUCCESS! All state preserved correctly after upgrade");
@@ -154,7 +148,6 @@ async function main(): Promise<void> {
     console.log("❌ Warning: State may have changed!");
     console.log("Game number match:", currentGameNumber === newGameNumber);
     console.log("Stage match:", currentStage === newStage);
-    console.log("Member count match:", memberCount === newMemberCount);
     console.log(
       "Approved member count match:",
       approvedMemberCount === newApprovedMemberCount

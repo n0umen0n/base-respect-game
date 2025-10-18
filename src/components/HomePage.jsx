@@ -179,6 +179,7 @@ const HomePage = () => {
                   score={member.average_respect}
                   profileUrl={member.profile_url}
                   xVerified={member.x_verified || false}
+                  walletAddress={member.wallet_address}
                   style={{ flex: '0 1 340px' }}
                 />
               ))

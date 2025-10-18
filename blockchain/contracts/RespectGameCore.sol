@@ -568,6 +568,25 @@ contract RespectGameCore is
 
         uint256 totalGroups = gameTotalGroups[currentGameNumber];
 
+        // Special case: If no groups were created, skip to next game immediately
+        if (totalGroups == 0) {
+            emit GameCompleted(currentGameNumber, 0, block.timestamp);
+
+            // Move to next game
+            currentGameNumber++;
+            currentStage = Stage.ContributionSubmission;
+            nextStageTimestamp = block.timestamp + contributionSubmissionLength;
+            isProcessingStageSwitch = false;
+
+            emit StageChanged(
+                currentGameNumber,
+                uint8(currentStage),
+                nextStageTimestamp,
+                block.timestamp
+            );
+            return;
+        }
+
         // Process ranking calculation in batches (process up to 20 groups per call)
         uint256 remainingGroups = totalGroups - rankingCalculationGroupProgress;
 
@@ -1003,20 +1022,20 @@ contract RespectGameCore is
         return groups[gameNumber][groupId].members;
     }
 
-    function getContribution(
-        uint256 gameNumber,
-        address contributor
-    )
-        external
-        view
-        override
-        returns (string[] memory contributions, string[] memory links)
-    {
-        Contribution storage contribution = memberContributions[gameNumber][
-            contributor
-        ];
-        return (contribution.contributions, contribution.links);
-    }
+    // function getContribution(
+    //     uint256 gameNumber,
+    //     address contributor
+    // )
+    //     external
+    //     view
+    //     override
+    //     returns (string[] memory contributions, string[] memory links)
+    // {
+    //     Contribution storage contribution = memberContributions[gameNumber][
+    //         contributor
+    //     ];
+    //     return (contribution.contributions, contribution.links);
+    // }
 
     function getGameResult(
         uint256 gameNumber,

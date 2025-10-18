@@ -1,10 +1,19 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { usePrivy } from '@privy-io/react-auth';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import CancelIcon from '@mui/icons-material/Cancel';
 import profileImage from '../assets/profile.jpg';
 import './ProfileCard.css';
 
-const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style }) => {
+const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walletAddress }) => {
+  const navigate = useNavigate();
+  const { user, login } = usePrivy();
+  
   const handleCardClick = () => {
-    window.open('https://google.com', '_blank', 'noopener,noreferrer');
+    if (walletAddress) {
+      navigate(`/profile/${walletAddress}`);
+    }
   };
 
   const handleLinkClick = (e) => {
@@ -57,38 +66,12 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style }) => 
               >
                 {x}
               </a>
-              <svg
-                className="verified-tick"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ width: '18px', height: '18px', color: '#4CAF50', marginLeft: '-2px' }}
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3.5"
-                  d="M5 13l4 4L19 7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />
             </>
           ) : (
             <>
-              <span style={{ color: '#9e9e9e', fontStyle: 'italic', fontSize: '0.7rem' }}>missing</span>
-              <svg
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ width: '18px', height: '18px', color: '#f44336', transform: 'rotate(45deg)' }}
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3.5"
-                  d="M12 2 L12 22 M2 12 L22 12"
-                  strokeLinecap="round"
-                />
-              </svg>
+              <span style={{ color: '#9e9e9e', fontSize: '0.7rem' }}>missing</span>
+              <CancelIcon sx={{ fontSize: 18, color: '#f44336' }} />
             </>
           )}
         </p>
