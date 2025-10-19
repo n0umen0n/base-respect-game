@@ -14,6 +14,10 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- X accounts are only stored in the database after Privy OAuth verification
 -- This prevents anyone from claiming X accounts they don't own
 -- See X_ACCOUNT_SECURITY.md for full security explanation
+--
+-- TOKEN AMOUNTS NOTE: We use NUMERIC instead of BIGINT for respect amounts
+-- because ERC20 tokens with 18 decimals produce values like 210000 * 10^18 = 2.1e23
+-- which exceeds PostgreSQL BIGINT max value (~9.2e18)
 CREATE TABLE IF NOT EXISTS members (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   wallet_address VARCHAR(66) UNIQUE NOT NULL,
@@ -26,8 +30,8 @@ CREATE TABLE IF NOT EXISTS members (
   is_approved BOOLEAN DEFAULT false,
   is_banned BOOLEAN DEFAULT false,
   joined_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  total_respect_earned BIGINT DEFAULT 0,
-  average_respect BIGINT DEFAULT 0,
+  total_respect_earned NUMERIC DEFAULT 0,
+  average_respect NUMERIC DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -137,7 +141,7 @@ CREATE TABLE IF NOT EXISTS game_results (
   member_address VARCHAR(66) NOT NULL,
   game_number INTEGER NOT NULL,
   rank INTEGER NOT NULL,
-  respect_earned BIGINT NOT NULL,
+  respect_earned NUMERIC NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   FOREIGN KEY (member_address) REFERENCES members(wallet_address) ON DELETE CASCADE,
   UNIQUE(member_address, game_number)
@@ -218,7 +222,7 @@ CREATE TABLE IF NOT EXISTS respect_history (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   member_address VARCHAR(66) NOT NULL,
   game_number INTEGER NOT NULL,
-  respect_amount BIGINT NOT NULL,
+  respect_amount NUMERIC NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   FOREIGN KEY (member_address) REFERENCES members(wallet_address) ON DELETE CASCADE,
   UNIQUE(member_address, game_number)
