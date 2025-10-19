@@ -271,8 +271,9 @@ async function handleRespectDistributed(log: any, txHash: string) {
     const memberAddress = decoded.args.member.toLowerCase();
     const gameNumber = Number(decoded.args.gameNumber);
     const rank = Number(decoded.args.rank);
-    const respectAmount = Number(decoded.args.respectAmount);
-    const newAverage = Number(decoded.args.newAverageRespect);
+    // Keep as BigInt and convert to string for PostgreSQL bigint columns
+    const respectAmount = decoded.args.respectAmount.toString();
+    const newAverage = decoded.args.newAverageRespect.toString();
 
     console.log(
       "💰 Respect distributed:",
@@ -292,7 +293,10 @@ async function handleRespectDistributed(log: any, txHash: string) {
       .eq("wallet_address", memberAddress)
       .single();
 
-    const newTotal = (memberData?.total_respect_earned || 0) + respectAmount;
+    // BigInt arithmetic - convert current total to BigInt, add, then back to string
+    const currentTotal = BigInt(memberData?.total_respect_earned || 0);
+    const amountBigInt = BigInt(respectAmount);
+    const newTotal = (currentTotal + amountBigInt).toString();
 
     // Update member stats
     const { error: memberError } = await supabase
@@ -746,8 +750,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ) {
           console.log("✅ Address matches! Processing...");
           const txHash = log.transaction?.hash || log.transactionHash;
-          const result = await processEventLog(log, txHash, contractAddr);
-          if (result) results.push(result);
+          try {
+            const result = await processEventLog(log, txHash, contractAddr);
+            if (result) results.push(result);
+          } catch (error) {
+            console.error("❌ Failed to process individual event, continuing with others:", error);
+            results.push({ success: false, error: error.message });
+          }
         } else {
           console.log("⏭️ Address doesn't match, skipping");
         }
@@ -769,12 +778,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           ) {
             console.log("✅ Address matches! Processing...");
             const txHash = activity.hash || activity.log.transactionHash;
-            const result = await processEventLog(
-              activity.log,
-              txHash,
-              contractAddr
-            );
-            if (result) results.push(result);
+            try {
+              const result = await processEventLog(
+                activity.log,
+                txHash,
+                contractAddr
+              );
+              if (result) results.push(result);
+            } catch (error) {
+              console.error("❌ Failed to process individual event, continuing with others:", error);
+              results.push({ success: false, error: error.message });
+            }
           } else {
             console.log("⏭️ Address doesn't match, skipping");
           }
