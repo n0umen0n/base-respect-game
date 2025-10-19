@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { parseEther, formatEther } from 'viem';
+import { parseEther, formatEther, createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
 import { CONTRACTS } from '../config/contracts.config';
 
 // Contract ABIs (simplified - add full ABIs in production)
@@ -101,6 +102,13 @@ const RESPECT_GAME_CORE_ABI = [
     outputs: [{ name: '', type: 'bool' }],
     stateMutability: 'view',
   },
+  {
+    name: 'getTopMembers',
+    type: 'function',
+    inputs: [],
+    outputs: [{ name: '', type: 'address[6]' }],
+    stateMutability: 'view',
+  },
 ] as const;
 
 const RESPECT_TOKEN_ABI = [
@@ -144,12 +152,30 @@ const RESPECT_GAME_GOVERNANCE_ABI = [
     outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'nonpayable',
   },
+  {
+    name: 'createExecuteTransactionsProposal',
+    type: 'function',
+    inputs: [
+      { name: 'targets', type: 'address[]' },
+      { name: 'values', type: 'uint256[]' },
+      { name: 'calldatas', type: 'bytes[]' },
+      { name: 'description', type: 'string' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+  },
 ] as const;
 
 // Contract addresses (imported from centralized config)
 const RESPECT_GAME_CORE_ADDRESS = CONTRACTS.RESPECT_GAME_CORE;
 const RESPECT_TOKEN_ADDRESS = CONTRACTS.RESPECT_TOKEN;
 const RESPECT_GAME_GOVERNANCE_ADDRESS = CONTRACTS.RESPECT_GAME_GOVERNANCE;
+
+// Create a public client for reading contract data
+const publicClient = createPublicClient({
+  chain: base,
+  transport: http('https://base-mainnet.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9'),
+});
 
 interface UseRespectGameProps {
   smartAccountClient: any;
@@ -177,51 +203,56 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
 
   // Load game state and member info
   useEffect(() => {
-    if (smartAccountClient && userAddress) {
+    if (userAddress) {
       loadGameData();
     }
-  }, [smartAccountClient, userAddress]);
+  }, [userAddress]);
 
   const loadGameData = async () => {
-    if (!smartAccountClient || !userAddress) return;
+    if (!userAddress) return;
 
     try {
       setLoading(true);
 
-      // Read contract data
-      const [gameNumber, stage, nextTimestamp, member, topMember, balance] = await Promise.all([
-        smartAccountClient.readContract({
+      // Read contract data using public client
+      const [gameNumber, stage, nextTimestamp, member, topMember, balance, topMembers] = await Promise.all([
+        publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'currentGameNumber',
         }),
-        smartAccountClient.readContract({
+        publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'getCurrentStage',
         }),
-        smartAccountClient.readContract({
+        publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'getNextStageTimestamp',
         }),
-        smartAccountClient.readContract({
+        publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'getMember',
           args: [userAddress],
         }),
-        smartAccountClient.readContract({
+        publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'isTopMember',
           args: [userAddress],
         }),
-        smartAccountClient.readContract({
+        publicClient.readContract({
           address: RESPECT_TOKEN_ADDRESS,
           abi: RESPECT_TOKEN_ABI,
           functionName: 'balanceOf',
           args: [userAddress],
+        }),
+        publicClient.readContract({
+          address: RESPECT_GAME_CORE_ADDRESS,
+          abi: RESPECT_GAME_CORE_ABI,
+          functionName: 'getTopMembers',
         }),
       ]);
 
@@ -242,6 +273,13 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
 
       setIsTopMember(topMember);
       setRespectBalance(Number(formatEther(balance)));
+
+      // Console log top members info
+      console.log('=== TOP MEMBERS INFO ===');
+      console.log('Top 6 Members:', topMembers);
+      console.log('Your address:', userAddress);
+      console.log('Are you a top member?', topMember);
+      console.log('========================');
     } catch (error) {
       console.error('Error loading game data:', error);
     } finally {
@@ -316,10 +354,69 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
     return hash;
   };
 
-  const getMyGroup = async (gameNumber: number) => {
+  const createBanProposal = async (targetMember: string, description: string) => {
     if (!smartAccountClient) throw new Error('Wallet not connected');
 
-    const result = await smartAccountClient.readContract({
+    const hash = await smartAccountClient.writeContract({
+      address: RESPECT_GAME_GOVERNANCE_ADDRESS,
+      abi: RESPECT_GAME_GOVERNANCE_ABI,
+      functionName: 'createBanProposal',
+      args: [targetMember as `0x${string}`, description],
+    });
+
+    console.log('Ban proposal created, transaction hash:', hash);
+    return hash;
+  };
+
+  const createTransferProposal = async (
+    tokenAddress: string,
+    recipient: string,
+    amount: string,
+    decimals: number,
+    description: string,
+    isETH: boolean = false
+  ) => {
+    if (!smartAccountClient) throw new Error('Wallet not connected');
+
+    // Parse amount to wei/smallest unit
+    const amountBigInt = BigInt(Math.floor(parseFloat(amount) * 10 ** decimals));
+
+    let calldata: `0x${string}`;
+    let value: bigint = 0n;
+    let target: `0x${string}`;
+
+    if (isETH) {
+      // For ETH transfer, we send directly to recipient with value
+      target = recipient as `0x${string}`;
+      value = amountBigInt;
+      calldata = '0x' as `0x${string}`; // Empty calldata
+    } else {
+      // For ERC20 transfer, encode the transfer function call
+      // Function signature: transfer(address,uint256)
+      const functionSelector = '0xa9059cbb'; // transfer(address,uint256)
+      
+      // Encode parameters: recipient address (32 bytes) + amount (32 bytes)
+      const recipientPadded = recipient.slice(2).padStart(64, '0');
+      const amountHex = amountBigInt.toString(16).padStart(64, '0');
+      
+      calldata = `${functionSelector}${recipientPadded}${amountHex}` as `0x${string}`;
+      target = tokenAddress as `0x${string}`;
+      value = 0n;
+    }
+
+    const hash = await smartAccountClient.writeContract({
+      address: RESPECT_GAME_GOVERNANCE_ADDRESS,
+      abi: RESPECT_GAME_GOVERNANCE_ABI,
+      functionName: 'createExecuteTransactionsProposal',
+      args: [[target], [value], [calldata], description],
+    });
+
+    console.log('Transfer proposal created, transaction hash:', hash);
+    return hash;
+  };
+
+  const getMyGroup = async (gameNumber: number) => {
+    const result = await publicClient.readContract({
       address: RESPECT_GAME_CORE_ADDRESS,
       abi: RESPECT_GAME_CORE_ABI,
       functionName: 'getMyGroup',
@@ -333,9 +430,7 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
   };
 
   const getContribution = async (gameNumber: number, contributor: string) => {
-    if (!smartAccountClient) throw new Error('Wallet not connected');
-
-    const result = await smartAccountClient.readContract({
+    const result = await publicClient.readContract({
       address: RESPECT_GAME_CORE_ADDRESS,
       abi: RESPECT_GAME_CORE_ABI,
       functionName: 'getContribution',
@@ -358,6 +453,8 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
     submitContribution,
     submitRanking,
     voteOnProposal,
+    createBanProposal,
+    createTransferProposal,
     getMyGroup,
     getContribution,
     refreshData: loadGameData,

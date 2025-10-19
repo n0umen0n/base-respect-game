@@ -52,10 +52,10 @@ root.render(
         <Route path="/" element={<App />}>
           <Route index element={<HomePage />} />
           <Route path="profile/:address" element={<ProfilePageWrapper />} />
+          <Route path="proposals" element={<ProposalsPageWrapper />} />
           <Route element={<ProtectedRoute />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="game" element={<RespectGameContainer />} />
-            <Route path="proposals" element={<ProposalsPageWrapper />} />
           </Route>
         </Route>
       </Routes>

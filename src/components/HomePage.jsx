@@ -21,7 +21,7 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 
 const HomePage = () => {
-  const { login, logout, user, ready } = usePrivy();
+  const { login, logout, user, ready, authenticated } = usePrivy();
   const navigate = useNavigate();
   const [topMembers, setTopMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,6 +31,23 @@ const HomePage = () => {
   useEffect(() => {
     loadTopMembers();
   }, []);
+
+  // Navigate to /game after login - using sessionStorage to persist across re-renders
+  useEffect(() => {
+    const shouldNavigateToGame = sessionStorage.getItem('navigateToGameAfterLogin');
+    console.log('Navigation effect:', { 
+      shouldNavigateToGame, 
+      ready, 
+      authenticated, 
+      user: !!user 
+    });
+    
+    if (shouldNavigateToGame === 'true' && ready && authenticated && user) {
+      console.log('✅ NAVIGATING TO /game NOW');
+      sessionStorage.removeItem('navigateToGameAfterLogin');
+      navigate('/game');
+    }
+  }, [ready, authenticated, user, navigate]);
 
   const loadTopMembers = async () => {
     try {
@@ -44,6 +61,7 @@ const HomePage = () => {
   };
 
   const handleLogout = async () => {
+    sessionStorage.removeItem('navigateToGameAfterLogin');
     await logout();
   };
 
@@ -51,6 +69,8 @@ const HomePage = () => {
     if (user) {
       navigate('/game');
     } else {
+      console.log('🔑 Login button clicked - setting flag to navigate after login');
+      sessionStorage.setItem('navigateToGameAfterLogin', 'true');
       login();
     }
   };

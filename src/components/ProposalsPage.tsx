@@ -16,20 +16,44 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Grid,
+  IconButton,
+  Tooltip,
+  Snackbar,
 } from '@mui/material';
 import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import AddIcon from '@mui/icons-material/Add';
+import CreateProposalDialog, {
+  type BanProposalData,
+  type TransferProposalData,
+  TOKEN_ADDRESSES,
+  TOKEN_DECIMALS,
+} from './CreateProposalDialog';
 import {
   getLiveProposals,
   getHistoricalProposals,
   type LiveProposal,
 } from '../lib/supabase-respect';
+import { useTreasuryBalances } from '../hooks/useTreasuryBalances';
+import { CONTRACTS } from '../config/contracts.config';
 
 interface ProposalsPageProps {
   userAddress: string;
   isTopMember: boolean;
   onVote: (proposalId: number, voteFor: boolean) => Promise<void>;
+  onCreateBanProposal?: (targetMember: string, description: string) => Promise<void>;
+  onCreateTransferProposal?: (
+    token: string,
+    tokenAddress: string,
+    recipient: string,
+    amount: string,
+    decimals: number,
+    description: string
+  ) => Promise<void>;
 }
 
 const PROPOSAL_COLORS = {
@@ -228,6 +252,8 @@ export default function ProposalsPage({
   userAddress,
   isTopMember,
   onVote,
+  onCreateBanProposal,
+  onCreateTransferProposal,
 }: ProposalsPageProps) {
   const [tabValue, setTabValue] = useState(0);
   const [liveProposals, setLiveProposals] = useState<LiveProposal[]>([]);
@@ -240,6 +266,70 @@ export default function ProposalsPage({
     voteFor: boolean;
   }>({ open: false, proposalId: null, voteFor: false });
   const [voting, setVoting] = useState(false);
+  const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
+  const [createProposalDialogOpen, setCreateProposalDialogOpen] = useState(false);
+
+  // Fetch treasury balances
+  const { balances: treasuryBalances, loading: treasuryLoading } = useTreasuryBalances(CONTRACTS.EXECUTOR);
+
+  // Log user status
+  useEffect(() => {
+    console.log('=== PROPOSALS PAGE STATUS ===');
+    console.log('User Address:', userAddress || 'Not logged in');
+    console.log('Is Top Member:', isTopMember);
+    console.log('Can Create Proposals:', isTopMember && userAddress !== '');
+    console.log('============================');
+  }, [userAddress, isTopMember]);
+
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(CONTRACTS.EXECUTOR);
+      setCopySnackbarOpen(true);
+    } catch (err) {
+      console.error('Failed to copy address:', err);
+    }
+  };
+
+  const handleCreateProposal = async (
+    type: 'ban' | 'transfer',
+    data: BanProposalData | TransferProposalData
+  ) => {
+    try {
+      if (type === 'ban') {
+        const banData = data as BanProposalData;
+        if (onCreateBanProposal) {
+          await onCreateBanProposal(banData.targetMember, banData.description);
+        } else {
+          throw new Error('Ban proposal creation not available');
+        }
+      } else {
+        const transferData = data as TransferProposalData;
+        const tokenAddress = transferData.token === 'ETH' 
+          ? '0x0000000000000000000000000000000000000000' 
+          : TOKEN_ADDRESSES[transferData.token as keyof typeof TOKEN_ADDRESSES];
+        const decimals = TOKEN_DECIMALS[transferData.token];
+        
+        if (onCreateTransferProposal) {
+          await onCreateTransferProposal(
+            transferData.token,
+            tokenAddress,
+            transferData.recipient,
+            transferData.amount,
+            decimals,
+            transferData.description
+          );
+        } else {
+          throw new Error('Transfer proposal creation not available');
+        }
+      }
+      
+      // Reload proposals after creation
+      await loadProposals();
+    } catch (err: any) {
+      console.error('Error creating proposal:', err);
+      throw err;
+    }
+  };
 
   useEffect(() => {
     loadProposals();
@@ -299,28 +389,65 @@ export default function ProposalsPage({
         }}
       >
         <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
-          <Typography
-            variant="h4"
-            component="h1"
-            gutterBottom
-            sx={{
-              fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '1.8rem',
-              textAlign: 'center',
-              marginBottom: 4,
-            }}
-          >
-            PROPOSALS
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+            <Typography
+              variant="h4"
+              component="h1"
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1.8rem',
+              }}
+            >
+              PROPOSALS
+            </Typography>
+            {userAddress && (
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setCreateProposalDialogOpen(true)}
+                disabled={!isTopMember}
+                sx={{
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.7rem',
+                  backgroundColor: isTopMember ? '#4caf50' : undefined,
+                  '&:hover': {
+                    backgroundColor: isTopMember ? '#45a049' : undefined,
+                  },
+                }}
+              >
+                CREATE
+              </Button>
+            )}
+          </Box>
 
           {!isTopMember && (
-            <Alert severity="info" sx={{ marginBottom: 3 }}>
-              Only top 6 members can vote on proposals. Keep earning RESPECT to join the top 6!
+            <Alert 
+              severity="info" 
+              sx={{ 
+                marginBottom: 3,
+                '& .MuiAlert-message': {
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.7rem',
+                  lineHeight: 1.8,
+                }
+              }}
+            >
+              Only top 6 members with highest RESPECT SCORE can vote
             </Alert>
           )}
 
           {error && (
-            <Alert severity="error" sx={{ marginBottom: 3 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                marginBottom: 3,
+                '& .MuiAlert-message': {
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.7rem',
+                  lineHeight: 1.8,
+                }
+              }}
+            >
               {error}
             </Alert>
           )}
@@ -360,7 +487,18 @@ export default function ProposalsPage({
                     />
                   ))
                 ) : (
-                  <Alert severity="info">No live proposals at the moment</Alert>
+                  <Alert 
+                    severity="info"
+                    sx={{ 
+                      '& .MuiAlert-message': {
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.7rem',
+                        lineHeight: 1.8,
+                      }
+                    }}
+                  >
+                    No live proposals at the moment
+                  </Alert>
                 )}
               </Box>
             )}
@@ -378,10 +516,284 @@ export default function ProposalsPage({
                     />
                   ))
                 ) : (
-                  <Alert severity="info">No historical proposals yet</Alert>
+                  <Alert 
+                    severity="info"
+                    sx={{ 
+                      '& .MuiAlert-message': {
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.7rem',
+                        lineHeight: 1.8,
+                      }
+                    }}
+                  >
+                    No historical proposals yet
+                  </Alert>
                 )}
               </Box>
             )}
+          </Paper>
+
+          {/* Treasury Card */}
+          <Paper
+            elevation={3}
+            sx={{
+              marginTop: 3,
+              padding: 3,
+              borderRadius: 4,
+              backgroundColor: '#ffffff',
+              border: '2px solid #e0e0e0',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <AccountBalanceWalletIcon sx={{ color: '#333', fontSize: 28 }} />
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.9rem',
+                    color: '#333',
+                    animation: treasuryLoading ? 'blink 1.5s ease-in-out infinite' : 'none',
+                    '@keyframes blink': {
+                      '0%, 100%': {
+                        opacity: 1,
+                      },
+                      '50%': {
+                        opacity: 0.5,
+                      },
+                    },
+                  }}
+                >
+                  {treasuryLoading ? 'FETCHING TREASURY' : 'TREASURY'}
+                </Typography>
+              </Box>
+              <Tooltip title="Copy Treasury Address" arrow>
+                <IconButton
+                  onClick={handleCopyAddress}
+                  sx={{
+                    color: '#333',
+                    '&:hover': {
+                      backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    },
+                  }}
+                  size="small"
+                >
+                  <ContentCopyIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
+            <Grid container spacing={2}>
+              {treasuryLoading ? (
+                <>
+                  {['ETH', 'cbBTC', 'EURC', 'USDC'].map((symbol, index) => {
+                    const colors = ['#627eea', '#f7931a', '#003399', '#2775ca'];
+                    return (
+                      <Grid item xs={12} sm={6} md={3} key={symbol}>
+                        <Paper
+                          sx={{
+                            padding: 2,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: `2px solid ${colors[index]}`,
+                            position: 'relative',
+                            overflow: 'hidden',
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              top: 0,
+                              left: '-100%',
+                              width: '100%',
+                              height: '100%',
+                              background: `linear-gradient(90deg, transparent, ${colors[index]}22, transparent)`,
+                              animation: 'shimmer 2s infinite',
+                            },
+                            '@keyframes shimmer': {
+                              '0%': {
+                                left: '-100%',
+                              },
+                              '100%': {
+                                left: '100%',
+                              },
+                            },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              height: 24,
+                              width: '60%',
+                              backgroundColor: `${colors[index]}33`,
+                              borderRadius: 1,
+                              marginBottom: 1,
+                              animation: 'pulse 1.5s ease-in-out infinite',
+                              '@keyframes pulse': {
+                                '0%, 100%': {
+                                  opacity: 0.6,
+                                },
+                                '50%': {
+                                  opacity: 0.3,
+                                },
+                              },
+                            }}
+                          />
+                          <Box
+                            sx={{
+                              height: 32,
+                              width: '80%',
+                              backgroundColor: `${colors[index]}22`,
+                              borderRadius: 1,
+                              animation: 'pulse 1.5s ease-in-out infinite 0.2s',
+                            }}
+                          />
+                        </Paper>
+                      </Grid>
+                    );
+                  })}
+                </>
+              ) : (
+                <>
+                  {treasuryBalances && (
+                    <>
+                      {/* ETH */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper
+                          sx={{
+                            padding: 2,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '2px solid #627eea',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.6rem',
+                              color: '#627eea',
+                            }}
+                          >
+                            ETH
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.8rem',
+                              marginTop: 1,
+                              color: '#333',
+                            }}
+                          >
+                            {treasuryBalances.ETH.balance}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+
+                      {/* cbBTC (Coinbase Wrapped BTC) */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper
+                          sx={{
+                            padding: 2,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '2px solid #f7931a',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.6rem',
+                              color: '#f7931a',
+                            }}
+                          >
+                            {treasuryBalances.WBTC.symbol}
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.8rem',
+                              marginTop: 1,
+                              color: '#333',
+                            }}
+                          >
+                            {treasuryBalances.WBTC.balance}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+
+                      {/* EURC */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper
+                          sx={{
+                            padding: 2,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '2px solid #003399',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.6rem',
+                              color: '#003399',
+                            }}
+                          >
+                            EURC
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.8rem',
+                              marginTop: 1,
+                              color: '#333',
+                            }}
+                          >
+                            {treasuryBalances.EURC.balance}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+
+                      {/* USDC */}
+                      <Grid item xs={12} sm={6} md={3}>
+                        <Paper
+                          sx={{
+                            padding: 2,
+                            borderRadius: 2,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            border: '2px solid #2775ca',
+                          }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.6rem',
+                              color: '#2775ca',
+                            }}
+                          >
+                            USDC
+                          </Typography>
+                          <Typography
+                            variant="h6"
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.8rem',
+                              marginTop: 1,
+                              color: '#333',
+                            }}
+                          >
+                            {treasuryBalances.USDC.balance}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                    </>
+                  )}
+                </>
+              )}
+            </Grid>
           </Paper>
 
           {/* Proposal Types Legend */}
@@ -424,9 +836,6 @@ export default function ProposalsPage({
                   >
                     APPROVE MEMBER (2 votes needed)
                   </Typography>
-                  <Typography variant="caption">
-                    Vote to approve a new member to the Respect Game
-                  </Typography>
                 </Box>
               </Box>
 
@@ -450,9 +859,6 @@ export default function ProposalsPage({
                   >
                     BAN MEMBER (3 votes needed)
                   </Typography>
-                  <Typography variant="caption">
-                    Vote to ban a member from the Respect Game
-                  </Typography>
                 </Box>
               </Box>
 
@@ -474,10 +880,7 @@ export default function ProposalsPage({
                       color: PROPOSAL_COLORS.ExecuteTransactions.text,
                     }}
                   >
-                    EXECUTE TRANSACTIONS (4 votes needed)
-                  </Typography>
-                  <Typography variant="caption">
-                    Vote to execute custom transactions through the governance
+                    EXECUTE CUSTOM TRANSACTION (4 votes needed)
                   </Typography>
                 </Box>
               </Box>
@@ -529,6 +932,30 @@ export default function ProposalsPage({
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Copy Address Snackbar */}
+      <Snackbar
+        open={copySnackbarOpen}
+        autoHideDuration={2000}
+        onClose={() => setCopySnackbarOpen(false)}
+        message="Treasury address copied!"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '0.6rem',
+            backgroundColor: '#4caf50',
+          },
+        }}
+      />
+
+      {/* Create Proposal Dialog */}
+      <CreateProposalDialog
+        open={createProposalDialogOpen}
+        onClose={() => setCreateProposalDialogOpen(false)}
+        onCreateProposal={handleCreateProposal}
+        isTopMember={isTopMember}
+      />
     </>
   );
 }
