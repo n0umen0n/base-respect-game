@@ -7,7 +7,6 @@ import {
   CardContent,
   Chip,
   Button,
-  CircularProgress,
   Alert,
   Tabs,
   Tab,
@@ -18,6 +17,7 @@ import {
   DialogContent,
   DialogActions,
 } from '@mui/material';
+import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import {
@@ -287,18 +287,7 @@ export default function ProposalsPage({
   };
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingScreen message="LOADING PROPOSALS..." />;
   }
 
   return (
@@ -536,7 +525,7 @@ export default function ProposalsPage({
               fontSize: '0.7rem',
             }}
           >
-            {voting ? <CircularProgress size={24} /> : 'CONFIRM'}
+            {voting ? <LoadingSpinner size={24} /> : 'CONFIRM'}
           </Button>
         </DialogActions>
       </Dialog>

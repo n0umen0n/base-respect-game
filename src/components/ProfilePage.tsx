@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -10,7 +11,6 @@ import {
   Card,
   CardContent,
   Link,
-  CircularProgress,
   Alert,
   Tabs,
   Tab,
@@ -24,22 +24,35 @@ import {
   ListItem,
   ListItemText,
   Button,
+  Collapse,
+  IconButton,
 } from '@mui/material';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import LinkIcon from '@mui/icons-material/Link';
 import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
+// @ts-ignore - image import
+import profileImage from '../assets/profile.jpg';
 import {
   getMember,
+  getMembers,
   getMemberGameHistory,
   getVouchedForMembers,
   getMemberContribution,
+  getMemberRanking,
   getCurrentGameStage,
+  updateMemberXAccount,
   type Member,
   type GameResult,
   type Contribution,
+  type Ranking,
 } from '../lib/supabase-respect';
+import { formatRespectDisplay } from '../lib/formatTokens';
+import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 
 interface ProfilePageProps {
   walletAddress: string;
@@ -57,6 +70,260 @@ interface ContributionHistory {
   respectEarned: number;
 }
 
+// Component for individual game history row with expandable details
+function GameHistoryRow({ game }: { game: GameResult }) {
+  const [open, setOpen] = useState(false);
+  const [rankedMembers, setRankedMembers] = useState<Member[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const navigate = useNavigate();
+
+  const hasDetails = 
+    (game.contributions && game.contributions.length > 0) ||
+    (game.links && game.links.length > 0) ||
+    (game.ranked_addresses && game.ranked_addresses.length > 0);
+
+  // Fetch member data when row is expanded and has ranked addresses
+  useEffect(() => {
+    if (open && game.ranked_addresses && game.ranked_addresses.length > 0 && rankedMembers.length === 0) {
+      setLoadingMembers(true);
+      getMembers(game.ranked_addresses)
+        .then((members) => {
+          // Sort members to match the order in ranked_addresses
+          const sortedMembers = game.ranked_addresses!.map(address => 
+            members.find(m => m.wallet_address.toLowerCase() === address.toLowerCase())
+          ).filter((m): m is Member => m !== undefined);
+          setRankedMembers(sortedMembers);
+        })
+        .catch((error) => {
+          console.error('Error fetching ranked members:', error);
+        })
+        .finally(() => {
+          setLoadingMembers(false);
+        });
+    }
+  }, [open, game.ranked_addresses, rankedMembers.length]);
+
+  return (
+    <>
+      <TableRow>
+        <TableCell>
+          {hasDetails && (
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          )}
+        </TableCell>
+        <TableCell>
+          <Chip
+            label={`#${game.game_number}`}
+            size="small"
+            sx={{
+              fontFamily: '"Press Start 2P", sans-serif',
+              fontSize: '0.6rem',
+            }}
+          />
+        </TableCell>
+        <TableCell>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {game.rank === 1 && (
+              <EmojiEventsIcon
+                sx={{ fontSize: 20, color: '#FFD700' }}
+              />
+            )}
+            {game.rank === 2 && (
+              <EmojiEventsIcon
+                sx={{ fontSize: 20, color: '#C0C0C0' }}
+              />
+            )}
+            {game.rank === 3 && (
+              <EmojiEventsIcon
+                sx={{ fontSize: 20, color: '#CD7F32' }}
+              />
+            )}
+            <Typography 
+              sx={{ 
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '0.7rem',
+                fontWeight: 'bold' 
+              }}
+            >
+              #{game.rank}
+            </Typography>
+          </Box>
+        </TableCell>
+        <TableCell>
+            <Typography 
+            sx={{ 
+              color: '#0052FF', 
+              fontWeight: 'bold',
+              fontFamily: '"Press Start 2P", sans-serif',
+              fontSize: '0.7rem',
+            }}
+          >
+            {formatRespectDisplay(game.respect_earned)}
+          </Typography>
+        </TableCell>
+        <TableCell>
+          <Typography 
+            sx={{
+              fontFamily: '"Press Start 2P", sans-serif',
+              fontSize: '0.6rem',
+            }}
+          >
+            {new Date(game.created_at).toLocaleDateString()}
+          </Typography>
+        </TableCell>
+      </TableRow>
+      {hasDetails && (
+        <TableRow>
+          <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={5}>
+            <Collapse in={open} timeout="auto" unmountOnExit>
+              <Box sx={{ margin: 2 }}>
+                {/* Contributions Section */}
+                {game.contributions && game.contributions.length > 0 && (
+                  <Box sx={{ marginBottom: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.7rem',
+                        marginBottom: 1,
+                        color: '#0052FF',
+                      }}
+                    >
+                      CONTRIBUTIONS:
+                    </Typography>
+                    <List dense>
+                      {game.contributions.map((contribution, index) => (
+                        <ListItem key={index}>
+                          <ListItemText
+                            primary={contribution}
+                            sx={{ fontSize: '0.9rem' }}
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {/* Links Section */}
+                {game.links && game.links.length > 0 && (
+                  <Box sx={{ marginBottom: 2 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.7rem',
+                        marginBottom: 1,
+                        color: '#0052FF',
+                      }}
+                    >
+                      LINKS:
+                    </Typography>
+                    <List dense>
+                      {game.links.map((link, index) => (
+                        <ListItem key={index}>
+                          <LinkIcon sx={{ fontSize: 16, marginRight: 1 }} />
+                          <Link
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ fontSize: '0.9rem', wordBreak: 'break-all' }}
+                          >
+                            {link.length > 30 ? `${link.substring(0, 30)}...` : link}
+                          </Link>
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                )}
+
+                {/* Ranked Members Section */}
+                {game.ranked_addresses && game.ranked_addresses.length > 0 && (
+                  <Box>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.7rem',
+                        marginBottom: 1,
+                        color: '#0052FF',
+                      }}
+                    >
+                      MEMBERS RANKED:
+                    </Typography>
+                    {loadingMembers ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', padding: 2 }}>
+                        <LoadingSpinner size={40} />
+                      </Box>
+                    ) : (
+                      <List dense>
+                        {rankedMembers.map((member, index) => (
+                          <ListItem 
+                            key={member.wallet_address}
+                            sx={{
+                              padding: '8px 16px',
+                              cursor: 'pointer',
+                              borderRadius: '8px',
+                              transition: 'background-color 0.2s',
+                              '&:hover': {
+                                backgroundColor: 'rgba(0, 82, 255, 0.08)',
+                              },
+                            }}
+                            onClick={() => navigate(`/profile/${member.wallet_address}`)}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                              <Typography 
+                                sx={{ 
+                                  fontFamily: '"Press Start 2P", sans-serif',
+                                  fontSize: '0.7rem',
+                                  minWidth: '30px',
+                                  color: '#0052FF',
+                                }}
+                              >
+                                #{index + 1}
+                              </Typography>
+                              <Avatar 
+                                src={member.profile_url || profileImage} 
+                                alt={member.name}
+                                sx={{ width: 40, height: 40 }}
+                              />
+                              <Box sx={{ flexGrow: 1 }}>
+                                <Typography sx={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
+                                  {member.name}
+                                </Typography>
+                                {member.x_account && (
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                    <XIcon sx={{ fontSize: 12 }} />
+                                    <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#666' }}>
+                                      @{member.x_account}
+                                    </Typography>
+                                    {member.x_verified && (
+                                      <VerifiedIcon sx={{ fontSize: 12, color: '#1DA1F2' }} />
+                                    )}
+                                  </Box>
+                                )}
+                              </Box>
+                            </Box>
+                          </ListItem>
+                        ))}
+                      </List>
+                    )}
+                  </Box>
+                )}
+              </Box>
+            </Collapse>
+          </TableCell>
+        </TableRow>
+      )}
+    </>
+  );
+}
+
 export default function ProfilePage({
   walletAddress,
   respectBalance = 0,
@@ -64,16 +331,20 @@ export default function ProfilePage({
   currentUserAddress,
 }: ProfilePageProps) {
   const { user, linkTwitter } = usePrivy();
+  const navigate = useNavigate();
   const [member, setMember] = useState<Member | null>(null);
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
   const [vouchedFor, setVouchedFor] = useState<Member[]>([]);
   const [currentContribution, setCurrentContribution] = useState<Contribution | null>(null);
+  const [currentRanking, setCurrentRanking] = useState<Ranking | null>(null);
+  const [currentGameStage, setCurrentGameStage] = useState<'ContributionSubmission' | 'ContributionRanking' | null>(null);
   const [currentGameNumber, setCurrentGameNumber] = useState<number | null>(null);
   const [nextStageTimestamp, setNextStageTimestamp] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [linkingTwitter, setLinkingTwitter] = useState(false);
+  const [rankedMembers, setRankedMembers] = useState<Member[]>([]);
   
   // Check if viewing own profile - use currentUserAddress if provided, fallback to Privy wallet
   const isOwnProfile = currentUserAddress 
@@ -92,20 +363,34 @@ export default function ProfilePage({
       // Get current game info
       const gameStageData = await getCurrentGameStage();
       const gameNum = gameStageData?.current_game_number || null;
+      const gameStage = gameStageData?.current_stage || null;
       setCurrentGameNumber(gameNum);
+      setCurrentGameStage(gameStage);
       setNextStageTimestamp(gameStageData?.next_stage_timestamp || null);
 
-      const [memberData, historyData, vouchedData, contributionData] = await Promise.all([
+      const [memberData, historyData, vouchedData, contributionData, rankingData] = await Promise.all([
         getMember(walletAddress),
         getMemberGameHistory(walletAddress),
         getVouchedForMembers(walletAddress),
         gameNum ? getMemberContribution(walletAddress, gameNum) : Promise.resolve(null),
+        gameNum ? getMemberRanking(walletAddress, gameNum) : Promise.resolve(null),
       ]);
 
       setMember(memberData);
       setGameHistory(historyData);
       setVouchedFor(vouchedData);
       setCurrentContribution(contributionData);
+      setCurrentRanking(rankingData);
+
+      // If ranking exists, fetch the ranked members
+      if (rankingData && rankingData.ranked_addresses && rankingData.ranked_addresses.length > 0) {
+        const members = await getMembers(rankingData.ranked_addresses);
+        // Sort members to match the order in ranked_addresses
+        const sortedMembers = rankingData.ranked_addresses.map(address => 
+          members.find(m => m.wallet_address.toLowerCase() === address.toLowerCase())
+        ).filter((m): m is Member => m !== undefined);
+        setRankedMembers(sortedMembers);
+      }
     } catch (err: any) {
       console.error('Error loading profile:', err);
       setError('Failed to load profile data');
@@ -115,18 +400,7 @@ export default function ProfilePage({
   };
 
   if (loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingScreen message="LOADING PROFILE..." />;
   }
 
   if (error || !member) {
@@ -245,17 +519,39 @@ export default function ProfilePage({
                       try {
                         setLinkingTwitter(true);
                         await linkTwitter();
+                        
+                        // Wait a moment for Privy to update the user object
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // Check if Twitter was successfully linked
+                        if (user?.twitter?.username) {
+                          const twitterUsername = user.twitter.username.startsWith('@') 
+                            ? user.twitter.username 
+                            : `@${user.twitter.username}`;
+                          
+                          // Save to database
+                          await updateMemberXAccount(
+                            walletAddress,
+                            twitterUsername,
+                            true, // X OAuth is verified by Privy
+                            user.id
+                          );
+                          
+                          console.log('✅ X account saved to database');
+                        }
+                        
                         // Reload profile data after linking
                         await loadProfileData();
                       } catch (err) {
                         console.error('Failed to link Twitter:', err);
+                        setError('Failed to link Twitter account. Please try again.');
                       } finally {
                         setLinkingTwitter(false);
                       }
                     }}
                     disabled={linkingTwitter}
                     variant="outlined"
-                    startIcon={linkingTwitter ? <CircularProgress size={20} /> : <XIcon />}
+                    endIcon={linkingTwitter ? <LoadingSpinner size={20} /> : <XIcon />}
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.65rem',
@@ -268,7 +564,7 @@ export default function ProfilePage({
                       },
                     }}
                   >
-                    {linkingTwitter ? 'CONNECTING...' : 'CONNECT X'}
+                    {linkingTwitter ? 'CONNECTING...' : 'CONNECT'}
                   </Button>
                 </Box>
               ) : (
@@ -380,7 +676,7 @@ export default function ProfilePage({
                       color: '#0052FF',
                     }}
                   >
-                    {member.average_respect}
+                    {formatRespectDisplay(member.average_respect)}
                   </Typography>
                 </CardContent>
               </Card>
@@ -447,7 +743,7 @@ export default function ProfilePage({
             borderRadius: 4,
             display: 'grid',
             gridTemplateRows: 'auto 1fr',
-            height: 500,
+            height: 550,
             width: 960,
             minWidth: 960,
             maxWidth: 960,
@@ -496,6 +792,155 @@ export default function ProfilePage({
               >
                 CURRENT GAME #{currentGameNumber || '...'}
               </Typography>
+
+              {/* Ranking Submission Section - Show first */}
+              {currentGameStage === 'ContributionRanking' && currentRanking && rankedMembers.length > 0 && (
+                <Card
+                  sx={{
+                    backgroundColor: '#f0fff4',
+                    borderLeft: '4px solid #22c55e',
+                    marginBottom: 3,
+                  }}
+                >
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginBottom: 2 }}>
+                      <CheckCircleIcon sx={{ color: '#22c55e' }} />
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontFamily: '"Press Start 2P", sans-serif',
+                          fontSize: '0.9rem',
+                          color: '#22c55e',
+                        }}
+                      >
+                        RANKING SUBMITTED
+                      </Typography>
+                    </Box>
+
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.75rem',
+                        marginBottom: 2,
+                        color: '#000',
+                      }}
+                    >
+                      RANKING:
+                    </Typography>
+
+                    <List dense>
+                      {rankedMembers.map((rankedMember, index) => (
+                        <ListItem
+                          key={rankedMember.wallet_address}
+                          onClick={() => navigate(`/profile/${rankedMember.wallet_address}`)}
+                          sx={{
+                            paddingY: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2,
+                            backgroundColor: '#fff',
+                            marginBottom: 1,
+                            borderRadius: 1,
+                            border: '1px solid #e5e7eb',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              backgroundColor: '#f9fafb',
+                              borderColor: '#22c55e',
+                            },
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontFamily: '"Press Start 2P", sans-serif',
+                              fontSize: '0.7rem',
+                              color: '#0052FF',
+                              minWidth: '40px',
+                            }}
+                          >
+                            #{index + 1}
+                          </Typography>
+                          <Avatar
+                            src={rankedMember.profile_url}
+                            alt={rankedMember.name}
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: 1,
+                            }}
+                          />
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              sx={{
+                                fontFamily: '"Press Start 2P", sans-serif',
+                                fontSize: '0.7rem',
+                              }}
+                            >
+                              {rankedMember.name}
+                            </Typography>
+                          </Box>
+                        </ListItem>
+                      ))}
+                    </List>
+
+                    <Box
+                      sx={{
+                        marginTop: 2,
+                        padding: 2,
+                        backgroundColor: '#fff',
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontSize: '0.75rem',
+                          color: 'text.secondary',
+                          lineHeight: 1.8,
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'inline-block',
+                            animation: 'hourglass-spin 2s ease-in-out infinite',
+                            '@keyframes hourglass-spin': {
+                              '0%, 100%': {
+                                transform: 'rotate(0deg)',
+                              },
+                              '50%': {
+                                transform: 'rotate(180deg)',
+                              },
+                            },
+                          }}
+                        >
+                          ⏳
+                        </Box>{' '}
+                        The ranking stage will end in{' '}
+                        {nextStageTimestamp ? (
+                          (() => {
+                            const timeDiff = new Date(nextStageTimestamp).getTime() - Date.now();
+                            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                            
+                            if (days > 0) {
+                              return <strong>{days} {days === 1 ? 'day' : 'days'} {hours} {hours === 1 ? 'hour' : 'hours'}</strong>;
+                            } else if (hours > 0) {
+                              return <strong>{hours} {hours === 1 ? 'hour' : 'hours'} {minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
+                            } else {
+                              return <strong>{minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
+                            }
+                          })()
+                        ) : (
+                          'calculating...'
+                        )}
+                        , results will be available on the profile page in GAME HISTORY.
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              )}
 
               {currentContribution ? (
                 <Card
@@ -556,7 +1001,7 @@ export default function ProfilePage({
                         marginBottom: 1.5,
                       }}
                     >
-                      YOUR CONTRIBUTIONS:
+                      CONTRIBUTIONS:
                     </Typography>
 
                     <List sx={{ paddingLeft: 2 }}>
@@ -601,47 +1046,126 @@ export default function ProfilePage({
                       )}
                     </List>
 
-                    <Box
-                      sx={{
-                        marginTop: 2,
-                        padding: 2,
-                        backgroundColor: '#fff',
-                        borderRadius: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
+                    {currentGameStage === 'ContributionSubmission' && (
+                      <Box
                         sx={{
-                          fontSize: '0.75rem',
-                          color: 'text.secondary',
+                          marginTop: 2,
+                          padding: 2,
+                          backgroundColor: '#fff',
+                          borderRadius: 2,
                         }}
                       >
-                        ⏳ Waiting for contribution submission stage to complete. Please comeback for contribution ranking phase in{' '}
-                        {nextStageTimestamp ? (
-                          <>
-                            {Math.ceil(
-                              (new Date(nextStageTimestamp).getTime() - Date.now()) /
-                                (1000 * 60 * 60 * 24)
-                            )}{' '}
-                            days
-                          </>
-                        ) : (
-                          'calculating...'
-                        )}
-                        .
-                      </Typography>
-                    </Box>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontSize: '0.75rem',
+                            color: 'text.secondary',
+                            lineHeight: 1.8,
+                          }}
+                        >
+                          <Box
+                            component="span"
+                            sx={{
+                              display: 'inline-block',
+                              animation: 'hourglass-spin 2s ease-in-out infinite',
+                              '@keyframes hourglass-spin': {
+                                '0%, 100%': {
+                                  transform: 'rotate(0deg)',
+                                },
+                                '50%': {
+                                  transform: 'rotate(180deg)',
+                                },
+                              },
+                            }}
+                          >
+                            ⏳
+                          </Box>{' '}
+                          Waiting for contribution submission stage to complete. Game resumes with contribution rankings in{' '}
+                          {nextStageTimestamp ? (
+                            (() => {
+                              const timeDiff = new Date(nextStageTimestamp).getTime() - Date.now();
+                              const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                              const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                              const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                              
+                              if (days > 0) {
+                                return <strong>{days} {days === 1 ? 'day' : 'days'} {hours} {hours === 1 ? 'hour' : 'hours'}</strong>;
+                              } else if (hours > 0) {
+                                return <strong>{hours} {hours === 1 ? 'hour' : 'hours'} {minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
+                              } else {
+                                return <strong>{minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
+                              }
+                            })()
+                          ) : (
+                            'calculating...'
+                          )}
+                          . All the players will be distributed randomly into small groups to rank each others contributions.
+                        </Typography>
+                      </Box>
+                    )}
                   </CardContent>
                 </Card>
               ) : (
-                <Alert severity="info">
-                  <Typography sx={{ fontSize: '0.9rem' }}>
-                    No contribution submitted for the current game yet.
-                    {member?.is_approved
-                      ? ' Visit the Contribution Submission page to submit your work!'
-                      : ' You need to be approved by the community first.'}
-                  </Typography>
-                </Alert>
+                <>
+                  <Alert severity="info" sx={{ marginBottom: 2 }}>
+                    <Typography 
+                      sx={{ 
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.7rem',
+                        lineHeight: 1.8,
+                      }}
+                    >
+                      Not playing, member has not submitted contributions for this game.
+                    </Typography>
+                  </Alert>
+
+                  {currentGameStage === 'ContributionRanking' && nextStageTimestamp && (
+                    <Alert severity="info" sx={{ '& .MuiAlert-icon': { display: 'none' }, '& .MuiAlert-message': { padding: 0 } }}>
+                      <Typography 
+                        sx={{ 
+                          fontFamily: '"Press Start 2P", sans-serif',
+                          fontSize: '0.7rem',
+                          lineHeight: 1.8,
+                          textAlign: 'left',
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: 'inline-block',
+                            animation: 'hourglass-spin 2s ease-in-out infinite',
+                            '@keyframes hourglass-spin': {
+                              '0%, 100%': {
+                                transform: 'rotate(0deg)',
+                              },
+                              '50%': {
+                                transform: 'rotate(180deg)',
+                              },
+                            },
+                          }}
+                        >
+                          ⏳
+                        </Box>
+                        {' '}Come back to play in{' '}
+                        {(() => {
+                          const timeDiff = new Date(nextStageTimestamp).getTime() - Date.now();
+                          const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                          const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                          const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+                          
+                          if (days > 0) {
+                            return <strong>{days} {days === 1 ? 'day' : 'days'} {hours} {hours === 1 ? 'hour' : 'hours'}</strong>;
+                          } else if (hours > 0) {
+                            return <strong>{hours} {hours === 1 ? 'hour' : 'hours'} {minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
+                          } else {
+                            return <strong>{minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
+                          }
+                        })()}
+                        , when the next contribution submission stage starts.
+                      </Typography>
+                    </Alert>
+                  )}
+                </>
               )}
             </Box>
           )}
@@ -680,6 +1204,12 @@ export default function ProfilePage({
                             fontFamily: '"Press Start 2P", sans-serif',
                             fontSize: '0.7rem',
                           }}
+                        />
+                        <TableCell
+                          sx={{
+                            fontFamily: '"Press Start 2P", sans-serif',
+                            fontSize: '0.7rem',
+                          }}
                         >
                           GAME #
                         </TableCell>
@@ -711,40 +1241,7 @@ export default function ProfilePage({
                     </TableHead>
                     <TableBody>
                       {gameHistory.map((game) => (
-                        <TableRow key={game.game_number}>
-                          <TableCell>
-                            <Chip
-                              label={`#${game.game_number}`}
-                              size="small"
-                              sx={{
-                                fontFamily: '"Press Start 2P", sans-serif',
-                                fontSize: '0.6rem',
-                              }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                              {game.rank === 1 && (
-                                <EmojiEventsIcon
-                                  sx={{ fontSize: 20, color: '#FFD700' }}
-                                />
-                              )}
-                              <Typography sx={{ fontWeight: 'bold' }}>
-                                #{game.rank}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Typography sx={{ color: '#0052FF', fontWeight: 'bold' }}>
-                              {game.respect_earned}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2">
-                              {new Date(game.created_at).toLocaleDateString()}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
+                        <GameHistoryRow key={game.game_number} game={game} />
                       ))}
                     </TableBody>
                   </Table>
@@ -843,7 +1340,7 @@ export default function ProfilePage({
                           </Box>
                         </Box>
                         <Chip
-                          label={`RESPECT: ${vouchedMember.average_respect}`}
+                          label={`RESPECT: ${formatRespectDisplay(vouchedMember.average_respect)}`}
                           size="small"
                           sx={{
                             fontFamily: '"Press Start 2P", sans-serif',

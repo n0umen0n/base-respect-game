@@ -4,7 +4,6 @@ import {
   Button,
   Typography,
   Paper,
-  CircularProgress,
   Alert,
   Avatar,
   Card,
@@ -15,6 +14,7 @@ import {
   Fade,
   Link,
 } from '@mui/material';
+import LoadingSpinner from './LoadingSpinner';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -73,28 +73,28 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
     <Card
       ref={setNodeRef}
       style={style}
+      {...attributes}
       sx={{
         marginBottom: 2,
-        cursor: 'grab',
         position: 'relative',
         zIndex: 1,
         backgroundColor: '#fafafa',
         border: '2px solid #e0e0e0',
         boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'hidden',
         '&:hover': {
           backgroundColor: '#f5f5f5',
           border: '2px solid #bdbdbd',
           boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
         },
-        '&:active': {
-          cursor: 'grabbing',
-        },
       }}
     >
-      <CardContent sx={{ padding: '20px !important' }}>
-        <Box sx={{ display: 'grid', gridTemplateColumns: '170px 1fr 150px', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <DragIndicatorIcon sx={{ color: '#757575', cursor: 'grab', fontSize: 28 }} />
+      <CardContent sx={{ padding: '20px !important', width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: '170px 1fr 150px', alignItems: 'center', gap: 2, width: '100%', maxWidth: '100%' }}>
+          <Box {...listeners} sx={{ display: 'flex', alignItems: 'center', gap: 2, cursor: 'grab', '&:active': { cursor: 'grabbing' } }}>
+            <DragIndicatorIcon sx={{ color: '#757575', fontSize: 28 }} />
             
             <Typography
               sx={{
@@ -118,7 +118,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
             />
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', justifyContent: 'center' }} {...attributes} {...listeners}>
+          <Box {...listeners} sx={{ display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center', justifyContent: 'center', cursor: 'grab', '&:active': { cursor: 'grabbing' }, minWidth: 0, overflow: 'hidden' }}>
             <Typography
               variant="h6"
               sx={{
@@ -126,19 +126,24 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                 fontSize: '1rem',
                 color: '#000',
                 lineHeight: 1.4,
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%',
               }}
             >
               {member.name}
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, justifyContent: 'center' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, justifyContent: 'center', maxWidth: '100%', overflow: 'hidden' }}>
               {member.xAccount ? (
                 <>
-                  <XIcon sx={{ fontSize: 16, color: '#000' }} />
+                  <XIcon sx={{ fontSize: 16, color: '#000', flexShrink: 0 }} />
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.65rem',
                       color: '#000',
+                      flexShrink: 0,
                     }}
                   >
                     :
@@ -148,11 +153,17 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.65rem',
                       color: '#1da1f2',
                       textDecoration: 'none',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: '100%',
                       '&:hover': {
                         textDecoration: 'underline',
                       },
@@ -160,16 +171,17 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                   >
                     {member.xAccount}
                   </Link>
-                  <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />
+                  <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50', flexShrink: 0 }} />
                 </>
               ) : (
                 <>
-                  <XIcon sx={{ fontSize: 16, color: '#9e9e9e' }} />
+                  <XIcon sx={{ fontSize: 16, color: '#9e9e9e', flexShrink: 0 }} />
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.65rem',
                       color: '#000',
+                      flexShrink: 0,
                     }}
                   >
                     :
@@ -179,11 +191,12 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.65rem',
                       color: '#9e9e9e',
+                      flexShrink: 0,
                     }}
                   >
                     missing
                   </Typography>
-                  <CancelIcon sx={{ fontSize: 18, color: '#f44336' }} />
+                  <CancelIcon sx={{ fontSize: 18, color: '#f44336', flexShrink: 0 }} />
                 </>
               )}
             </Box>
@@ -195,6 +208,8 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                 e.stopPropagation();
                 setExpanded(!expanded);
               }}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               sx={{
                 transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
                 transition: '0.3s',
@@ -210,7 +225,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
         </Box>
 
         <Collapse in={expanded} timeout="auto" unmountOnExit>
-          <Box sx={{ marginTop: 2, paddingTop: 2, borderTop: '2px solid #e0e0e0', backgroundColor: '#f9f9f9', padding: 2, borderRadius: 2 }}>
+          <Box sx={{ marginTop: 2, paddingTop: 2, borderTop: '2px solid #e0e0e0', backgroundColor: '#f9f9f9', padding: 2, borderRadius: 2, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
             <Typography
               variant="subtitle2"
               sx={{
@@ -224,7 +239,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
             </Typography>
             {member.contributions.length > 0 ? (
               member.contributions.map((contribution, index) => (
-                <Box key={index} sx={{ marginBottom: 2, padding: 1.5, backgroundColor: '#fff', borderRadius: 1, border: '1px solid #e0e0e0' }}>
+                <Box key={index} sx={{ marginBottom: 2, padding: 1.5, backgroundColor: '#fff', borderRadius: 1, border: '1px solid #e0e0e0', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
                   <Typography
                     variant="body2"
                     sx={{ 
@@ -232,6 +247,8 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                       fontSize: '0.75rem',
                       lineHeight: 1.6,
                       color: '#333',
+                      wordWrap: 'break-word',
+                      overflowWrap: 'break-word',
                     }}
                   >
                     {contribution}
@@ -241,12 +258,18 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                       href={member.links[index]}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
                       sx={{
                         fontFamily: '"Press Start 2P", sans-serif',
                         fontSize: '0.6rem',
                         wordBreak: 'break-all',
+                        overflowWrap: 'break-word',
                         color: '#1da1f2',
                         textDecoration: 'none',
+                        display: 'block',
+                        maxWidth: '100%',
                         '&:hover': {
                           textDecoration: 'underline',
                         },
@@ -287,11 +310,29 @@ export default function RankingSubmission({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
 
   // Sync members state when groupMembers prop changes
   useEffect(() => {
     setMembers(groupMembers);
   }, [groupMembers]);
+
+  // Countdown timer for results availability
+  useEffect(() => {
+    const updateCountdown = () => {
+      const timeDiff = new Date(nextSubmissionStageDate).getTime() - Date.now();
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+      
+      setCountdown({ days: Math.max(0, days), hours: Math.max(0, hours), minutes: Math.max(0, minutes) });
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [nextSubmissionStageDate]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -331,6 +372,20 @@ export default function RankingSubmission({
     }
   };
 
+  const formatDateWithOrdinal = (date: Date) => {
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    
+    const getOrdinalSuffix = (n: number) => {
+      const s = ['th', 'st', 'nd', 'rd'];
+      const v = n % 100;
+      return s[(v - 20) % 10] || s[v] || s[0];
+    };
+    
+    return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+  };
+
   const handleAddToCalendar = () => {
     const startDate = new Date(nextSubmissionStageDate);
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
@@ -353,25 +408,25 @@ export default function RankingSubmission({
         sx={{
           minHeight: '100vh',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'center',
           padding: '0 50px',
-          marginTop: '-200px',
+          paddingTop: '80px',
+          paddingBottom: '80px',
         }}
       >
         <Paper
           elevation={3}
           sx={{
             padding: 4,
-            width: '100%',
-            maxWidth: 'none',
-            minWidth: '1200px',
+            width: '1200px',
+            maxWidth: '1200px',
             borderRadius: 4,
             position: 'relative',
             zIndex: 1,
             '@media (max-width: 1300px)': {
-              minWidth: 'auto',
               width: 'calc(100vw - 100px)',
+              maxWidth: 'calc(100vw - 100px)',
             },
           }}
         >
@@ -460,7 +515,7 @@ export default function RankingSubmission({
           >
             {isSubmitting ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <CircularProgress size={24} sx={{ color: 'white' }} />
+                <LoadingSpinner size={24} color="#ffffff" />
                 <span>SUBMITTING...</span>
               </Box>
             ) : (
@@ -508,19 +563,10 @@ export default function RankingSubmission({
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
                 fontSize: '1.2rem',
-                marginBottom: 2,
+                marginBottom: 3,
               }}
             >
               THANK YOU!
-            </Typography>
-            <Typography
-              sx={{
-                marginBottom: 2,
-                fontSize: '0.9rem',
-                lineHeight: 1.6,
-              }}
-            >
-              Your rankings have been submitted successfully.
             </Typography>
             <Box
               sx={{
@@ -535,19 +581,28 @@ export default function RankingSubmission({
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.65rem',
-                  marginBottom: 1,
+                  marginBottom: 2,
+                  lineHeight: 1.8,
                 }}
               >
-                CHECK RESULTS IN YOUR PROFILE
+                RESULTS WILL BE AVAILABLE ON YOUR PROFILE PAGE IN:
               </Typography>
               <Typography
-                variant="body2"
+                variant="h6"
                 sx={{
-                  fontSize: '0.75rem',
-                  lineHeight: 1.6,
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.9rem',
+                  color: '#000',
+                  fontWeight: 'bold',
                 }}
               >
-                Results will be available after all rankings are processed
+                {countdown.days > 0 ? (
+                  `${countdown.days} ${countdown.days === 1 ? 'DAY' : 'DAYS'} ${countdown.hours} ${countdown.hours === 1 ? 'HOUR' : 'HOURS'}`
+                ) : countdown.hours > 0 ? (
+                  `${countdown.hours} ${countdown.hours === 1 ? 'HOUR' : 'HOURS'} ${countdown.minutes} ${countdown.minutes === 1 ? 'MINUTE' : 'MINUTES'}`
+                ) : (
+                  `${countdown.minutes} ${countdown.minutes === 1 ? 'MINUTE' : 'MINUTES'}`
+                )}
               </Typography>
             </Box>
             <Box
@@ -563,19 +618,27 @@ export default function RankingSubmission({
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.65rem',
-                  marginBottom: 1,
+                  marginBottom: 2,
+                  lineHeight: 1.8,
                 }}
               >
-                NEXT GAME SUBMISSIONS START
+                SUBMIT YOUR NEXT CONTRIBUTIONS ON:
               </Typography>
               <Typography
-                variant="body1"
+                variant="h6"
                 sx={{
-                  fontSize: '0.85rem',
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.9rem',
+                  color: '#000',
                   marginBottom: 2,
                 }}
               >
-                {new Date(nextSubmissionStageDate).toLocaleString()}
+                {(() => {
+                  // Calculate the last day of next contribution phase (6 days after it starts)
+                  const lastSubmissionDay = new Date(nextSubmissionStageDate);
+                  lastSubmissionDay.setDate(lastSubmissionDay.getDate() + 6);
+                  return formatDateWithOrdinal(lastSubmissionDay);
+                })()}
               </Typography>
               <Button
                 startIcon={<CalendarTodayIcon />}

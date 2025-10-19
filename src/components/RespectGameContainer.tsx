@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import { CircularProgress, Box } from '@mui/material';
+import { Box } from '@mui/material';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
-import { getMember, getCurrentGameStage, getMemberContribution, getMemberGroup } from '../lib/supabase-respect';
+import { getMember, getCurrentGameStage, getMemberContribution, getMemberGroup, getMemberRanking } from '../lib/supabase-respect';
 import ProfileCreation from './ProfileCreation';
 import ContributionSubmission from './ContributionSubmission';
 import RankingSubmission from './RankingSubmission';
 import ProfilePage from './ProfilePage';
 import ProposalsPage from './ProposalsPage';
+import { LoadingScreen } from './LoadingSpinner';
 
 type View = 'profile-creation' | 'contribution' | 'ranking' | 'profile' | 'proposals';
 
@@ -118,39 +119,50 @@ export default function RespectGameContainer() {
         }
       } else {
         // Ranking Stage ('ContributionRanking')
-        // Check if user has a group assigned in Supabase
-        const groupData = await getMemberGroup(
+        // First check if user has already submitted their ranking
+        const userRanking = await getMemberRanking(
           smartAccountAddress,
           current_game_number
         );
 
-        if (groupData && groupData.members.length > 0) {
-          // Has a group, fetch member details and contributions for all group members
-          const membersWithData = await Promise.all(
-            groupData.members.map(async (memberAddress: string) => {
-              const memberInfo = await getMember(memberAddress);
-              const contributionData = await getMemberContribution(
-                memberAddress,
-                current_game_number
-              );
-
-              return {
-                address: memberAddress,
-                name: memberInfo?.name || 'Unknown',
-                profileUrl: memberInfo?.profile_url,
-                xAccount: memberInfo?.x_account,
-                xVerified: memberInfo?.x_verified || false,
-                contributions: contributionData?.contributions || [],
-                links: contributionData?.links || [],
-              };
-            })
+        if (userRanking) {
+          // Already submitted ranking, show profile
+          setCurrentView('profile');
+        } else {
+          // Has not submitted ranking, check if user has a group assigned
+          const groupData = await getMemberGroup(
+            smartAccountAddress,
+            current_game_number
           );
 
-          setGroupMembers(membersWithData);
-          setCurrentView('ranking');
-        } else {
-          // No group assigned yet, show profile
-          setCurrentView('profile');
+          if (groupData && groupData.members.length > 0) {
+            // Has a group, fetch member details and contributions for all group members
+            const membersWithData = await Promise.all(
+              groupData.members.map(async (memberAddress: string) => {
+                const memberInfo = await getMember(memberAddress);
+                const contributionData = await getMemberContribution(
+                  memberAddress,
+                  current_game_number
+                );
+
+                return {
+                  address: memberAddress,
+                  name: memberInfo?.name || 'Unknown',
+                  profileUrl: memberInfo?.profile_url,
+                  xAccount: memberInfo?.x_account,
+                  xVerified: memberInfo?.x_verified || false,
+                  contributions: contributionData?.contributions || [],
+                  links: contributionData?.links || [],
+                };
+              })
+            );
+
+            setGroupMembers(membersWithData);
+            setCurrentView('ranking');
+          } else {
+            // No group assigned yet, show profile
+            setCurrentView('profile');
+          }
         }
       }
 
@@ -180,7 +192,8 @@ export default function RespectGameContainer() {
     // Trigger profile refresh to show new contribution
     setProfileRefreshTrigger(Date.now());
     
-    await determineView();
+    // Always navigate to profile after submission
+    setCurrentView('profile');
   };
 
   const handleRankingSubmitted = async () => {
@@ -192,7 +205,8 @@ export default function RespectGameContainer() {
     // Trigger profile refresh
     setProfileRefreshTrigger(Date.now());
     
-    await determineView();
+    // Always navigate to profile after submission
+    setCurrentView('profile');
   };
 
   const handleBecomeMember = async (
@@ -218,33 +232,11 @@ export default function RespectGameContainer() {
   };
 
   if (walletLoading || gameLoading || loading) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress size={60} />
-      </Box>
-    );
+    return <LoadingScreen message="LOADING GAME..." />;
   }
 
   if (!currentView) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress size={60} />
-      </Box>
-    );
+    return <LoadingScreen message="LOADING..." />;
   }
 
   return (

@@ -835,7 +835,7 @@ contract RespectGameCore is
             ) {
                 sum += members[member].respectHistory[i];
             }
-            uint256 newAverage = sum / members[member].respectHistory.length;
+            uint256 newAverage = sum / periodsForAverage;
             members[member].averageRespect = newAverage;
 
             // Store game result
@@ -915,25 +915,14 @@ contract RespectGameCore is
         uint256 groupSize
     ) private view returns (uint256) {
         // Map rank to respectDistribution index based on group size
-        // Group of 2: ranks [0, 1] -> indices [0, 4]
-        // Group of 3: ranks [0, 1, 2] -> indices [0, 2, 4]
-        // Group of 4: ranks [0, 1, 2, 3] -> indices [0, 1, 3, 4]
-        // Group of 5: ranks [0, 1, 2, 3, 4] -> indices [0, 1, 2, 3, 4]
+        // Always use the first N indices for a group of size N
+        // Group of 2: ranks [0, 1] -> indices [0, 1] -> 210000, 130000
+        // Group of 3: ranks [0, 1, 2] -> indices [0, 1, 2] -> 210000, 130000, 80000
+        // Group of 4: ranks [0, 1, 2, 3] -> indices [0, 1, 2, 3] -> 210000, 130000, 80000, 50000
+        // Group of 5: ranks [0, 1, 2, 3, 4] -> indices [0, 1, 2, 3, 4] -> 210000, 130000, 80000, 50000, 30000
 
-        if (groupSize == 5) {
-            return respectDistribution[rank];
-        } else if (groupSize == 4) {
-            uint256[4] memory indices = [uint256(0), 1, 3, 4];
-            return respectDistribution[indices[rank]];
-        } else if (groupSize == 3) {
-            uint256[3] memory indices = [uint256(0), 2, 4];
-            return respectDistribution[indices[rank]];
-        } else if (groupSize == 2) {
-            uint256[2] memory indices = [uint256(0), 4];
-            return respectDistribution[indices[rank]];
-        }
-
-        return 0; // Should never reach here
+        // Simply return the distribution at the rank index, scaled by 10^18 for ERC20 decimals
+        return respectDistribution[rank] * 10 ** 18;
     }
 
     /**

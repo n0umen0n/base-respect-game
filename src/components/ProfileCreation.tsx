@@ -6,13 +6,13 @@ import {
   Button,
   Typography,
   Paper,
-  CircularProgress,
   Alert,
   Modal,
   Fade,
   Chip,
   IconButton,
 } from '@mui/material';
+import LoadingSpinner from './LoadingSpinner';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -381,7 +381,7 @@ export default function ProfileCreation({
                     }}
                     disabled={isSubmitting || linkingTwitter}
                     variant="outlined"
-                    startIcon={linkingTwitter ? <CircularProgress size={20} /> : <XIcon />}
+                    startIcon={linkingTwitter ? <LoadingSpinner size={20} /> : <XIcon />}
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.65rem',
@@ -500,7 +500,7 @@ export default function ProfileCreation({
             >
               {isSubmitting ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
+                  <LoadingSpinner size={24} color="#ffffff" />
                   <span>{uploadProgress || 'CREATING...'}</span>
                 </Box>
               ) : (

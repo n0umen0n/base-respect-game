@@ -17,8 +17,8 @@ import {
   Paper,
   Avatar,
   Link,
-  CircularProgress
 } from '@mui/material';
+import LoadingSpinner from './LoadingSpinner';
 
 const HomePage = () => {
   const { login, user, ready } = usePrivy();
@@ -168,7 +168,7 @@ const HomePage = () => {
             }}
           >
             {loading ? (
-              <CircularProgress />
+              <LoadingSpinner size={60} />
             ) : topMembers.length > 0 ? (
               topMembers.map((member, index) => (
                 <ProfileCard

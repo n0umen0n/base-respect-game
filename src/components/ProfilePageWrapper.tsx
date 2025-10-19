@@ -1,10 +1,11 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
-import { CircularProgress, Box, Alert } from '@mui/material';
+import { Box, Alert } from '@mui/material';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
 import ProfilePage from './ProfilePage';
+import { LoadingScreen } from './LoadingSpinner';
 
 export default function ProfilePageWrapper() {
   const { address } = useParams<{ address: string }>();
@@ -21,18 +22,7 @@ export default function ProfilePageWrapper() {
   });
 
   if ((user && walletLoading) || (user && gameLoading)) {
-    return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <CircularProgress size={60} />
-      </Box>
-    );
+    return <LoadingScreen message="LOADING PROFILE..." />;
   }
 
   if (!address) {

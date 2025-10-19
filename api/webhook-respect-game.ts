@@ -754,7 +754,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const result = await processEventLog(log, txHash, contractAddr);
             if (result) results.push(result);
           } catch (error) {
-            console.error("❌ Failed to process individual event, continuing with others:", error);
+            console.error(
+              "❌ Failed to process individual event, continuing with others:",
+              error
+            );
             results.push({ success: false, error: error.message });
           }
         } else {
@@ -786,7 +789,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
               );
               if (result) results.push(result);
             } catch (error) {
-              console.error("❌ Failed to process individual event, continuing with others:", error);
+              console.error(
+                "❌ Failed to process individual event, continuing with others:",
+                error
+              );
               results.push({ success: false, error: error.message });
             }
           } else {

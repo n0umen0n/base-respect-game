@@ -35,8 +35,8 @@ export interface Member {
   is_approved: boolean;
   is_banned: boolean;
   joined_at: string;
-  total_respect_earned: number;
-  average_respect: number;
+  total_respect_earned: string; // NUMERIC as string to preserve precision
+  average_respect: string; // NUMERIC as string to preserve precision
   created_at: string;
   updated_at: string;
 }
@@ -93,8 +93,11 @@ export interface GameResult {
   member_address: string;
   game_number: number;
   rank: number;
-  respect_earned: number;
+  respect_earned: string; // NUMERIC as string to preserve precision
   created_at: string;
+  contributions?: string[];
+  links?: string[];
+  ranked_addresses?: string[];
 }
 
 export interface Proposal {
@@ -146,8 +149,8 @@ export interface TopSixMember {
   profile_url?: string;
   x_account?: string;
   x_verified: boolean;
-  average_respect: number;
-  total_respect_earned: number;
+  average_respect: string; // NUMERIC as string to preserve precision
+  total_respect_earned: string; // NUMERIC as string to preserve precision
   rank: number;
 }
 
@@ -188,8 +191,8 @@ export interface MemberProfile {
   is_approved: boolean;
   is_banned: boolean;
   joined_at: string;
-  total_respect_earned: number;
-  average_respect: number;
+  total_respect_earned: string; // NUMERIC as string to preserve precision
+  average_respect: string; // NUMERIC as string to preserve precision
   games_participated: number;
   vouched_by_count: number;
 }
@@ -199,9 +202,15 @@ export interface MemberProfile {
  */
 
 export async function getMember(walletAddress: string): Promise<Member | null> {
+  // Cast NUMERIC columns to TEXT to preserve precision
   const { data, error } = await supabase
     .from("members")
-    .select("*")
+    .select(`
+      id, wallet_address, privy_did, name, profile_url, description,
+      x_account, x_verified, is_approved, is_banned, joined_at,
+      total_respect_earned::text, average_respect::text,
+      created_at, updated_at
+    `)
     .eq("wallet_address", walletAddress.toLowerCase())
     .single();
 
@@ -211,6 +220,32 @@ export async function getMember(walletAddress: string): Promise<Member | null> {
   }
 
   return data;
+}
+
+export async function getMembers(walletAddresses: string[]): Promise<Member[]> {
+  if (!walletAddresses || walletAddresses.length === 0) {
+    return [];
+  }
+
+  const normalizedAddresses = walletAddresses.map((addr) => addr.toLowerCase());
+
+  // Cast NUMERIC columns to TEXT
+  const { data, error } = await supabase
+    .from("members")
+    .select(`
+      id, wallet_address, privy_did, name, profile_url, description,
+      x_account, x_verified, is_approved, is_banned, joined_at,
+      total_respect_earned::text, average_respect::text,
+      created_at, updated_at
+    `)
+    .in("wallet_address", normalizedAddresses);
+
+  if (error) {
+    console.error("Error fetching members:", error);
+    return [];
+  }
+
+  return data || [];
 }
 
 export async function getCurrentGameStage(): Promise<GameStage | null> {
@@ -283,8 +318,34 @@ export async function getMemberGroup(
   return data;
 }
 
+export async function getMemberRanking(
+  walletAddress: string,
+  gameNumber: number
+): Promise<Ranking | null> {
+  const { data, error } = await supabase
+    .from("rankings")
+    .select("*")
+    .eq("ranker_address", walletAddress.toLowerCase())
+    .eq("game_number", gameNumber)
+    .single();
+
+  if (error) {
+    if (error.code === "PGRST116") {
+      // No rows returned
+      return null;
+    }
+    console.error("Error fetching ranking:", error);
+    return null;
+  }
+
+  return data;
+}
+
 export async function getTopSixMembers(): Promise<TopSixMember[]> {
-  const { data, error } = await supabase.from("top_six_members").select("*");
+  // Cast NUMERIC columns to TEXT to preserve precision
+  const { data, error } = await supabase
+    .from("top_six_members")
+    .select("wallet_address, name, profile_url, x_account, x_verified, average_respect::text, total_respect_earned::text, rank");
 
   if (error) {
     console.error("Error fetching top six members:", error);
@@ -325,18 +386,53 @@ export async function getHistoricalProposals(): Promise<LiveProposal[]> {
 export async function getMemberGameHistory(
   walletAddress: string
 ): Promise<GameResult[]> {
-  const { data, error } = await supabase
+  const normalizedAddress = walletAddress.toLowerCase();
+
+  // Fetch game results - cast NUMERIC to TEXT
+  const { data: gameResults, error: resultsError } = await supabase
     .from("game_results")
-    .select("*")
-    .eq("member_address", walletAddress.toLowerCase())
+    .select("id, member_address, game_number, rank, respect_earned::text, created_at")
+    .eq("member_address", normalizedAddress)
     .order("game_number", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching game history:", error);
+  if (resultsError) {
+    console.error("Error fetching game history:", resultsError);
     return [];
   }
 
-  return data || [];
+  if (!gameResults || gameResults.length === 0) {
+    return [];
+  }
+
+  // For each game result, fetch contributions and rankings
+  const enrichedResults = await Promise.all(
+    gameResults.map(async (result) => {
+      // Fetch contributions for this game
+      const { data: contribution } = await supabase
+        .from("contributions")
+        .select("contributions, links")
+        .eq("contributor_address", normalizedAddress)
+        .eq("game_number", result.game_number)
+        .single();
+
+      // Fetch rankings submitted by this user for this game
+      const { data: rankings } = await supabase
+        .from("rankings")
+        .select("ranked_addresses")
+        .eq("ranker_address", normalizedAddress)
+        .eq("game_number", result.game_number)
+        .single();
+
+      return {
+        ...result,
+        contributions: contribution?.contributions || [],
+        links: contribution?.links || [],
+        ranked_addresses: rankings?.ranked_addresses || [],
+      };
+    })
+  );
+
+  return enrichedResults;
 }
 
 export async function getMemberProfile(
@@ -374,9 +470,15 @@ export async function getVouchedForMembers(
     return [];
   }
 
+  // Cast NUMERIC columns to TEXT
   const { data, error } = await supabase
     .from("members")
-    .select("*")
+    .select(`
+      id, wallet_address, privy_did, name, profile_url, description,
+      x_account, x_verified, is_approved, is_banned, joined_at,
+      total_respect_earned::text, average_respect::text,
+      created_at, updated_at
+    `)
     .in("wallet_address", addresses);
 
   if (error) {

@@ -4,6 +4,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import CancelIcon from '@mui/icons-material/Cancel';
 import profileImage from '../assets/profile.jpg';
+import { formatRespectDisplay } from '../lib/formatTokens';
 import './ProfileCard.css';
 
 const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walletAddress }) => {
@@ -75,7 +76,7 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
             </>
           )}
         </p>
-        <p style={{ margin: '0.5rem 0', fontSize: '0.8rem' }}>RESPECT SCORE: {score}</p>
+        <p style={{ margin: '0.5rem 0', fontSize: '0.8rem' }}>RESPECT SCORE: {formatRespectDisplay(score)}</p>
       </div>
     </div>
   );

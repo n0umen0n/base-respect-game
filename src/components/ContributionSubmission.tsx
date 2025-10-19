@@ -5,13 +5,13 @@ import {
   Button,
   Typography,
   Paper,
-  CircularProgress,
   Alert,
   IconButton,
   Chip,
   Modal,
   Fade,
 } from '@mui/material';
+import LoadingSpinner from './LoadingSpinner';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -121,15 +121,35 @@ export default function ContributionSubmission({
     }
   };
 
+  const formatDateWithOrdinal = (date: Date) => {
+    const day = date.getDate();
+    const month = date.toLocaleString('en-US', { month: 'long' });
+    const year = date.getFullYear();
+    
+    const getOrdinalSuffix = (day: number) => {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    return `${day}${getOrdinalSuffix(day)} of ${month} ${year}`;
+  };
+
   const handleAddToCalendar = () => {
-    const startDate = new Date(nextStageTimestamp);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
+    const rankingPhaseStart = new Date(nextStageTimestamp);
+    // Assume ranking phase is ~24 hours, set reminder to middle (12 hours in)
+    const midPhaseTime = new Date(rankingPhaseStart.getTime() + 12 * 60 * 60 * 1000);
+    const endDate = new Date(midPhaseTime.getTime() + 60 * 60 * 1000); // 1 hour event duration
 
     const title = encodeURIComponent('Respect Game - Ranking Phase');
     const details = encodeURIComponent('Submit your rankings for the Respect Game');
     const location = encodeURIComponent('https://respectgame.xyz');
 
-    const startDateStr = startDate.toISOString().replace(/-|:|\.\d+/g, '');
+    const startDateStr = midPhaseTime.toISOString().replace(/-|:|\.\d+/g, '');
     const endDateStr = endDate.toISOString().replace(/-|:|\.\d+/g, '');
 
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateStr}/${endDateStr}&details=${details}&location=${location}`;
@@ -206,6 +226,7 @@ export default function ContributionSubmission({
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '1rem',
                   color: '#0052FF',
+                  fontWeight: 'bold',
                 }}
               >
                 {timeLeft}
@@ -327,7 +348,7 @@ export default function ContributionSubmission({
             >
               {isSubmitting ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <CircularProgress size={24} sx={{ color: 'white' }} />
+                  <LoadingSpinner size={24} color="#ffffff" />
                   <span>SUBMITTING...</span>
                 </Box>
               ) : (
@@ -381,15 +402,6 @@ export default function ContributionSubmission({
             >
               THANK YOU!
             </Typography>
-            <Typography
-              sx={{
-                marginBottom: 2,
-                fontSize: '0.9rem',
-                lineHeight: 1.6,
-              }}
-            >
-              Your contributions have been submitted successfully.
-            </Typography>
             <Box
               sx={{
                 padding: 2,
@@ -406,7 +418,7 @@ export default function ContributionSubmission({
                   marginBottom: 1,
                 }}
               >
-                NEXT: RANKING PHASE
+                PLEASE COME BACK FOR THE RANKING STAGE ON:
               </Typography>
               <Typography
                 variant="body1"
@@ -415,7 +427,7 @@ export default function ContributionSubmission({
                   marginBottom: 2,
                 }}
               >
-                {new Date(nextStageTimestamp).toLocaleString()}
+                {formatDateWithOrdinal(new Date(nextStageTimestamp))}
               </Typography>
               <Button
                 startIcon={<CalendarTodayIcon />}
