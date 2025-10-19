@@ -156,7 +156,8 @@ interface IRespectGameCore {
         uint256 gameNumber,
         uint256 groupId
     ) external view returns (address[] memory);
-/*
+
+    /*
     function getContribution(
         uint256 gameNumber,
         address contributor

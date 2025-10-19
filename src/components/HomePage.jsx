@@ -21,10 +21,12 @@ import {
 import LoadingSpinner from './LoadingSpinner';
 
 const HomePage = () => {
-  const { login, user, ready } = usePrivy();
+  const { login, logout, user, ready } = usePrivy();
   const navigate = useNavigate();
   const [topMembers, setTopMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showHeader, setShowHeader] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     loadTopMembers();
@@ -41,18 +43,80 @@ const HomePage = () => {
     }
   };
 
-  useEffect(() => {
-    if (ready && user) {
-      navigate('/game');
-    }
-  }, [ready, user, navigate]);
+  const handleLogout = async () => {
+    await logout();
+  };
 
-  if (!ready || user) {
+  const handleButtonClick = () => {
+    if (user) {
+      navigate('/game');
+    } else {
+      login();
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY < 50) {
+        setShowHeader(true);
+      } else if (currentScrollY > lastScrollY) {
+        setShowHeader(false);
+      } else {
+        setShowHeader(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+
+  if (!ready) {
     return null;
   }
 
   return (
     <div>
+      {user && (
+        <button
+          onClick={handleLogout}
+          style={{
+            position: 'fixed',
+            top: '2em',
+            right: 'calc(2em + 140px)',
+            zIndex: 9999,
+            pointerEvents: showHeader ? 'auto' : 'none',
+            background: 'transparent',
+            color: '#1a1a1a',
+            border: 'none',
+            padding: 0,
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'opacity 0.3s ease, transform 0.3s ease',
+            fontWeight: '500',
+            lineHeight: 1,
+            display: 'flex',
+            alignItems: 'center',
+            transform: showHeader ? 'translateY(0)' : 'translateY(-150%)',
+            opacity: showHeader ? 1 : 0
+          }}
+          onMouseEnter={(e) => {
+            if (showHeader) e.currentTarget.style.opacity = '0.7';
+          }}
+          onMouseLeave={(e) => {
+            if (showHeader) e.currentTarget.style.opacity = '1';
+          }}
+        >
+          Logout
+        </button>
+      )}
       <Shuffle
         text="RESPECT GAME"
         tag="div"
@@ -89,7 +153,7 @@ const HomePage = () => {
         <div style={{ display: 'inline-block' }}>
           <Button
             variant="contained"
-            onClick={login}
+            onClick={handleButtonClick}
             sx={{
               fontFamily: '"Press Start 2P", sans-serif',
               fontSize: '1rem',
@@ -103,7 +167,7 @@ const HomePage = () => {
               }
             }}
           >
-            Log in to play
+            {user ? 'PLAY' : 'Log in to play'}
           </Button>
         </div>
       </AnimatedContent>
@@ -168,7 +232,9 @@ const HomePage = () => {
             }}
           >
             {loading ? (
-              <LoadingSpinner size={60} />
+              <div style={{ paddingTop: '2rem' }}>
+                <LoadingSpinner size={60} />
+              </div>
             ) : topMembers.length > 0 ? (
               topMembers.map((member, index) => (
                 <ProfileCard

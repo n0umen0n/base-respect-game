@@ -137,7 +137,7 @@
   background: white;
   display: flex;
   flex-direction: column;
-  padding: 6em 2em 2em 2em;
+  padding: 8em 2.5em 2.5em 2.5em;
   z-index: 10;
 }
 
@@ -186,10 +186,10 @@
 
 .sm-socials {
   margin-top: auto; /* Push to bottom */
-  padding-top: 2rem;
+  padding-top: 3rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1.5rem;
 }
 
 .sm-socials-title {
@@ -204,9 +204,9 @@
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
   flex-wrap: wrap;
 }
 
@@ -236,20 +236,23 @@
 }
 
 .sm-socials-link {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #111;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #000;
   text-decoration: none;
   position: relative;
-  padding: 2px 0;
+  padding: 0;
   display: inline-block;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  text-transform: uppercase;
   transition:
     color 0.3s ease,
     opacity 0.3s ease;
 }
 
 .sm-socials-link:hover {
-  color: var(--sm-accent, #ff0000);
+  color: var(--sm-accent, #0052FF);
 }
 
 .sm-panel-title {
@@ -266,7 +269,7 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 2rem;
   padding-bottom: 2rem;
 }
 
@@ -274,10 +277,10 @@
   position: relative;
   color: #000;
   font-weight: 600;
-  font-size: 2.5rem;
+  font-size: 2rem;
   cursor: pointer;
-  line-height: 1;
-  letter-spacing: -2px;
+  line-height: 1.2;
+  letter-spacing: -1px;
   text-transform: uppercase;
   transition:
     background 0.25s,
@@ -286,6 +289,17 @@
   text-decoration: none;
   padding-right: 3em;
   text-align: left;
+}
+
+.sm-panel-item-secondary {
+  font-size: 1.3rem;
+  color: #666;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+}
+
+.sm-panel-item-secondary:hover {
+  color: var(--sm-accent, #0052FF);
 }
 
 .staggered-menu-panel .sm-socials-list .sm-socials-link {
@@ -333,6 +347,11 @@
   pointer-events: none;
   user-select: none;
   opacity: var(--sm-num-opacity, 0);
+}
+
+.sm-panel-list[data-numbering] .sm-panel-item-secondary::after {
+  display: none;
+  counter-increment: none;
 }
 
 @media (max-width: 1024px) {

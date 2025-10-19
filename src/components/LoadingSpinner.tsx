@@ -50,9 +50,10 @@ export function LoadingScreen({ message }: { message?: string }) {
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'flex-start',
         alignItems: 'center',
         minHeight: '100vh',
+        paddingTop: '15vh',
         gap: 3,
       }}
     >

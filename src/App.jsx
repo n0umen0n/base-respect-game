@@ -1,30 +1,70 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import StaggeredMenu from './components/StaggeredMenu';
 import PixelBlast from './components/PixelBlast';
 import Shuffle from './components/Shuffle';
-
-const menuItems = [
-  { label: 'Home', ariaLabel: 'Go to home page', link: '/' },
-  { label: 'About', ariaLabel: 'Learn about us', link: 'https://x.com' },
-  { label: 'Services', ariaLabel: 'View our services', link: '/services' },
-  { label: 'Contact', ariaLabel: 'Get in touch', link: '/contact' }
-];
-
-const socialItems = [
-  { label: 'Twitter', link: 'https://twitter.com' },
-  { label: 'GitHub', link: 'https://github.com' },
-  { label: 'LinkedIn', link: 'https://linkedin.com' }
-];
+import { useSmartWallet } from './hooks/useSmartWallet';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const { logout, user } = usePrivy();
+  const { smartAccountAddress } = useSmartWallet();
   const location = useLocation();
   const navigate = useNavigate();
+  
+  const menuItems = useMemo(() => {
+    const items = [];
+    
+    // Add "My Profile" only if user is logged in
+    if (user && smartAccountAddress) {
+      items.push({ 
+        label: 'My Profile', 
+        ariaLabel: 'Go to my profile', 
+        link: `/profile/${smartAccountAddress}` 
+      });
+    }
+    
+    // Add Proposals
+    items.push({ 
+      label: 'Proposals', 
+      ariaLabel: 'View proposals', 
+      link: '/proposals' 
+    });
+    
+    // Add external links (marked as secondary for different styling)
+    items.push({ 
+      label: 'ORGANIZATION', 
+      ariaLabel: 'Visit Hypha organization', 
+      link: 'https://app.hypha.earth/en/dho/respect-game-ceo/overview',
+      secondary: true
+    });
+    
+    items.push({ 
+      label: 'GITHUB', 
+      ariaLabel: 'View GitHub repository', 
+      link: 'https://github.com/n0umen0n/base-respect-game',
+      secondary: true
+    });
+    
+    items.push({ 
+      label: 'CRYPTO SWAG', 
+      ariaLabel: 'Get crypto swag', 
+      link: 'https://moodcyi.com/',
+      secondary: true
+    });
+    
+    items.push({ 
+      label: 'TELEGRAM', 
+      ariaLabel: 'Join Telegram community', 
+      link: 'https://t.me/respectgameofficial',
+      secondary: true
+    });
+    
+    return items;
+  }, [user, smartAccountAddress]);
   
   const isHomePage = location.pathname === '/';
   
@@ -193,8 +233,8 @@ function App() {
           position="right"
           isFixed={false}
           items={menuItems}
-          socialItems={socialItems}
-          displaySocials={true}
+          socialItems={[]}
+          displaySocials={false}
           displayItemNumbering={true}
           menuButtonColor="#1a1a1a"
           openMenuButtonColor="#1a1a1a"

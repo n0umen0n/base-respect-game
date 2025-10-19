@@ -37,6 +37,7 @@ export default function RespectGameContainer() {
   const [currentView, setCurrentView] = useState<View | null>(null);
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState<string>('LOADING GAME...');
   const [profileRefreshTrigger, setProfileRefreshTrigger] = useState<number>(Date.now());
   const [supabaseGameData, setSupabaseGameData] = useState<{
     gameNumber: number;
@@ -184,26 +185,92 @@ export default function RespectGameContainer() {
   };
 
   const handleContributionSubmitted = async () => {
+    setLoading(true);
+    setLoadingMessage('PROCESSING SUBMISSION...');
+    
     await refreshData();
     
-    // Wait for webhook to update Supabase
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    if (!smartAccountAddress || !supabaseGameData) {
+      setLoading(false);
+      setCurrentView('profile');
+      return;
+    }
+    
+    // Poll until contribution appears in Supabase (max 10 seconds)
+    const maxAttempts = 20; // 20 attempts * 500ms = 10 seconds
+    let attempts = 0;
+    let contributionFound = false;
+    
+    while (attempts < maxAttempts && !contributionFound) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const contribution = await getMemberContribution(
+        smartAccountAddress,
+        supabaseGameData.gameNumber
+      );
+      
+      if (contribution) {
+        contributionFound = true;
+        console.log('✅ Contribution found in Supabase after', (attempts + 1) * 500, 'ms');
+      } else {
+        attempts++;
+      }
+    }
+    
+    if (!contributionFound) {
+      console.warn('⚠️ Contribution not found in Supabase after 10 seconds, navigating anyway');
+    }
     
     // Trigger profile refresh to show new contribution
     setProfileRefreshTrigger(Date.now());
+    
+    setLoading(false);
     
     // Always navigate to profile after submission
     setCurrentView('profile');
   };
 
   const handleRankingSubmitted = async () => {
+    setLoading(true);
+    setLoadingMessage('PROCESSING SUBMISSION...');
+    
     await refreshData();
     
-    // Wait for webhook to update Supabase
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    if (!smartAccountAddress || !supabaseGameData) {
+      setLoading(false);
+      setCurrentView('profile');
+      return;
+    }
+    
+    // Poll until ranking appears in Supabase (max 10 seconds)
+    const maxAttempts = 20; // 20 attempts * 500ms = 10 seconds
+    let attempts = 0;
+    let rankingFound = false;
+    
+    while (attempts < maxAttempts && !rankingFound) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const ranking = await getMemberRanking(
+        smartAccountAddress,
+        supabaseGameData.gameNumber
+      );
+      
+      if (ranking) {
+        rankingFound = true;
+        console.log('✅ Ranking found in Supabase after', (attempts + 1) * 500, 'ms');
+      } else {
+        attempts++;
+      }
+    }
+    
+    if (!rankingFound) {
+      console.warn('⚠️ Ranking not found in Supabase after 10 seconds, navigating anyway');
+    }
     
     // Trigger profile refresh
     setProfileRefreshTrigger(Date.now());
+    
+    setLoading(false);
     
     // Always navigate to profile after submission
     setCurrentView('profile');
@@ -232,7 +299,7 @@ export default function RespectGameContainer() {
   };
 
   if (walletLoading || gameLoading || loading) {
-    return <LoadingScreen message="LOADING GAME..." />;
+    return <LoadingScreen message={loadingMessage} />;
   }
 
   if (!currentView) {

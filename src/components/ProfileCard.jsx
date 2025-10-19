@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePrivy } from '@privy-io/react-auth';
+import { Tooltip } from '@mui/material';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import CancelIcon from '@mui/icons-material/Cancel';
 import profileImage from '../assets/profile.jpg';
@@ -52,7 +53,12 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
       />
       <div>
         <p style={{ margin: '0.5rem 0', fontSize: '0.8rem' }}>Rank: {rank}</p>
-        <p style={{ margin: '0.5rem 0', fontSize: '0.8rem' }}>Name: {name}</p>
+        <p style={{ margin: '0.5rem 0', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <span>Name: </span>
+          <Tooltip title={name} placement="top" arrow>
+            <span className="profile-card-name">{name}</span>
+          </Tooltip>
+        </p>
         <p style={{ margin: '0.5rem 0', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span>X: </span>
           {hasXAccount ? (

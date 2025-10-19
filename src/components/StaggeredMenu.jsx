@@ -17,7 +17,8 @@ export const StaggeredMenu = ({
   changeMenuColorOnOpen = true,
   isFixed = false,
   onMenuOpen,
-  onMenuClose
+  onMenuClose,
+  socialsTitle = 'Socials'
 }) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
@@ -377,13 +378,24 @@ export const StaggeredMenu = ({
         <div className="sm-panel-inner">
           <ul className="sm-panel-list" role="list" data-numbering={displayItemNumbering || undefined}>
             {items && items.length ? (
-              items.map((it, idx) => (
-                <li className="sm-panel-itemWrap" key={it.label + idx}>
-                  <a className="sm-panel-item" href={it.link} aria-label={it.ariaLabel} data-index={idx + 1}>
-                    <span className="sm-panel-itemLabel">{it.label}</span>
-                  </a>
-                </li>
-              ))
+              items.map((it, idx) => {
+                const isExternal = it.link.startsWith('http://') || it.link.startsWith('https://');
+                const isSecondary = it.secondary || false;
+                return (
+                  <li className="sm-panel-itemWrap" key={it.label + idx}>
+                    <a 
+                      className={`sm-panel-item ${isSecondary ? 'sm-panel-item-secondary' : ''}`}
+                      href={it.link} 
+                      aria-label={it.ariaLabel}
+                      data-index={!isSecondary ? idx + 1 : undefined}
+                      target={isExternal ? "_blank" : undefined}
+                      rel={isExternal ? "noopener noreferrer" : undefined}
+                    >
+                      <span className="sm-panel-itemLabel">{it.label}</span>
+                    </a>
+                  </li>
+                );
+              })
             ) : (
               <li className="sm-panel-itemWrap" aria-hidden="true">
                 <span className="sm-panel-item">
@@ -393,8 +405,8 @@ export const StaggeredMenu = ({
             )}
           </ul>
           {displaySocials && socialItems && socialItems.length > 0 && (
-            <div className="sm-socials" aria-label="Social links">
-              <h3 className="sm-socials-title">Socials</h3>
+            <div className="sm-socials" aria-label="Links">
+              {socialsTitle && <h3 className="sm-socials-title">{socialsTitle}</h3>}
               <ul className="sm-socials-list" role="list">
                 {socialItems.map((s, i) => (
                   <li key={s.label + i} className="sm-socials-item">

@@ -51,7 +51,7 @@ import {
   type Contribution,
   type Ranking,
 } from '../lib/supabase-respect';
-import { formatRespectDisplay } from '../lib/formatTokens';
+import { formatRespectDisplay, formatRespectEarned } from '../lib/formatTokens';
 import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 
 interface ProfilePageProps {
@@ -164,7 +164,7 @@ function GameHistoryRow({ game }: { game: GameResult }) {
               fontSize: '0.7rem',
             }}
           >
-            {formatRespectDisplay(game.respect_earned)}
+            {formatRespectEarned(game.respect_earned)}
           </Typography>
         </TableCell>
         <TableCell>
@@ -257,7 +257,7 @@ function GameHistoryRow({ game }: { game: GameResult }) {
                       MEMBERS RANKED:
                     </Typography>
                     {loadingMembers ? (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', padding: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'center', paddingTop: 1, paddingBottom: 2 }}>
                         <LoadingSpinner size={40} />
                       </Box>
                     ) : (
@@ -296,17 +296,6 @@ function GameHistoryRow({ game }: { game: GameResult }) {
                                 <Typography sx={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
                                   {member.name}
                                 </Typography>
-                                {member.x_account && (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                    <XIcon sx={{ fontSize: 12 }} />
-                                    <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#666' }}>
-                                      @{member.x_account}
-                                    </Typography>
-                                    {member.x_verified && (
-                                      <VerifiedIcon sx={{ fontSize: 12, color: '#1DA1F2' }} />
-                                    )}
-                                  </Box>
-                                )}
                               </Box>
                             </Box>
                           </ListItem>
@@ -702,7 +691,7 @@ export default function ProfilePage({
                       color: '#FFD700',
                     }}
                   >
-                    {respectBalance}
+                    {formatRespectDisplay(member.total_respect_earned, true)}
                   </Typography>
                 </CardContent>
               </Card>
