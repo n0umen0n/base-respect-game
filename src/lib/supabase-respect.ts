@@ -205,12 +205,14 @@ export async function getMember(walletAddress: string): Promise<Member | null> {
   // Cast NUMERIC columns to TEXT to preserve precision
   const { data, error } = await supabase
     .from("members")
-    .select(`
+    .select(
+      `
       id, wallet_address, privy_did, name, profile_url, description,
       x_account, x_verified, is_approved, is_banned, joined_at,
       total_respect_earned::text, average_respect::text,
       created_at, updated_at
-    `)
+    `
+    )
     .eq("wallet_address", walletAddress.toLowerCase())
     .single();
 
@@ -232,12 +234,14 @@ export async function getMembers(walletAddresses: string[]): Promise<Member[]> {
   // Cast NUMERIC columns to TEXT
   const { data, error } = await supabase
     .from("members")
-    .select(`
+    .select(
+      `
       id, wallet_address, privy_did, name, profile_url, description,
       x_account, x_verified, is_approved, is_banned, joined_at,
       total_respect_earned::text, average_respect::text,
       created_at, updated_at
-    `)
+    `
+    )
     .in("wallet_address", normalizedAddresses);
 
   if (error) {
@@ -345,7 +349,9 @@ export async function getTopSixMembers(): Promise<TopSixMember[]> {
   // Cast NUMERIC columns to TEXT to preserve precision
   const { data, error } = await supabase
     .from("top_six_members")
-    .select("wallet_address, name, profile_url, x_account, x_verified, average_respect::text, total_respect_earned::text, rank");
+    .select(
+      "wallet_address, name, profile_url, x_account, x_verified, average_respect::text, total_respect_earned::text, rank"
+    );
 
   if (error) {
     console.error("Error fetching top six members:", error);
@@ -391,7 +397,9 @@ export async function getMemberGameHistory(
   // Fetch game results - cast NUMERIC to TEXT
   const { data: gameResults, error: resultsError } = await supabase
     .from("game_results")
-    .select("id, member_address, game_number, rank, respect_earned::text, created_at")
+    .select(
+      "id, member_address, game_number, rank, respect_earned::text, created_at"
+    )
     .eq("member_address", normalizedAddress)
     .order("game_number", { ascending: false });
 
@@ -473,12 +481,14 @@ export async function getVouchedForMembers(
   // Cast NUMERIC columns to TEXT
   const { data, error } = await supabase
     .from("members")
-    .select(`
+    .select(
+      `
       id, wallet_address, privy_did, name, profile_url, description,
       x_account, x_verified, is_approved, is_banned, joined_at,
       total_respect_earned::text, average_respect::text,
       created_at, updated_at
-    `)
+    `
+    )
     .in("wallet_address", addresses);
 
   if (error) {
