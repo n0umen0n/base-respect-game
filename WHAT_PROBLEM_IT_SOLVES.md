@@ -1,5 +1,7 @@
- # Respect Game: What Problem It Solves
+# Respect Game: What Problem It Solves
+
 ---
+
 ## The Core Problem
 
 **Communities have no effective way to self organize without getting corrupted, and no scalable system to fund public goods.**
@@ -38,6 +40,7 @@ Respect Game creates a **corruption resistant system** for communities to self o
 - Build real relationships through repeated interaction
 
 **Govern & Decide**
+
 - Top contributors form a multisig and can vote on proposals
 - Execute any on-chain transactions via multisig
 
@@ -72,7 +75,6 @@ Respect Game creates a **corruption resistant system** for communities to self o
 
 **Before:** Guessing who's valuable based on visibility or politics  
 **After:** RESPECT score shows sustained peer-evaluated contribution
-
 
 ### Safer: Treasury Management
 
@@ -130,4 +132,4 @@ All while remaining **resistant to corruption, gaming, and capture**.
 
 _Inspired by [Fractally](https://fractally.com/uploads/Fractally%20White%20Paper%201.0.pdf)'s principles and Daniel Larimer's work on consensus-building._
 
-**Earn Respect and Shape the Future** 
+**Earn Respect and Shape the Future**
