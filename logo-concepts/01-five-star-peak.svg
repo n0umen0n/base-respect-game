@@ -1,0 +1,70 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 8-bit style pixelated stars -->
+  <defs>
+    <pattern id="pixelGrid" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="none"/>
+    </pattern>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="#1a0033"/>
+  
+  <!-- Star 5 (bottom, smallest) - Purple -->
+  <rect x="32" y="160" width="8" height="4" fill="#4a148c"/>
+  <rect x="28" y="164" width="4" height="4" fill="#4a148c"/>
+  <rect x="44" y="164" width="4" height="4" fill="#4a148c"/>
+  <rect x="28" y="168" width="8" height="4" fill="#4a148c"/>
+  <rect x="40" y="168" width="8" height="4" fill="#4a148c"/>
+  <rect x="36" y="172" width="8" height="4" fill="#4a148c"/>
+  
+  <!-- Star 4 - Deeper Purple -->
+  <rect x="56" y="136" width="12" height="4" fill="#6a1b9a"/>
+  <rect x="52" y="140" width="4" height="4" fill="#6a1b9a"/>
+  <rect x="68" y="140" width="4" height="4" fill="#6a1b9a"/>
+  <rect x="52" y="144" width="8" height="4" fill="#6a1b9a"/>
+  <rect x="64" y="144" width="8" height="4" fill="#6a1b9a"/>
+  <rect x="56" y="148" width="12" height="4" fill="#6a1b9a"/>
+  <rect x="60" y="152" width="4" height="4" fill="#6a1b9a"/>
+  
+  <!-- Star 3 - Bright Purple -->
+  <rect x="84" y="108" width="16" height="4" fill="#8b5cf6"/>
+  <rect x="80" y="112" width="4" height="4" fill="#8b5cf6"/>
+  <rect x="100" y="112" width="4" height="4" fill="#8b5cf6"/>
+  <rect x="80" y="116" width="12" height="4" fill="#8b5cf6"/>
+  <rect x="96" y="116" width="8" height="4" fill="#8b5cf6"/>
+  <rect x="84" y="120" width="16" height="4" fill="#8b5cf6"/>
+  <rect x="88" y="124" width="8" height="4" fill="#8b5cf6"/>
+  
+  <!-- Star 2 - Light Purple -->
+  <rect x="112" y="76" width="20" height="4" fill="#a78bfa"/>
+  <rect x="108" y="80" width="4" height="4" fill="#a78bfa"/>
+  <rect x="132" y="80" width="4" height="4" fill="#a78bfa"/>
+  <rect x="108" y="84" width="12" height="4" fill="#a78bfa"/>
+  <rect x="124" y="84" width="12" height="4" fill="#a78bfa"/>
+  <rect x="112" y="88" width="20" height="4" fill="#a78bfa"/>
+  <rect x="116" y="92" width="12" height="4" fill="#a78bfa"/>
+  <rect x="120" y="96" width="4" height="4" fill="#a78bfa"/>
+  
+  <!-- Star 1 (top, largest) - Gold with glow -->
+  <!-- Glow effect -->
+  <rect x="136" y="36" width="32" height="4" fill="#ff6b00" opacity="0.3"/>
+  <rect x="132" y="40" width="4" height="4" fill="#ff6b00" opacity="0.3"/>
+  <rect x="168" y="40" width="4" height="4" fill="#ff6b00" opacity="0.3"/>
+  
+  <!-- Main star -->
+  <rect x="144" y="40" width="16" height="4" fill="#ffd700"/>
+  <rect x="140" y="44" width="4" height="4" fill="#ffd700"/>
+  <rect x="160" y="44" width="4" height="4" fill="#ffd700"/>
+  <rect x="136" y="48" width="4" height="8" fill="#ffd700"/>
+  <rect x="164" y="48" width="4" height="8" fill="#ffd700"/>
+  <rect x="140" y="48" width="24" height="4" fill="#ffd700"/>
+  <rect x="140" y="52" width="24" height="4" fill="#ffed4e"/>
+  <rect x="140" y="56" width="24" height="4" fill="#ffd700"/>
+  <rect x="144" y="60" width="16" height="4" fill="#ffd700"/>
+  <rect x="148" y="64" width="8" height="4" fill="#ffd700"/>
+  <rect x="152" y="68" width="4" height="4" fill="#ffd700"/>
+  
+  <!-- Shine pixels on gold star -->
+  <rect x="148" y="48" width="4" height="4" fill="#fffacd"/>
+  <rect x="144" y="52" width="4" height="4" fill="#fffacd"/>
+</svg>

@@ -1,0 +1,90 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 8-bit Badge -->
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="#0f0f1f"/>
+  
+  <!-- Outer star badge (pixelated) -->
+  <!-- Top point -->
+  <rect x="96" y="32" width="8" height="8" fill="#6b46c1"/>
+  <rect x="92" y="40" width="16" height="4" fill="#6b46c1"/>
+  
+  <!-- Upper sides -->
+  <rect x="84" y="44" width="8" height="12" fill="#6b46c1"/>
+  <rect x="108" y="44" width="8" height="12" fill="#6b46c1"/>
+  <rect x="76" y="56" width="8" height="12" fill="#8b5cf6"/>
+  <rect x="116" y="56" width="8" height="12" fill="#8b5cf6"/>
+  
+  <!-- Middle sides -->
+  <rect x="68" y="68" width="8" height="20" fill="#8b5cf6"/>
+  <rect x="124" y="68" width="8" height="20" fill="#8b5cf6"/>
+  
+  <!-- Lower sides -->
+  <rect x="76" y="88" width="8" height="16" fill="#8b5cf6"/>
+  <rect x="116" y="88" width="8" height="16" fill="#8b5cf6"/>
+  
+  <!-- Bottom points -->
+  <rect x="84" y="104" width="8" height="8" fill="#6b46c1"/>
+  <rect x="108" y="104" width="8" height="8" fill="#6b46c1"/>
+  <rect x="88" y="112" width="8" height="8" fill="#6b46c1"/>
+  <rect x="104" y="112" width="8" height="8" fill="#6b46c1"/>
+  <rect x="96" y="120" width="8" height="8" fill="#6b46c1"/>
+  
+  <!-- Center circle (gold) -->
+  <rect x="84" y="52" width="32" height="48" fill="#ffd700"/>
+  <rect x="80" y="60" width="40" height="32" fill="#ffd700"/>
+  <rect x="76" y="68" width="48" height="16" fill="#ffd700"/>
+  
+  <!-- Inner circle detail -->
+  <rect x="88" y="56" width="24" height="40" fill="#ffed4e"/>
+  <rect x="84" y="64" width="32" height="24" fill="#ffed4e"/>
+  
+  <!-- Letter R (pixelated) -->
+  <!-- Vertical bar -->
+  <rect x="92" y="64" width="4" height="24" fill="#4a148c"/>
+  
+  <!-- Top bar -->
+  <rect x="96" y="64" width="12" height="4" fill="#4a148c"/>
+  
+  <!-- Top right -->
+  <rect x="108" y="68" width="4" height="8" fill="#4a148c"/>
+  
+  <!-- Middle -->
+  <rect x="96" y="76" width="8" height="4" fill="#4a148c"/>
+  
+  <!-- Diagonal leg -->
+  <rect x="100" y="80" width="4" height="4" fill="#6a1b9a"/>
+  <rect x="104" y="84" width="4" height="4" fill="#6a1b9a"/>
+  
+  <!-- Five small pixel stars around R -->
+  <!-- Top -->
+  <rect x="98" y="54" width="4" height="4" fill="#fffacd"/>
+  <!-- Right -->
+  <rect x="110" y="72" width="4" height="4" fill="#fffacd"/>
+  <!-- Bottom right -->
+  <rect x="106" y="90" width="4" height="4" fill="#fffacd"/>
+  <!-- Bottom left -->
+  <rect x="86" y="90" width="4" height="4" fill="#fffacd"/>
+  <!-- Left -->
+  <rect x="82" y="72" width="4" height="4" fill="#fffacd"/>
+  
+  <!-- Ribbon banner at bottom -->
+  <rect x="64" y="124" width="72" height="12" fill="#8b5cf6"/>
+  <rect x="60" y="128" width="4" height="4" fill="#8b5cf6"/>
+  <rect x="136" y="128" width="4" height="4" fill="#8b5cf6"/>
+  
+  <!-- Ribbon tails -->
+  <rect x="56" y="136" width="8" height="8" fill="#6b46c1"/>
+  <rect x="52" y="144" width="4" height="8" fill="#6b46c1"/>
+  
+  <rect x="136" y="136" width="8" height="8" fill="#6b46c1"/>
+  <rect x="144" y="144" width="4" height="8" fill="#6b46c1"/>
+  
+  <!-- Text on ribbon (pixel font) -->
+  <rect x="72" y="128" width="4" height="4" fill="#fff"/>
+  <rect x="80" y="128" width="8" height="4" fill="#fff"/>
+  <rect x="92" y="128" width="4" height="4" fill="#fff"/>
+  <rect x="100" y="128" width="8" height="4" fill="#fff"/>
+  <rect x="112" y="128" width="4" height="4" fill="#fff"/>
+  <rect x="120" y="128" width="4" height="4" fill="#fff"/>
+</svg>

@@ -1,0 +1,44 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 8-bit R with Crown -->
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="#0a0015"/>
+  
+  <!-- Crown (Gold pixels) -->
+  <rect x="72" y="40" width="8" height="8" fill="#ffd700"/>
+  <rect x="88" y="32" width="8" height="16" fill="#ffd700"/>
+  <rect x="96" y="28" width="8" height="20" fill="#ffed4e"/>
+  <rect x="104" y="32" width="8" height="16" fill="#ffd700"/>
+  <rect x="120" y="40" width="8" height="8" fill="#ffd700"/>
+  
+  <!-- Crown base -->
+  <rect x="68" y="48" width="64" height="8" fill="#ffa500"/>
+  
+  <!-- Letter R (Purple) -->
+  <!-- Vertical bar -->
+  <rect x="68" y="64" width="12" height="96" fill="#8b5cf6"/>
+  
+  <!-- Top horizontal bar -->
+  <rect x="80" y="64" width="44" height="12" fill="#8b5cf6"/>
+  
+  <!-- Top right vertical -->
+  <rect x="124" y="76" width="12" height="24" fill="#8b5cf6"/>
+  
+  <!-- Middle curve -->
+  <rect x="112" y="100" width="12" height="12" fill="#8b5cf6"/>
+  <rect x="80" y="100" width="32" height="12" fill="#8b5cf6"/>
+  
+  <!-- Diagonal leg -->
+  <rect x="96" y="112" width="12" height="12" fill="#a78bfa"/>
+  <rect x="108" y="124" width="12" height="12" fill="#a78bfa"/>
+  <rect x="120" y="136" width="12" height="12" fill="#a78bfa"/>
+  <rect x="132" y="148" width="12" height="12" fill="#a78bfa"/>
+  
+  <!-- Highlights -->
+  <rect x="72" y="68" width="4" height="84" fill="#a78bfa"/>
+  <rect x="84" y="68" width="4" height="4" fill="#c4b5fd"/>
+  
+  <!-- Shadow pixels -->
+  <rect x="132" y="64" width="4" height="4" fill="#6b46c1"/>
+  <rect x="132" y="96" width="4" height="4" fill="#6b46c1"/>
+</svg>

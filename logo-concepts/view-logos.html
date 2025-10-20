@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Respect Game - Logo Concepts</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 48px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .tagline {
+            text-align: center;
+            color: #FFD700;
+            margin-bottom: 50px;
+            font-size: 24px;
+            font-weight: 300;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.3);
+        }
+        
+        .logo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .logo-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .logo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+        
+        .logo-display {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 250px;
+            margin-bottom: 20px;
+        }
+        
+        .logo-display.dark {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        
+        .logo-display img {
+            max-width: 200px;
+            height: auto;
+        }
+        
+        .logo-info {
+            text-align: center;
+        }
+        
+        .logo-info h3 {
+            color: #4C1D95;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        
+        .logo-info p {
+            color: #64748b;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        .logo-info .best-for {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #475569;
+            font-weight: 600;
+        }
+        
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+        
+        .view-toggle button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            background: white;
+            color: #4C1D95;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        
+        .view-toggle button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        
+        .view-toggle button.active {
+            background: #FFD700;
+            color: #4C1D95;
+        }
+        
+        @media (max-width: 768px) {
+            .logo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 36px;
+            }
+            
+            .tagline {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Respect Game</h1>
+        <p class="tagline">Earn Respect and Shape the Future</p>
+        
+        <div class="view-toggle">
+            <button class="active" onclick="toggleView('light')">Light Background</button>
+            <button onclick="toggleView('dark')">Dark Background</button>
+        </div>
+        
+        <div class="logo-grid">
+            <div class="logo-card">
+                <div class="logo-display" id="display-1">
+                    <img src="01-five-star-peak.svg" alt="Five Star Peak Logo">
+                </div>
+                <div class="logo-info">
+                    <h3>Five Star Peak</h3>
+                    <p>Five ascending stars forming a crown. The top star glows in gold, representing achievement and the #1 rank.</p>
+                    <div class="best-for">Best for: App Icons, Achievements</div>
+                </div>
+            </div>
+            
+            <div class="logo-card">
+                <div class="logo-display" id="display-2">
+                    <img src="02-r-crown.svg" alt="R Crown Logo">
+                </div>
+                <div class="logo-info">
+                    <h3>R Crown</h3>
+                    <p>Bold letter "R" with an integrated crown on top. Clean, professional, and highly brandable.</p>
+                    <div class="best-for">Best for: Primary Logo, Headers</div>
+                </div>
+            </div>
+            
+            <div class="logo-card">
+                <div class="logo-display" id="display-3">
+                    <img src="03-connected-ascent.svg" alt="Connected Ascent Logo">
+                </div>
+                <div class="logo-info">
+                    <h3>Connected Ascent</h3>
+                    <p>Five connected nodes (5→1) showing upward progression. Modern, tech-focused design.</p>
+                    <div class="best-for">Best for: Dashboard, Analytics</div>
+                </div>
+            </div>
+            
+            <div class="logo-card">
+                <div class="logo-display" id="display-4">
+                    <img src="04-pentagon-network.svg" alt="Pentagon Network Logo">
+                </div>
+                <div class="logo-info">
+                    <h3>Pentagon Network</h3>
+                    <p>Five nodes in a pentagon showing collaboration. Represents groups of 5 members working together.</p>
+                    <div class="best-for">Best for: Social Features, Groups</div>
+                </div>
+            </div>
+            
+            <div class="logo-card">
+                <div class="logo-display" id="display-5">
+                    <img src="05-trophy-stack.svg" alt="Trophy Stack Logo">
+                </div>
+                <div class="logo-info">
+                    <h3>Trophy Stack</h3>
+                    <p>Layered trophies in bronze, silver, and gold. Gaming-inspired, competitive feel.</p>
+                    <div class="best-for">Best for: Leaderboards, Rankings</div>
+                </div>
+            </div>
+            
+            <div class="logo-card">
+                <div class="logo-display" id="display-6">
+                    <img src="06-simple-badge.svg" alt="Simple Badge Logo">
+                </div>
+                <div class="logo-info">
+                    <h3>Simple Badge</h3>
+                    <p>Classic star-shaped badge with "R" center and "RESPECT" ribbon. Authoritative and official.</p>
+                    <div class="best-for">Best for: Badges, Certificates</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleView(mode) {
+            const displays = document.querySelectorAll('.logo-display');
+            const buttons = document.querySelectorAll('.view-toggle button');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            displays.forEach(display => {
+                if (mode === 'dark') {
+                    display.classList.add('dark');
+                } else {
+                    display.classList.remove('dark');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

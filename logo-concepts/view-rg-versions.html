@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RG Logo Versions</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f0f0f0;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 40px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .logo-box {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            margin-bottom: 15px;
+        }
+        
+        .logo-box img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        h3 {
+            color: #333;
+            margin: 0 0 8px 0;
+            font-size: 18px;
+        }
+        
+        p {
+            color: #666;
+            margin: 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RG Logo Versions - Pick Your Favorite</h1>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="logo-box">
+                    <img src="rg-v1-bold.svg" alt="Version 1">
+                </div>
+                <h3>Version 1: Bold</h3>
+                <p>Thick, strong letters with chunky diagonal. Maximum impact.</p>
+            </div>
+            
+            <div class="card">
+                <div class="logo-box">
+                    <img src="rg-v2-thin.svg" alt="Version 2">
+                </div>
+                <h3>Version 2: Thin</h3>
+                <p>Sleek and minimal. Clean lines, modern 8-bit style.</p>
+            </div>
+            
+            <div class="card">
+                <div class="logo-box">
+                    <img src="rg-v3-square.svg" alt="Version 3">
+                </div>
+                <h3>Version 3: Square</h3>
+                <p>Blocky and geometric. Balanced proportions.</p>
+            </div>
+            
+            <div class="card">
+                <div class="logo-box">
+                    <img src="rg-v4-rounded.svg" alt="Version 4">
+                </div>
+                <h3>Version 4: Rounded</h3>
+                <p>Softer edges with pixel-style curves. Friendly feel.</p>
+            </div>
+            
+            <div class="card">
+                <div class="logo-box">
+                    <img src="rg-v5-compact.svg" alt="Version 5">
+                </div>
+                <h3>Version 5: Compact</h3>
+                <p>Tight spacing, efficient use of space. Dense and punchy.</p>
+            </div>
+            
+            <div class="card">
+                <div class="logo-box">
+                    <img src="rg-v6-classic.svg" alt="Version 6">
+                </div>
+                <h3>Version 6: Classic</h3>
+                <p>Traditional arcade font style. Nostalgic retro gaming.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Version 6: Classic Arcade Font Style -->
+  <rect width="200" height="200" fill="#ffffff"/>
+  
+  <!-- R -->
+  <rect x="50" y="65" width="12" height="70" fill="#000000"/>
+  <rect x="62" y="65" width="32" height="12" fill="#000000"/>
+  <rect x="94" y="77" width="12" height="16" fill="#000000"/>
+  <rect x="62" y="93" width="32" height="12" fill="#000000"/>
+  <rect x="70" y="105" width="12" height="10" fill="#000000"/>
+  <rect x="82" y="115" width="12" height="10" fill="#000000"/>
+  <rect x="94" y="125" width="12" height="10" fill="#000000"/>
+  
+  <!-- G -->
+  <rect x="118" y="65" width="52" height="12" fill="#000000"/>
+  <rect x="118" y="77" width="12" height="46" fill="#000000"/>
+  <rect x="130" y="123" width="40" height="12" fill="#000000"/>
+  <rect x="158" y="102" width="12" height="21" fill="#000000"/>
+  <rect x="146" y="102" width="12" height="12" fill="#000000"/>
+</svg>
+

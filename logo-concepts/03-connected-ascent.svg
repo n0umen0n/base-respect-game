@@ -1,0 +1,61 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 8-bit Connected Ascent -->
+  
+  <!-- Background -->
+  <rect width="200" height="200" fill="#0f172a"/>
+  
+  <!-- Connecting lines (pixelated) -->
+  <rect x="44" y="156" width="12" height="4" fill="#4a148c"/>
+  <rect x="56" y="152" width="4" height="4" fill="#4a148c"/>
+  <rect x="60" y="148" width="4" height="4" fill="#4a148c"/>
+  <rect x="64" y="144" width="8" height="4" fill="#4a148c"/>
+  
+  <rect x="72" y="136" width="12" height="4" fill="#6a1b9a"/>
+  <rect x="84" y="132" width="4" height="4" fill="#6a1b9a"/>
+  <rect x="88" y="128" width="4" height="4" fill="#6a1b9a"/>
+  <rect x="92" y="124" width="8" height="4" fill="#6a1b9a"/>
+  
+  <rect x="100" y="116" width="12" height="4" fill="#8b5cf6"/>
+  <rect x="112" y="112" width="4" height="4" fill="#8b5cf6"/>
+  <rect x="116" y="108" width="4" height="4" fill="#8b5cf6"/>
+  <rect x="120" y="104" width="8" height="4" fill="#8b5cf6"/>
+  
+  <rect x="128" y="96" width="12" height="4" fill="#a78bfa"/>
+  <rect x="140" y="92" width="4" height="4" fill="#a78bfa"/>
+  <rect x="144" y="88" width="4" height="4" fill="#a78bfa"/>
+  <rect x="148" y="84" width="8" height="4" fill="#a78bfa"/>
+  
+  <!-- Position 5 (bottom left) -->
+  <rect x="36" y="152" width="16" height="16" fill="#4a148c"/>
+  <rect x="40" y="156" width="8" height="8" fill="#6a1b9a"/>
+  <text x="44" y="165" font-family="monospace" font-size="10" font-weight="bold" fill="#fff">5</text>
+  
+  <!-- Position 4 -->
+  <rect x="64" y="132" width="20" height="20" fill="#6a1b9a"/>
+  <rect x="68" y="136" width="12" height="12" fill="#8b5cf6"/>
+  <text x="71" y="147" font-family="monospace" font-size="11" font-weight="bold" fill="#fff">4</text>
+  
+  <!-- Position 3 -->
+  <rect x="92" y="112" width="24" height="24" fill="#8b5cf6"/>
+  <rect x="96" y="116" width="16" height="16" fill="#a78bfa"/>
+  <text x="100" y="129" font-family="monospace" font-size="12" font-weight="bold" fill="#fff">3</text>
+  
+  <!-- Position 2 -->
+  <rect x="120" y="92" width="28" height="28" fill="#a78bfa"/>
+  <rect x="124" y="96" width="20" height="20" fill="#c4b5fd"/>
+  <text x="129" y="110" font-family="monospace" font-size="13" font-weight="bold" fill="#1f1f1f">2</text>
+  
+  <!-- Position 1 (top right, glowing gold) -->
+  <!-- Glow -->
+  <rect x="148" y="68" width="40" height="40" fill="#ff6b00" opacity="0.3"/>
+  <!-- Main -->
+  <rect x="152" y="72" width="32" height="32" fill="#ffd700"/>
+  <rect x="156" y="76" width="24" height="24" fill="#ffed4e"/>
+  <text x="162" y="93" font-family="monospace" font-size="16" font-weight="bold" fill="#1f1f1f">1</text>
+  
+  <!-- Crown on position 1 -->
+  <rect x="160" y="64" width="4" height="8" fill="#ffd700"/>
+  <rect x="168" y="60" width="4" height="12" fill="#ffd700"/>
+  <rect x="176" y="64" width="4" height="8" fill="#ffd700"/>
+  <rect x="156" y="72" width="28" height="4" fill="#ffa500"/>
+</svg>

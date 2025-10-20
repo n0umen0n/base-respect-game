@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Version 1: Bold & Simple -->
+  <rect width="200" height="200" fill="#ffffff"/>
+  
+  <!-- R -->
+  <rect x="40" y="60" width="16" height="80" fill="#000000"/>
+  <rect x="56" y="60" width="32" height="16" fill="#000000"/>
+  <rect x="88" y="76" width="16" height="16" fill="#000000"/>
+  <rect x="56" y="92" width="32" height="16" fill="#000000"/>
+  <rect x="64" y="108" width="16" height="8" fill="#000000"/>
+  <rect x="80" y="116" width="16" height="8" fill="#000000"/>
+  <rect x="96" y="124" width="16" height="16" fill="#000000"/>
+  
+  <!-- G -->
+  <rect x="120" y="60" width="64" height="16" fill="#000000"/>
+  <rect x="120" y="76" width="16" height="48" fill="#000000"/>
+  <rect x="136" y="124" width="48" height="16" fill="#000000"/>
+  <rect x="168" y="100" width="16" height="24" fill="#000000"/>
+  <rect x="152" y="100" width="16" height="16" fill="#000000"/>
+</svg>
+
