@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Version 3: Square Blocky -->
+  <rect width="200" height="200" fill="#ffffff"/>
+  
+  <!-- R -->
+  <rect x="17" y="51" width="17" height="98" fill="#000000"/>
+  <rect x="34" y="51" width="42" height="17" fill="#000000"/>
+  <rect x="76" y="68" width="17" height="25" fill="#000000"/>
+  <rect x="34" y="93" width="42" height="17" fill="#000000"/>
+  <rect x="42" y="110" width="17" height="14" fill="#000000"/>
+  <rect x="59" y="124" width="17" height="14" fill="#000000"/>
+  <rect x="76" y="138" width="17" height="11" fill="#000000"/>
+  
+  <!-- G -->
+  <rect x="115" y="51" width="67" height="17" fill="#000000"/>
+  <rect x="115" y="68" width="17" height="64" fill="#000000"/>
+  <rect x="132" y="132" width="50" height="17" fill="#000000"/>
+  <rect x="165" y="104" width="17" height="28" fill="#000000"/>
+  <rect x="148" y="104" width="17" height="17" fill="#000000"/>
+</svg>
+
