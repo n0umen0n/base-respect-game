@@ -206,13 +206,15 @@ export default function RespectGameContainer() {
         }
       }
 
+      console.log('✅ View determined, setting view to:', currentView);
       setLoading(false);
-      console.log('✅ View determined:', currentView);
+      setChildLoading(false); // Reset child loading state
     } catch (error) {
       console.error('❌ Error determining view:', error);
       // On error, default to profile view
       updateView('profile');
       setLoading(false);
+      setChildLoading(false); // Reset child loading state
     }
   };
 
@@ -363,7 +365,6 @@ export default function RespectGameContainer() {
           <ContributionSubmission
             gameNumber={supabaseGameData.gameNumber}
             nextStageTimestamp={supabaseGameData.nextStageTimestamp}
-            onSubmitContribution={handleSubmitContribution}
             onNavigate={handleContributionSubmitted}
           />
         )}
@@ -373,7 +374,6 @@ export default function RespectGameContainer() {
             gameNumber={supabaseGameData.gameNumber}
             groupMembers={groupMembers}
             nextSubmissionStageDate={supabaseGameData.nextStageTimestamp}
-            onSubmitRanking={handleSubmitRanking}
             onNavigate={handleRankingSubmitted}
           />
         )}
@@ -389,7 +389,7 @@ export default function RespectGameContainer() {
 
         {currentView === 'proposals' && smartAccountAddress && (
           <ProposalsPage
-            userAddress={smartAccountAddress}
+            isLoggedIn={authenticated && !!smartAccountAddress}
             onLoadingChange={setChildLoading}
           />
         )}

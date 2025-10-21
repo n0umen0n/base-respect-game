@@ -214,7 +214,7 @@ export async function getMember(walletAddress: string): Promise<Member | null> {
     `
     )
     .eq("wallet_address", walletAddress.toLowerCase())
-    .single();
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 rows gracefully
 
   if (error) {
     console.error("Error fetching member:", error);
@@ -257,7 +257,7 @@ export async function getCurrentGameStage(): Promise<GameStage | null> {
     .from("game_stages")
     .select("*")
     .eq("id", 1)
-    .single();
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 rows gracefully
 
   if (error) {
     console.error("Error fetching game stage:", error);
@@ -276,13 +276,9 @@ export async function getMemberContribution(
     .select("*")
     .eq("contributor_address", walletAddress.toLowerCase())
     .eq("game_number", gameNumber)
-    .single();
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 rows gracefully
 
   if (error) {
-    if (error.code === "PGRST116") {
-      // No rows returned
-      return null;
-    }
     console.error("Error fetching contribution:", error);
     return null;
   }
@@ -300,7 +296,7 @@ export async function getMemberGroup(
     .select("group_id")
     .eq("member_address", walletAddress.toLowerCase())
     .eq("game_number", gameNumber)
-    .single();
+    .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
 
   if (mgError || !memberGroup) {
     return null;
@@ -312,7 +308,7 @@ export async function getMemberGroup(
     .select("*")
     .eq("game_number", gameNumber)
     .eq("group_id", memberGroup.group_id)
-    .single();
+    .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
 
   if (error) {
     console.error("Error fetching group:", error);
@@ -331,13 +327,9 @@ export async function getMemberRanking(
     .select("*")
     .eq("ranker_address", walletAddress.toLowerCase())
     .eq("game_number", gameNumber)
-    .single();
+    .maybeSingle(); // Use maybeSingle() instead of single() to handle 0 or 1 rows gracefully
 
   if (error) {
-    if (error.code === "PGRST116") {
-      // No rows returned
-      return null;
-    }
     console.error("Error fetching ranking:", error);
     return null;
   }
@@ -421,7 +413,7 @@ export async function getMemberGameHistory(
         .select("contributions, links")
         .eq("contributor_address", normalizedAddress)
         .eq("game_number", result.game_number)
-        .single();
+        .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
 
       // Fetch rankings submitted by this user for this game
       const { data: rankings } = await supabase
@@ -429,7 +421,7 @@ export async function getMemberGameHistory(
         .select("ranked_addresses")
         .eq("ranker_address", normalizedAddress)
         .eq("game_number", result.game_number)
-        .single();
+        .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
 
       return {
         ...result,
@@ -450,7 +442,7 @@ export async function getMemberProfile(
     .from("member_profiles")
     .select("*")
     .eq("wallet_address", walletAddress.toLowerCase())
-    .single();
+    .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
 
   if (error) {
     console.error("Error fetching member profile:", error);
@@ -581,9 +573,9 @@ export async function updateMemberXAccount(
       .from("members")
       .select("wallet_address, x_account")
       .eq("wallet_address", walletAddress.toLowerCase())
-      .single();
+      .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
 
-    if (checkError) {
+    if (checkError || !member) {
       console.error("Member not found in database yet:", checkError);
       throw new Error("Member not found - webhook may not have processed yet");
     }

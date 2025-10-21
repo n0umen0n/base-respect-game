@@ -39,6 +39,8 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { useSmartWallet } from '../hooks/useSmartWallet';
+import { useRespectGame } from '../hooks/useRespectGame';
 
 interface Member {
   address: string;
@@ -54,7 +56,6 @@ interface RankingSubmissionProps {
   gameNumber: number;
   groupMembers: Member[];
   nextSubmissionStageDate: Date;
-  onSubmitRanking: (rankedAddresses: string[]) => Promise<void>;
   onNavigate: () => void;
 }
 
@@ -244,7 +245,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
                     variant="body2"
                     sx={{ 
                       marginBottom: 1, 
-                      fontSize: '0.75rem',
+                      fontSize: '1rem',
                       lineHeight: 1.6,
                       color: '#333',
                       wordWrap: 'break-word',
@@ -303,7 +304,6 @@ export default function RankingSubmission({
   gameNumber,
   groupMembers,
   nextSubmissionStageDate,
-  onSubmitRanking,
   onNavigate,
 }: RankingSubmissionProps) {
   const [members, setMembers] = useState(groupMembers);
@@ -311,6 +311,14 @@ export default function RankingSubmission({
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+
+  // Get smart wallet and blockchain functions
+  const { smartAccountClient, smartAccountAddress } = useSmartWallet();
+  const { submitRanking: submitRankingToBlockchain } = useRespectGame({
+    smartAccountClient,
+    userAddress: smartAccountAddress,
+    minimalMode: true,
+  });
 
   // Sync members state when groupMembers prop changes
   useEffect(() => {
@@ -357,12 +365,21 @@ export default function RankingSubmission({
   const handleSubmit = async () => {
     setError(null);
 
+    if (!smartAccountClient || !smartAccountAddress) {
+      setError('Wallet not connected. Please refresh the page.');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
       const rankedAddresses = members.map((member) => member.address);
-      await onSubmitRanking(rankedAddresses);
+      console.log('🎯 Submitting ranking to blockchain:', rankedAddresses);
+      
+      // Submit to blockchain
+      await submitRankingToBlockchain(rankedAddresses);
 
+      console.log('✅ Ranking submitted successfully!');
       setShowSuccessModal(true);
     } catch (err: any) {
       console.error('Error submitting ranking:', err);

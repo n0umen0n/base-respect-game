@@ -16,11 +16,12 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useSmartWallet } from '../hooks/useSmartWallet';
+import { useRespectGame } from '../hooks/useRespectGame';
 
 interface ContributionSubmissionProps {
   gameNumber: number;
   nextStageTimestamp: Date;
-  onSubmitContribution: (contributions: string[], links: string[]) => Promise<void>;
   onNavigate: () => void;
 }
 
@@ -33,7 +34,6 @@ interface ContributionItem {
 export default function ContributionSubmission({
   gameNumber,
   nextStageTimestamp,
-  onSubmitContribution,
   onNavigate,
 }: ContributionSubmissionProps) {
   const [items, setItems] = useState<ContributionItem[]>([
@@ -43,6 +43,14 @@ export default function ContributionSubmission({
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
+
+  // Get smart wallet and blockchain functions
+  const { smartAccountClient, smartAccountAddress } = useSmartWallet();
+  const { submitContribution: submitContributionToBlockchain } = useRespectGame({
+    smartAccountClient,
+    userAddress: smartAccountAddress,
+    minimalMode: true,
+  });
 
   // Countdown timer
   useEffect(() => {
@@ -93,13 +101,18 @@ export default function ContributionSubmission({
     e.preventDefault();
     setError(null);
 
-    // Validation
+    if (!smartAccountClient || !smartAccountAddress) {
+      setError('Wallet not connected. Please refresh the page.');
+      return;
+    }
+
+    // Validation - only contribution text is required, links are optional
     const validItems = items.filter(
-      (item) => item.contribution.trim() && item.link.trim()
+      (item) => item.contribution.trim()
     );
 
     if (validItems.length === 0) {
-      setError('Please add at least one contribution with a link');
+      setError('Please add at least one contribution');
       return;
     }
 
@@ -107,10 +120,14 @@ export default function ContributionSubmission({
       setIsSubmitting(true);
 
       const contributions = validItems.map((item) => item.contribution.trim());
-      const links = validItems.map((item) => item.link.trim());
+      const links = validItems.map((item) => item.link.trim() || '');
 
-      await onSubmitContribution(contributions, links);
+      console.log('🎯 Submitting contribution to blockchain:', { contributions, links });
+      
+      // Submit to blockchain
+      await submitContributionToBlockchain(contributions, links);
 
+      console.log('✅ Contribution submitted successfully!');
       // Show success modal
       setShowSuccessModal(true);
     } catch (err: any) {
@@ -166,6 +183,7 @@ export default function ContributionSubmission({
           alignItems: 'center',
           justifyContent: 'center',
           padding: 3,
+          marginTop: '-100px',
         }}
       >
         <Paper
@@ -250,7 +268,10 @@ export default function ContributionSubmission({
                 lineHeight: 1.8,
               }}
             >
-              Share your contributions to the community. Add links as proof of work.
+              Please share how you have contributed to the Base community in the past week.
+              <br />
+              <br />
+              You can add links as proof of work.
             </Typography>
 
             {items.map((item, index) => (
@@ -300,9 +321,16 @@ export default function ContributionSubmission({
                   onChange={(e) =>
                     updateContribution(item.id, 'contribution', e.target.value)
                   }
-                  sx={{ marginBottom: 2 }}
+                  sx={{ 
+                    marginBottom: 2,
+                    '& .MuiInputBase-input::placeholder': {
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.6rem',
+                      opacity: 0.6,
+                    }
+                  }}
                   disabled={isSubmitting}
-                  placeholder="Describe what you contributed..."
+                  placeholder="Contribution description"
                 />
 
                 <TextField
@@ -313,6 +341,13 @@ export default function ContributionSubmission({
                   disabled={isSubmitting}
                   placeholder="https://..."
                   helperText="Link to your contribution (GitHub, Twitter, etc.)"
+                  sx={{
+                    '& .MuiInputBase-input::placeholder': {
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.6rem',
+                      opacity: 0.6,
+                    }
+                  }}
                 />
               </Box>
             ))}
