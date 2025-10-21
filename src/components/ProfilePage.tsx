@@ -71,7 +71,7 @@ interface ContributionHistory {
 }
 
 // Component for individual game history row with expandable details
-function GameHistoryRow({ game }: { game: GameResult }) {
+function GameHistoryRow({ game, memberName }: { game: GameResult; memberName?: string }) {
   const [open, setOpen] = useState(false);
   const [rankedMembers, setRankedMembers] = useState<Member[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
@@ -211,7 +211,7 @@ function GameHistoryRow({ game }: { game: GameResult }) {
                 )}
 
                 {/* Links Section */}
-                {game.links && game.links.length > 0 && (
+                {game.links && game.links.filter((link: string) => link && link.trim() !== '').length > 0 && (
                   <Box sx={{ marginBottom: 2 }}>
                     <Typography
                       variant="subtitle2"
@@ -225,7 +225,7 @@ function GameHistoryRow({ game }: { game: GameResult }) {
                       LINKS:
                     </Typography>
                     <List dense>
-                      {game.links.map((link, index) => (
+                      {game.links.filter((link: string) => link && link.trim() !== '').map((link, index) => (
                         <ListItem key={index}>
                           <LinkIcon sx={{ fontSize: 16, marginRight: 1 }} />
                           <Link
@@ -254,7 +254,7 @@ function GameHistoryRow({ game }: { game: GameResult }) {
                         color: '#0052FF',
                       }}
                     >
-                      MEMBERS RANKED:
+                      {memberName ? `${memberName.toUpperCase()} RANKED:` : 'MEMBERS RANKED:'}
                     </Typography>
                     {loadingMembers ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', paddingTop: 1, paddingBottom: 2 }}>
@@ -334,11 +334,32 @@ export default function ProfilePage({
   const [tabValue, setTabValue] = useState(0);
   const [linkingTwitter, setLinkingTwitter] = useState(false);
   const [rankedMembers, setRankedMembers] = useState<Member[]>([]);
+  const [justLinkedTwitter, setJustLinkedTwitter] = useState(false);
   
   // Check if viewing own profile - use currentUserAddress if provided, fallback to Privy wallet
   const isOwnProfile = currentUserAddress 
     ? currentUserAddress.toLowerCase() === walletAddress.toLowerCase()
     : user?.wallet?.address?.toLowerCase() === walletAddress.toLowerCase();
+
+  // Get Twitter account from Privy user object (reactive - updates automatically)
+  const twitterAccount = user?.twitter?.username 
+    ? (user.twitter.username.startsWith('@') ? user.twitter.username : `@${user.twitter.username}`)
+    : '';
+  const twitterVerified = (user?.twitter as any)?.verified || false;
+
+  // Debug logging
+  useEffect(() => {
+    console.log('📊 ProfilePage state:', {
+      walletAddress,
+      currentUserAddress,
+      isOwnProfile,
+      twitterAccount,
+      memberXAccount: member?.x_account,
+      justLinkedTwitter,
+      hasUser: !!user,
+      hasTwitter: !!user?.twitter,
+    });
+  }, [walletAddress, currentUserAddress, isOwnProfile, twitterAccount, member?.x_account, justLinkedTwitter, user?.twitter]);
 
   // Notify parent of loading state changes
   useEffect(() => {
@@ -348,6 +369,59 @@ export default function ProfilePage({
   useEffect(() => {
     loadProfileData();
   }, [walletAddress, refreshTrigger]);
+
+  // Watch for Twitter account and sync with database
+  // This handles two cases:
+  // 1. User just clicked link button and Twitter data arrives
+  // 2. User already has Twitter linked in Privy but it's missing from database
+  useEffect(() => {
+    const saveTwitterToDatabase = async () => {
+      // Only save if:
+      // 1. Twitter account is available from Privy
+      // 2. It's the user's own profile
+      // 3. Member data is loaded
+      // 4. Member doesn't already have this X account in database
+      // 5. EITHER: User just clicked link button OR Twitter exists but not in DB
+      if (
+        twitterAccount && 
+        isOwnProfile && 
+        member && 
+        member.x_account !== twitterAccount &&
+        (justLinkedTwitter || (twitterAccount && !member.x_account))
+      ) {
+        try {
+          console.log('🔗 Syncing Twitter account to database:', {
+            walletAddress,
+            twitterAccount,
+            twitterVerified,
+            privyId: user?.id,
+            reason: justLinkedTwitter ? 'User just linked' : 'Auto-sync (already linked in Privy)'
+          });
+
+          await updateMemberXAccount(
+            walletAddress,
+            twitterAccount,
+            twitterVerified,
+            user?.id || ''
+          );
+
+          console.log('✅ X account saved to database successfully!');
+          
+          // Reset the flag
+          setJustLinkedTwitter(false);
+          
+          // Reload profile data to show the updated X account
+          await loadProfileData();
+        } catch (err: any) {
+          console.error('❌ Failed to save X account:', err);
+          setError(err.message || 'Failed to save X account. Please try again.');
+          setJustLinkedTwitter(false);
+        }
+      }
+    };
+
+    saveTwitterToDatabase();
+  }, [justLinkedTwitter, twitterAccount, isOwnProfile, member, walletAddress, twitterVerified, user?.id]);
 
   const loadProfileData = async () => {
     try {
@@ -472,7 +546,8 @@ export default function ProfilePage({
               </Typography>
 
               {/* X Account Display */}
-              {member.x_account ? (
+              {/* Show X account if in database OR if available from Privy and it's own profile */}
+              {(member.x_account || (isOwnProfile && twitterAccount)) ? (
                 <Box
                   sx={{
                     display: 'flex',
@@ -492,7 +567,7 @@ export default function ProfilePage({
                     :
                   </Typography>
                   <Link
-                    href={`https://x.com/${member.x_account.replace('@', '')}`}
+                    href={`https://x.com/${(member.x_account || twitterAccount).replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     sx={{
@@ -505,7 +580,7 @@ export default function ProfilePage({
                       },
                     }}
                   >
-                    {member.x_account}
+                    {member.x_account || twitterAccount}
                   </Link>
                   <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />
                 </Box>
@@ -515,33 +590,21 @@ export default function ProfilePage({
                     onClick={async () => {
                       try {
                         setLinkingTwitter(true);
+                        setError(null);
+                        console.log('🔗 Starting X account linking...');
+                        
+                        // Set flag to indicate user clicked link button
+                        setJustLinkedTwitter(true);
+                        
+                        // Trigger Privy OAuth flow
+                        // The useEffect will handle saving to database once user.twitter updates
                         await linkTwitter();
                         
-                        // Wait a moment for Privy to update the user object
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        
-                        // Check if Twitter was successfully linked
-                        if (user?.twitter?.username) {
-                          const twitterUsername = user.twitter.username.startsWith('@') 
-                            ? user.twitter.username 
-                            : `@${user.twitter.username}`;
-                          
-                          // Save to database
-                          await updateMemberXAccount(
-                            walletAddress,
-                            twitterUsername,
-                            true, // X OAuth is verified by Privy
-                            user.id
-                          );
-                          
-                          console.log('✅ X account saved to database');
-                        }
-                        
-                        // Reload profile data after linking
-                        await loadProfileData();
+                        console.log('✅ Privy linkTwitter() completed, waiting for user object to update...');
                       } catch (err) {
-                        console.error('Failed to link Twitter:', err);
+                        console.error('❌ Failed to link Twitter:', err);
                         setError('Failed to link Twitter account. Please try again.');
+                        setJustLinkedTwitter(false);
                       } finally {
                         setLinkingTwitter(false);
                       }
@@ -1238,7 +1301,7 @@ export default function ProfilePage({
                     </TableHead>
                     <TableBody>
                       {gameHistory.map((game) => (
-                        <GameHistoryRow key={game.game_number} game={game} />
+                        <GameHistoryRow key={game.game_number} game={game} memberName={member?.name} />
                       ))}
                     </TableBody>
                   </Table>

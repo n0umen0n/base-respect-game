@@ -32,14 +32,14 @@ INSERT INTO members (
   -- Mid-high tier (50-69)
   ('0x8888888888888888888888888888888888888888', 'Nina Patel', 'https://api.dicebear.com/7.x/avataaars/svg?seed=nina', 'ninapatel', false, true, false, NOW() - INTERVAL '25 days', 680, 68),
   ('0x9999999999999999999999999999999999999999', 'David Lee', 'https://api.dicebear.com/7.x/avataaars/svg?seed=david', NULL, false, true, false, NOW() - INTERVAL '24 days', 650, 65),
-  ('0xAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', 'Maria Santos', 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria', 'mariasantos', true, true, false, NOW() - INTERVAL '22 days', 620, 62),
-  ('0xBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB', 'Tom Anderson', 'https://api.dicebear.com/7.x/avataaars/svg?seed=tom', 'tomanderson', false, true, false, NOW() - INTERVAL '20 days', 590, 59),
-  ('0xCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC', 'Yuki Tanaka', 'https://api.dicebear.com/7.x/avataaars/svg?seed=yuki', 'yukitanaka', true, true, false, NOW() - INTERVAL '19 days', 560, 56),
-  ('0xDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD', 'Oliver Brown', 'https://api.dicebear.com/7.x/avataaars/svg?seed=oliver', NULL, false, true, false, NOW() - INTERVAL '18 days', 530, 53),
-  ('0xEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE', 'Sofia Garcia', 'https://api.dicebear.com/7.x/avataaars/svg?seed=sofia', 'sofiagarcia', false, true, false, NOW() - INTERVAL '17 days', 500, 50),
+  ('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 'Maria Santos', 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria', 'mariasantos', true, true, false, NOW() - INTERVAL '22 days', 620, 62),
+  ('0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'Tom Anderson', 'https://api.dicebear.com/7.x/avataaars/svg?seed=tom', 'tomanderson', false, true, false, NOW() - INTERVAL '20 days', 590, 59),
+  ('0xcccccccccccccccccccccccccccccccccccccccc', 'Yuki Tanaka', 'https://api.dicebear.com/7.x/avataaars/svg?seed=yuki', 'yukitanaka', true, true, false, NOW() - INTERVAL '19 days', 560, 56),
+  ('0xdddddddddddddddddddddddddddddddddddddddd', 'Oliver Brown', 'https://api.dicebear.com/7.x/avataaars/svg?seed=oliver', NULL, false, true, false, NOW() - INTERVAL '18 days', 530, 53),
+  ('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'Sofia Garcia', 'https://api.dicebear.com/7.x/avataaars/svg?seed=sofia', 'sofiagarcia', false, true, false, NOW() - INTERVAL '17 days', 500, 50),
   
   -- Mid tier (40-49)
-  ('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF', 'John Smith', 'https://api.dicebear.com/7.x/avataaars/svg?seed=john', NULL, false, true, false, NOW() - INTERVAL '16 days', 480, 48),
+  ('0xffffffffffffffffffffffffffffffffffffffff', 'John Smith', 'https://api.dicebear.com/7.x/avataaars/svg?seed=john', NULL, false, true, false, NOW() - INTERVAL '16 days', 480, 48),
   ('0x1000000000000000000000000000000000000001', 'Emma Wilson', 'https://api.dicebear.com/7.x/avataaars/svg?seed=emma', 'emmawilson', true, true, false, NOW() - INTERVAL '15 days', 460, 46),
   ('0x1000000000000000000000000000000000000002', 'Lucas Silva', 'https://api.dicebear.com/7.x/avataaars/svg?seed=lucas', 'lucassilva', false, true, false, NOW() - INTERVAL '14 days', 440, 44),
   ('0x1000000000000000000000000000000000000003', 'Aisha Mohammed', 'https://api.dicebear.com/7.x/avataaars/svg?seed=aisha', NULL, false, true, false, NOW() - INTERVAL '13 days', 420, 42),
@@ -53,14 +53,14 @@ INSERT INTO members (
   ('0x1000000000000000000000000000000000000009', 'Ryan O''Connor', 'https://api.dicebear.com/7.x/avataaars/svg?seed=ryan', 'ryanoconnor', false, true, false, NOW() - INTERVAL '7 days', 300, 30),
   
   -- Entry level (20-29)
-  ('0x100000000000000000000000000000000000000A', 'Lily Wang', 'https://api.dicebear.com/7.x/avataaars/svg?seed=lily', 'lilywang', true, true, false, NOW() - INTERVAL '6 days', 280, 28),
-  ('0x100000000000000000000000000000000000000B', 'Carlos Mendez', 'https://api.dicebear.com/7.x/avataaars/svg?seed=carlos', NULL, false, true, false, NOW() - INTERVAL '5 days', 260, 26),
-  ('0x100000000000000000000000000000000000000C', 'Fatima Hassan', 'https://api.dicebear.com/7.x/avataaars/svg?seed=fatima', 'fatimahassan', false, true, false, NOW() - INTERVAL '4 days', 240, 24),
-  ('0x100000000000000000000000000000000000000D', 'Jack Taylor', 'https://api.dicebear.com/7.x/avataaars/svg?seed=jack', 'jacktaylor', true, true, false, NOW() - INTERVAL '3 days', 220, 22),
-  ('0x100000000000000000000000000000000000000E', 'Maya Johnson', 'https://api.dicebear.com/7.x/avataaars/svg?seed=maya', NULL, false, true, false, NOW() - INTERVAL '2 days', 200, 20),
+  ('0x100000000000000000000000000000000000000a', 'Lily Wang', 'https://api.dicebear.com/7.x/avataaars/svg?seed=lily', 'lilywang', true, true, false, NOW() - INTERVAL '6 days', 280, 28),
+  ('0x100000000000000000000000000000000000000b', 'Carlos Mendez', 'https://api.dicebear.com/7.x/avataaars/svg?seed=carlos', NULL, false, true, false, NOW() - INTERVAL '5 days', 260, 26),
+  ('0x100000000000000000000000000000000000000c', 'Fatima Hassan', 'https://api.dicebear.com/7.x/avataaars/svg?seed=fatima', 'fatimahassan', false, true, false, NOW() - INTERVAL '4 days', 240, 24),
+  ('0x100000000000000000000000000000000000000d', 'Jack Taylor', 'https://api.dicebear.com/7.x/avataaars/svg?seed=jack', 'jacktaylor', true, true, false, NOW() - INTERVAL '3 days', 220, 22),
+  ('0x100000000000000000000000000000000000000e', 'Maya Johnson', 'https://api.dicebear.com/7.x/avataaars/svg?seed=maya', NULL, false, true, false, NOW() - INTERVAL '2 days', 200, 20),
   
   -- Beginners (10-19)
-  ('0x100000000000000000000000000000000000000F', 'Noah White', 'https://api.dicebear.com/7.x/avataaars/svg?seed=noah', 'noahwhite', false, true, false, NOW() - INTERVAL '1 day', 180, 18),
+  ('0x100000000000000000000000000000000000000f', 'Noah White', 'https://api.dicebear.com/7.x/avataaars/svg?seed=noah', 'noahwhite', false, true, false, NOW() - INTERVAL '1 day', 180, 18),
   ('0x1000000000000000000000000000000000000010', 'Zara Ahmed', 'https://api.dicebear.com/7.x/avataaars/svg?seed=zara', 'zaraahmed', true, true, false, NOW() - INTERVAL '23 hours', 160, 16),
   ('0x1000000000000000000000000000000000000011', 'Ethan Harris', 'https://api.dicebear.com/7.x/avataaars/svg?seed=ethan', NULL, false, true, false, NOW() - INTERVAL '20 hours', 140, 14),
   ('0x1000000000000000000000000000000000000012', 'Amelia Clark', 'https://api.dicebear.com/7.x/avataaars/svg?seed=amelia', 'ameliaclark', false, true, false, NOW() - INTERVAL '18 hours', 120, 12),
@@ -75,14 +75,14 @@ INSERT INTO members (
   
   -- Very new (0-4)
   ('0x1000000000000000000000000000000000000019', 'William King', 'https://api.dicebear.com/7.x/avataaars/svg?seed=william', 'williamking', true, true, false, NOW() - INTERVAL '4 hours', 40, 4),
-  ('0x100000000000000000000000000000000000001A', 'Charlotte Wright', 'https://api.dicebear.com/7.x/avataaars/svg?seed=charlotte', NULL, false, true, false, NOW() - INTERVAL '3 hours', 30, 3),
-  ('0x100000000000000000000000000000000000001B', 'James Scott', 'https://api.dicebear.com/7.x/avataaars/svg?seed=jamesscott', 'jamesscott', false, true, false, NOW() - INTERVAL '2 hours', 20, 2),
-  ('0x100000000000000000000000000000000000001C', 'Emily Green', 'https://api.dicebear.com/7.x/avataaars/svg?seed=emily', 'emilygreen', true, true, false, NOW() - INTERVAL '1 hour', 10, 1),
-  ('0x100000000000000000000000000000000000001D', 'Liz', 'https://i.pravatar.cc/150?img=5', NULL, false, true, false, NOW() - INTERVAL '30 minutes', 0, 0),
+  ('0x100000000000000000000000000000000000001a', 'Charlotte Wright', 'https://api.dicebear.com/7.x/avataaars/svg?seed=charlotte', NULL, false, true, false, NOW() - INTERVAL '3 hours', 30, 3),
+  ('0x100000000000000000000000000000000000001b', 'James Scott', 'https://api.dicebear.com/7.x/avataaars/svg?seed=jamesscott', 'jamesscott', false, true, false, NOW() - INTERVAL '2 hours', 20, 2),
+  ('0x100000000000000000000000000000000000001c', 'Emily Green', 'https://api.dicebear.com/7.x/avataaars/svg?seed=emily', 'emilygreen', true, true, false, NOW() - INTERVAL '1 hour', 10, 1),
+  ('0x100000000000000000000000000000000000001d', 'Liz', 'https://i.pravatar.cc/150?img=5', NULL, false, true, false, NOW() - INTERVAL '30 minutes', 0, 0),
   
   -- Additional members for testing
-  ('0x100000000000000000000000000000000000001E', 'ARNOLD SCHWARZENEGGER', 'https://i.pravatar.cc/150?img=33', NULL, false, true, false, NOW() - INTERVAL '25 minutes', 0, 0),
-  ('0x100000000000000000000000000000000000001F', 'John Travolta', 'https://i.pravatar.cc/150?img=12', NULL, false, true, false, NOW() - INTERVAL '20 minutes', 0, 0),
+  ('0x100000000000000000000000000000000000001e', 'ARNOLD SCHWARZENEGGER', 'https://i.pravatar.cc/150?img=33', NULL, false, true, false, NOW() - INTERVAL '25 minutes', 0, 0),
+  ('0x100000000000000000000000000000000000001f', 'John Travolta', 'https://i.pravatar.cc/150?img=12', NULL, false, true, false, NOW() - INTERVAL '20 minutes', 0, 0),
   ('0x1000000000000000000000000000000000000020', 'Bruce Lee', 'https://api.dicebear.com/7.x/avataaars/svg?seed=bruce', 'brucelee', true, true, false, NOW() - INTERVAL '15 minutes', 0, 0),
   ('0x1000000000000000000000000000000000000021', 'Jackie Chan', 'https://api.dicebear.com/7.x/avataaars/svg?seed=jackie', 'jackiechan', true, true, false, NOW() - INTERVAL '10 minutes', 0, 0),
   ('0x1000000000000000000000000000000000000022', 'Chuck Norris', 'https://api.dicebear.com/7.x/avataaars/svg?seed=chuck', 'chucknorris', true, true, false, NOW() - INTERVAL '5 minutes', 0, 0)

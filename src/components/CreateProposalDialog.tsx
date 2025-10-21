@@ -148,7 +148,21 @@ export default function CreateProposalDialog({
       handleClose();
     } catch (err: any) {
       console.error('Error creating proposal:', err);
-      setError(err.message || 'Failed to create proposal');
+      
+      // Decode the error message
+      let errorMessage = 'Failed to create proposal';
+      
+      // Check if it's the "Not top" error (user not in top 6)
+      const errorStr = err.message || err.toString();
+      if (errorStr.includes('4e6f7420746f70') || errorStr.includes('Not top')) {
+        errorMessage = 'Only top 6 members can create proposals. Keep contributing to move up the leaderboard!';
+      } else if (errorStr.includes('revert')) {
+        errorMessage = 'Transaction reverted. Please check your permissions and try again.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setCreating(false);
     }

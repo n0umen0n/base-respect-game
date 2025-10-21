@@ -136,7 +136,7 @@ function ProposalCard({
                 color: colors.text,
               }}
             >
-              {proposal.target_member_name || 'General Proposal'}
+              {proposal.target_member_name || (proposal.proposal_type === 'ExecuteTransactions' ? 'Fund Transfer Proposal' : 'General Proposal')}
             </Typography>
 
             <Typography
@@ -174,19 +174,21 @@ function ProposalCard({
               >
                 FOR
               </Button>
-              <Button
-                variant="contained"
-                color="error"
-                size="small"
-                startIcon={<ThumbDownIcon />}
-                onClick={() => onVoteClick(proposal.proposal_id, false)}
-                sx={{
-                  fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.6rem',
-                }}
-              >
-                AGAINST
-              </Button>
+              {proposal.proposal_type !== 'ExecuteTransactions' && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  startIcon={<ThumbDownIcon />}
+                  onClick={() => onVoteClick(proposal.proposal_id, false)}
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.6rem',
+                  }}
+                >
+                  AGAINST
+                </Button>
+              )}
             </Box>
           )}
         </Box>
@@ -327,6 +329,13 @@ export default function ProposalsPage({
       await loadProposals();
     } catch (err: any) {
       console.error('Error creating proposal:', err);
+      
+      // Decode the error message for better user feedback
+      const errorStr = err.message || err.toString();
+      if (errorStr.includes('4e6f7420746f70') || errorStr.includes('Not top')) {
+        throw new Error('Only top 6 members can create proposals. Keep contributing to move up the leaderboard!');
+      }
+      
       throw err;
     }
   };
