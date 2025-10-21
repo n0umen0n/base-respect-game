@@ -353,6 +353,30 @@ export async function getTopSixMembers(): Promise<TopSixMember[]> {
   return data || [];
 }
 
+export async function getAllMembers(): Promise<TopSixMember[]> {
+  // Fetch all approved, non-banned members ordered by respect
+  const { data, error } = await supabase
+    .from("members")
+    .select(
+      "wallet_address, name, profile_url, x_account, x_verified, average_respect::text, total_respect_earned::text"
+    )
+    .eq("is_approved", true)
+    .eq("is_banned", false)
+    .order("average_respect", { ascending: false })
+    .order("total_respect_earned", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching all members:", error);
+    return [];
+  }
+
+  // Add rank to each member
+  return (data || []).map((member, index) => ({
+    ...member,
+    rank: index + 1,
+  }));
+}
+
 export async function getLiveProposals(): Promise<LiveProposal[]> {
   const { data, error } = await supabase
     .from("live_proposals")

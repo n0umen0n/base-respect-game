@@ -5,7 +5,8 @@ import AnimatedContent from './AnimatedContent';
 import Button from '@mui/material/Button';
 import Shuffle from './Shuffle';
 import ProfileCard from './ProfileCard';
-import { getTopSixMembers } from '../lib/supabase-respect';
+import { getTopSixMembers, getAllMembers } from '../lib/supabase-respect';
+import { formatRespectDisplay } from '../lib/formatTokens';
 
 import {
   Table,
@@ -17,13 +18,19 @@ import {
   Paper,
   Avatar,
   Link,
+  TextField,
+  InputAdornment,
+  Box,
 } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
 import LoadingSpinner, { LoadingScreen } from './LoadingSpinner';
 
 const HomePage = () => {
   const { login, logout, user, ready, authenticated } = usePrivy();
   const navigate = useNavigate();
   const [topMembers, setTopMembers] = useState([]);
+  const [allMembers, setAllMembers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -56,10 +63,14 @@ const HomePage = () => {
 
   const loadTopMembers = async () => {
     try {
-      const members = await getTopSixMembers();
-      setTopMembers(members);
+      const [topSix, all] = await Promise.all([
+        getTopSixMembers(),
+        getAllMembers()
+      ]);
+      setTopMembers(topSix);
+      setAllMembers(all);
     } catch (error) {
-      console.error('Error loading top members:', error);
+      console.error('Error loading members:', error);
     } finally {
       setLoading(false);
     }
@@ -101,6 +112,11 @@ const HomePage = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, [lastScrollY]);
+
+  // Filter members based on search query (from rank 7 onwards)
+  const filteredMembers = allMembers.slice(6).filter(member => 
+    member.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Show loading spinner if Privy is not ready OR if navigating to game
   // Use LoadingScreen for consistent positioning across the app
@@ -296,14 +312,66 @@ const HomePage = () => {
           threshold={0.1}
           delay={0.6}
         >
+          <Box
+            sx={{
+              maxWidth: '1200px',
+              margin: '4rem auto 0.75rem',
+              padding: '0 2rem'
+            }}
+          >
+            <TextField
+              fullWidth
+              placeholder="Search members by name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: '#000' }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '4px solid #000',
+                  borderRadius: '8px',
+                  '& fieldset': {
+                    border: 'none',
+                  },
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: '#f0f0f0',
+                    boxShadow: '0 0 0 3px rgba(0, 0, 0, 0.1)',
+                  },
+                },
+                '& .MuiInputBase-input': {
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.75rem',
+                  padding: '1rem 1rem',
+                  '&::placeholder': {
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.7rem',
+                    opacity: 0.6,
+                  },
+                },
+              }}
+            />
+          </Box>
           <TableContainer
             component={Paper}
             sx={{
-              maxWidth: '800px',
-              margin: '4rem auto 0',
-              background: '#f5f5f5',
-              borderRadius: '16px',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+              maxWidth: '1200px',
+              margin: '0 auto 2rem',
+              background: '#ffffff',
+              borderRadius: '8px',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+              border: '4px solid #000',
+              overflow: 'hidden'
             }}
           >
             <Table
@@ -313,40 +381,208 @@ const HomePage = () => {
               }}
             >
               <TableHead>
-                <TableRow>
+                <TableRow
+                  sx={{
+                    backgroundColor: '#000',
+                    '& th': {
+                      borderBottom: '4px solid #000'
+                    }
+                  }}
+                >
                   <TableCell
                     align="center"
-                    sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
+                    sx={{ 
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontWeight: 'bold',
+                      fontSize: '0.8rem',
+                      color: '#fff',
+                      py: 2.5,
+                      borderRight: '2px solid #333'
+                    }}
                   >
                     Rank
                   </TableCell>
                   <TableCell
-                    align="center"
-                    sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
+                    align="left"
+                    sx={{ 
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontWeight: 'bold',
+                      fontSize: '0.8rem',
+                      color: '#fff',
+                      py: 2.5,
+                      paddingLeft: '3rem',
+                      borderRight: '2px solid #333'
+                    }}
                   >
                     Name
                   </TableCell>
                   <TableCell
                     align="center"
-                    sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
+                    sx={{ 
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontWeight: 'bold',
+                      fontSize: '0.8rem',
+                      color: '#fff',
+                      py: 2.5,
+                      borderRight: '2px solid #333'
+                    }}
                   >
                     X
                   </TableCell>
                   <TableCell
                     align="center"
-                    sx={{ fontFamily: 'inherit', fontWeight: 'bold' }}
+                    sx={{ 
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontWeight: 'bold',
+                      fontSize: '0.8rem',
+                      color: '#fff',
+                      py: 2.5
+                    }}
                   >
                     RESPECT SCORE
                   </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {!loading && topMembers.length === 0 && (
+                {loading ? (
                   <TableRow>
-                    <TableCell colSpan={4} align="center">
-                      No members yet
+                    <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                      <LoadingSpinner size={40} />
                     </TableCell>
                   </TableRow>
+                ) : filteredMembers.length === 0 ? (
+                  <TableRow>
+                    <TableCell 
+                      colSpan={4} 
+                      align="center"
+                      sx={{ 
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.8rem',
+                        py: 4
+                      }}
+                    >
+                      {searchQuery ? 'No members found matching your search' : 'No additional members yet'}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredMembers.map((member) => (
+                    <TableRow
+                      key={member.wallet_address}
+                      onClick={() => navigate(`/profile/${member.wallet_address}`)}
+                      sx={{
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          backgroundColor: '#f0f0f0',
+                          transform: 'scale(1.01)'
+                        },
+                        '&:nth-of-type(odd)': {
+                          backgroundColor: '#fafafa'
+                        },
+                        '& td': {
+                          borderRight: '2px solid #e0e0e0',
+                          borderBottom: '2px solid #e0e0e0'
+                        },
+                        '& td:last-child': {
+                          borderRight: 'none'
+                        }
+                      }}
+                    >
+                      <TableCell 
+                        align="center"
+                        sx={{ 
+                          fontFamily: '"Press Start 2P", sans-serif',
+                          fontSize: '0.9rem',
+                          fontWeight: 'bold',
+                          py: 2.5,
+                          color: '#000'
+                        }}
+                      >
+                        {member.rank}
+                      </TableCell>
+                      <TableCell 
+                        align="left"
+                        sx={{ 
+                          fontFamily: '"Press Start 2P", sans-serif',
+                          fontSize: '0.7rem',
+                          py: 2.5,
+                          paddingLeft: '3rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
+                          <Avatar
+                            src={member.profile_url}
+                            alt={member.name}
+                            sx={{
+                              width: 48,
+                              height: 48,
+                              border: '3px solid #000',
+                              imageRendering: 'pixelated',
+                              boxShadow: '4px 4px 0 rgba(0,0,0,0.1)'
+                            }}
+                          />
+                          <span style={{ 
+                            maxWidth: '300px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {member.name}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell 
+                        align="center"
+                        sx={{ 
+                          fontFamily: '"Press Start 2P", sans-serif',
+                          fontSize: '0.65rem',
+                          py: 2.5
+                        }}
+                      >
+                        {member.x_account ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                            <Link
+                              href={`https://x.com/${member.x_account.replace('@', '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              sx={{
+                                color: '#1DA1F2',
+                                textDecoration: 'none',
+                                fontFamily: '"Press Start 2P", sans-serif',
+                                '&:hover': {
+                                  textDecoration: 'underline',
+                                  color: '#0d8bd9'
+                                }
+                              }}
+                            >
+                              {member.x_account}
+                            </Link>
+                            {member.x_verified && (
+                              <span title="Verified" style={{ fontSize: '1rem' }}>✅</span>
+                            )}
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', color: '#999' }}>
+                            <span>missing</span>
+                            <span style={{ fontSize: '1rem' }}>❌</span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell 
+                        align="center"
+                        sx={{ 
+                          fontFamily: '"Press Start 2P", sans-serif',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          py: 2.5,
+                          color: '#000'
+                        }}
+                      >
+                        {formatRespectDisplay(member.average_respect)}
+                      </TableCell>
+                    </TableRow>
+                  ))
                 )}
               </TableBody>
             </Table>
