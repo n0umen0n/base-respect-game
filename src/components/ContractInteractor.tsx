@@ -438,9 +438,15 @@ export default function ContractInteractor({ wallet }: ContractInteractorProps) 
       
       // Create a public client for reading (no wallet needed for view functions)
       const currentChain = SMART_WALLET_CONFIG.CHAIN_ID === 84532 ? baseSepolia : base;
+      
+      // Use Alchemy RPC to avoid rate limits
+      const alchemyRpcUrl = currentChain.id === 8453 
+        ? 'https://base-mainnet.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9'
+        : 'https://base-sepolia.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9';
+      
       const publicClient = createPublicClient({
         chain: currentChain,
-        transport: http(),
+        transport: http(alchemyRpcUrl),
       });
       
       // Read from contract using the public client

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { createPublicClient, http, createWalletClient, custom } from 'viem';
 import { base, baseSepolia } from 'viem/chains';
@@ -8,11 +8,24 @@ import { createSmartAccountClient } from 'permissionless';
 import { createPimlicoClient } from 'permissionless/clients/pimlico';
 import { SMART_WALLET_CONFIG, validateConfig } from '../config/smartWallet.config';
 
-export function useSmartWallet() {
+// Global singleton to prevent duplicate smart wallet setups across all hook instances
+const globalWalletCache: {
+  setupInProgress: boolean;
+  lastWalletAddress: string | null;
+  smartAccountClient: any;
+  smartAccountAddress: string | null;
+} = {
+  setupInProgress: false,
+  lastWalletAddress: null,
+  smartAccountClient: null,
+  smartAccountAddress: null,
+};
+
+export function useSmartWallet(enabled: boolean = true) {
   const { ready, authenticated } = usePrivy();
   const { wallets } = useWallets();
-  const [smartAccountClient, setSmartAccountClient] = useState<any>(null);
-  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(null);
+  const [smartAccountClient, setSmartAccountClient] = useState<any>(globalWalletCache.smartAccountClient);
+  const [smartAccountAddress, setSmartAccountAddress] = useState<string | null>(globalWalletCache.smartAccountAddress);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,13 +34,75 @@ export function useSmartWallet() {
     return wallets.find((wallet) => wallet.walletClientType === 'privy');
   }, [wallets]);
 
+  // Sync local state with global cache on mount and when cache updates
   useEffect(() => {
+    if (globalWalletCache.smartAccountClient && globalWalletCache.smartAccountAddress) {
+      setSmartAccountClient(globalWalletCache.smartAccountClient);
+      setSmartAccountAddress(globalWalletCache.smartAccountAddress);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Don't initialize if not enabled
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Handle polling if setup is already in progress
+    if (!ready || !authenticated || !embeddedWallet) {
+      // Clear local state
+      setSmartAccountClient(null);
+      setSmartAccountAddress(null);
+      // Clear global cache
+      globalWalletCache.setupInProgress = false;
+      globalWalletCache.lastWalletAddress = null;
+      globalWalletCache.smartAccountClient = null;
+      globalWalletCache.smartAccountAddress = null;
+      return;
+    }
+
+    // If already set up for this wallet, use cached values immediately
+    if (globalWalletCache.lastWalletAddress === embeddedWallet.address && globalWalletCache.smartAccountClient) {
+      console.log('✅ Using cached smart wallet:', globalWalletCache.smartAccountAddress);
+      setSmartAccountClient(globalWalletCache.smartAccountClient);
+      setSmartAccountAddress(globalWalletCache.smartAccountAddress);
+      setIsLoading(false);
+      return;
+    }
+
+    // If setup is in progress by another instance, poll for completion
+    if (globalWalletCache.setupInProgress) {
+      console.log('⏳ Smart wallet setup already in progress, waiting...');
+      setIsLoading(true);
+      
+      // Poll for completion
+      const checkInterval = setInterval(() => {
+        if (!globalWalletCache.setupInProgress && globalWalletCache.smartAccountClient) {
+          console.log('✅ Smart wallet setup completed by another instance');
+          setSmartAccountClient(globalWalletCache.smartAccountClient);
+          setSmartAccountAddress(globalWalletCache.smartAccountAddress);
+          setIsLoading(false);
+          clearInterval(checkInterval);
+        }
+      }, 50); // Check every 50ms
+      
+      // Cleanup
+      return () => {
+        clearInterval(checkInterval);
+      };
+    }
+
+    // Setup the smart wallet
     async function setupSmartWallet() {
-      if (!ready || !authenticated || !embeddedWallet) {
-        setSmartAccountClient(null);
-        setSmartAccountAddress(null);
+      // Safety check
+      if (!embeddedWallet) {
+        console.error('❌ No embedded wallet found');
         return;
       }
+
+      // Set flag IMMEDIATELY in global cache to prevent race conditions
+      globalWalletCache.setupInProgress = true;
 
       try {
         setIsLoading(true);
@@ -50,10 +125,15 @@ export function useSmartWallet() {
         const currentChain = SMART_WALLET_CONFIG.CHAIN_ID === 84532 ? baseSepolia : base;
         console.log('🌐 Using chain:', currentChain.name, 'Chain ID:', currentChain.id);
 
-        // Create a public client for RPC calls
+        // Use Alchemy RPC to avoid rate limits
+        const alchemyRpcUrl = currentChain.id === 8453 
+          ? 'https://base-mainnet.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9'
+          : 'https://base-sepolia.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9';
+
+        // Create a public client for RPC calls with Alchemy endpoint
         const publicClient = createPublicClient({
           chain: currentChain,
-          transport: http(),
+          transport: http(alchemyRpcUrl),
         });
 
         // Create a wallet client from the embedded wallet
@@ -76,7 +156,6 @@ export function useSmartWallet() {
         });
 
         console.log('🎯 Smart Account Address:', simpleSmartAccount.address);
-        setSmartAccountAddress(simpleSmartAccount.address);
 
         // Create Pimlico paymaster client for gas sponsorship
         console.log('💰 Setting up Pimlico paymaster...');
@@ -102,18 +181,28 @@ export function useSmartWallet() {
           },
         });
 
+        // Update both local state and global cache
         setSmartAccountClient(smartClient);
+        setSmartAccountAddress(simpleSmartAccount.address);
+        globalWalletCache.smartAccountClient = smartClient;
+        globalWalletCache.smartAccountAddress = simpleSmartAccount.address;
+        globalWalletCache.lastWalletAddress = embeddedWallet.address;
         console.log('✅ Smart wallet setup complete!');
       } catch (err) {
         console.error('❌ Error setting up smart wallet:', err);
         setError(err instanceof Error ? err.message : 'Failed to setup smart wallet');
+        // Clear cache on error
+        globalWalletCache.lastWalletAddress = null;
+        globalWalletCache.smartAccountClient = null;
+        globalWalletCache.smartAccountAddress = null;
       } finally {
         setIsLoading(false);
+        globalWalletCache.setupInProgress = false;
       }
     }
 
     setupSmartWallet();
-  }, [ready, authenticated, embeddedWallet]);
+  }, [ready, authenticated, embeddedWallet, enabled]);
 
   return {
     smartAccountClient,

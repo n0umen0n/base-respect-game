@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { parseEther, formatEther, createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import { CONTRACTS } from '../config/contracts.config';
@@ -180,9 +180,10 @@ const publicClient = createPublicClient({
 interface UseRespectGameProps {
   smartAccountClient: any;
   userAddress: string | null;
+  minimalMode?: boolean; // Only fetch isTopMember, skip expensive calls
 }
 
-export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGameProps) {
+export function useRespectGame({ smartAccountClient, userAddress, minimalMode = false }: UseRespectGameProps) {
   const [gameState, setGameState] = useState<{
     currentGameNumber: number;
     currentStage: 0 | 1; // 0 = Submission, 1 = Ranking
@@ -201,19 +202,27 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
   const [respectBalance, setRespectBalance] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Load game state and member info
-  useEffect(() => {
-    if (userAddress) {
-      loadGameData();
-    }
-  }, [userAddress]);
-
-  const loadGameData = async () => {
+  const loadGameData = useCallback(async () => {
     if (!userAddress) return;
 
     try {
       setLoading(true);
 
+      // Minimal mode: only fetch isTopMember (for proposals page)
+      if (minimalMode) {
+        const topMember = await publicClient.readContract({
+          address: RESPECT_GAME_CORE_ADDRESS,
+          abi: RESPECT_GAME_CORE_ABI,
+          functionName: 'isTopMember',
+          args: [userAddress],
+        });
+        
+        setIsTopMember(topMember);
+        setLoading(false);
+        return;
+      }
+
+      // Full mode: fetch all data (for game container)
       // Read contract data using public client
       const [gameNumber, stage, nextTimestamp, member, topMember, balance, topMembers] = await Promise.all([
         publicClient.readContract({
@@ -285,7 +294,16 @@ export function useRespectGame({ smartAccountClient, userAddress }: UseRespectGa
     } finally {
       setLoading(false);
     }
-  };
+  }, [userAddress, minimalMode]);
+
+  // Load game state and member info
+  useEffect(() => {
+    if (userAddress) {
+      loadGameData();
+    } else {
+      setLoading(false);
+    }
+  }, [userAddress, loadGameData]);
 
   // Contract write functions
   const becomeMember = async (

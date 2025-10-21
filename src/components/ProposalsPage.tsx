@@ -39,21 +39,13 @@ import {
   type LiveProposal,
 } from '../lib/supabase-respect';
 import { useTreasuryBalances } from '../hooks/useTreasuryBalances';
+import { useRespectGame } from '../hooks/useRespectGame';
+import { useSmartWallet } from '../hooks/useSmartWallet';
 import { CONTRACTS } from '../config/contracts.config';
 
 interface ProposalsPageProps {
-  userAddress: string;
-  isTopMember: boolean;
-  onVote: (proposalId: number, voteFor: boolean) => Promise<void>;
-  onCreateBanProposal?: (targetMember: string, description: string) => Promise<void>;
-  onCreateTransferProposal?: (
-    token: string,
-    tokenAddress: string,
-    recipient: string,
-    amount: string,
-    decimals: number,
-    description: string
-  ) => Promise<void>;
+  isLoggedIn: boolean;
+  onLoadingChange: (loading: boolean) => void; // Callback to notify parent of loading state
 }
 
 const PROPOSAL_COLORS = {
@@ -82,11 +74,9 @@ const PROPOSAL_THRESHOLDS = {
 
 function ProposalCard({
   proposal,
-  isTopMember,
   onVoteClick,
 }: {
   proposal: LiveProposal;
-  isTopMember: boolean;
   onVoteClick: (proposalId: number, voteFor: boolean) => void;
 }) {
   const colors = PROPOSAL_COLORS[proposal.proposal_type as keyof typeof PROPOSAL_COLORS] || PROPOSAL_COLORS.ApproveMember;
@@ -169,7 +159,7 @@ function ProposalCard({
             </Box>
           </Box>
 
-          {isTopMember && proposal.status === 'Pending' && (
+          {proposal.status === 'Pending' && (
             <Box sx={{ display: 'flex', gap: 1 }}>
               <Button
                 variant="contained"
@@ -249,16 +239,14 @@ function ProposalCard({
 }
 
 export default function ProposalsPage({
-  userAddress,
-  isTopMember,
-  onVote,
-  onCreateBanProposal,
-  onCreateTransferProposal,
+  isLoggedIn,
+  onLoadingChange,
 }: ProposalsPageProps) {
   const [tabValue, setTabValue] = useState(0);
   const [liveProposals, setLiveProposals] = useState<LiveProposal[]>([]);
   const [historicalProposals, setHistoricalProposals] = useState<LiveProposal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false); // Track if initial data load is complete
   const [error, setError] = useState<string | null>(null);
   const [voteDialog, setVoteDialog] = useState<{
     open: boolean;
@@ -269,17 +257,29 @@ export default function ProposalsPage({
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [createProposalDialogOpen, setCreateProposalDialogOpen] = useState(false);
 
-  // Fetch treasury balances
+  // Lazy-load wallet and blockchain only when needed
+  const [walletInitialized, setWalletInitialized] = useState(false);
+  const { smartAccountClient, smartAccountAddress } = useSmartWallet(walletInitialized && isLoggedIn);
+  const {
+    voteOnProposal,
+    createBanProposal,
+    createTransferProposal,
+  } = useRespectGame({
+    smartAccountClient: walletInitialized && isLoggedIn ? smartAccountClient : null,
+    userAddress: walletInitialized && isLoggedIn ? smartAccountAddress : null,
+    minimalMode: true,
+  });
+
+  // Fetch treasury balances (only thing we load from blockchain)
   const { balances: treasuryBalances, loading: treasuryLoading } = useTreasuryBalances(CONTRACTS.EXECUTOR);
 
-  // Log user status
+  // Wait for both proposals AND treasury to load
+  const allDataReady = dataLoaded && !treasuryLoading;
+
+  // Notify parent when all data is loaded (hide loading screen)
   useEffect(() => {
-    console.log('=== PROPOSALS PAGE STATUS ===');
-    console.log('User Address:', userAddress || 'Not logged in');
-    console.log('Is Top Member:', isTopMember);
-    console.log('Can Create Proposals:', isTopMember && userAddress !== '');
-    console.log('============================');
-  }, [userAddress, isTopMember]);
+    onLoadingChange(!allDataReady);
+  }, [allDataReady, onLoadingChange]);
 
   const handleCopyAddress = async () => {
     try {
@@ -294,33 +294,33 @@ export default function ProposalsPage({
     type: 'ban' | 'transfer',
     data: BanProposalData | TransferProposalData
   ) => {
+    // Initialize wallet on first use
+    if (!walletInitialized) {
+      setWalletInitialized(true);
+      // Wait a bit for wallet to initialize
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
     try {
       if (type === 'ban') {
         const banData = data as BanProposalData;
-        if (onCreateBanProposal) {
-          await onCreateBanProposal(banData.targetMember, banData.description);
-        } else {
-          throw new Error('Ban proposal creation not available');
-        }
+        await createBanProposal(banData.targetMember, banData.description);
       } else {
         const transferData = data as TransferProposalData;
         const tokenAddress = transferData.token === 'ETH' 
           ? '0x0000000000000000000000000000000000000000' 
           : TOKEN_ADDRESSES[transferData.token as keyof typeof TOKEN_ADDRESSES];
         const decimals = TOKEN_DECIMALS[transferData.token];
+        const isETH = transferData.token === 'ETH';
         
-        if (onCreateTransferProposal) {
-          await onCreateTransferProposal(
-            transferData.token,
-            tokenAddress,
-            transferData.recipient,
-            transferData.amount,
-            decimals,
-            transferData.description
-          );
-        } else {
-          throw new Error('Transfer proposal creation not available');
-        }
+        await createTransferProposal(
+          tokenAddress,
+          transferData.recipient,
+          transferData.amount,
+          decimals,
+          transferData.description,
+          isETH
+        );
       }
       
       // Reload proposals after creation
@@ -330,10 +330,6 @@ export default function ProposalsPage({
       throw err;
     }
   };
-
-  useEffect(() => {
-    loadProposals();
-  }, []);
 
   const loadProposals = async () => {
     try {
@@ -347,15 +343,25 @@ export default function ProposalsPage({
 
       setLiveProposals(live);
       setHistoricalProposals(historical);
+      setDataLoaded(true); // Mark data as loaded
     } catch (err: any) {
       console.error('Error loading proposals:', err);
       setError('Failed to load proposals');
+      setDataLoaded(true); // Still mark as loaded even on error
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    loadProposals();
+  }, []);
+
   const handleVoteClick = (proposalId: number, voteFor: boolean) => {
+    // Initialize wallet when user tries to vote
+    if (!walletInitialized) {
+      setWalletInitialized(true);
+    }
     setVoteDialog({ open: true, proposalId, voteFor });
   };
 
@@ -364,7 +370,7 @@ export default function ProposalsPage({
 
     try {
       setVoting(true);
-      await onVote(voteDialog.proposalId, voteDialog.voteFor);
+      await voteOnProposal(voteDialog.proposalId, voteDialog.voteFor);
       setVoteDialog({ open: false, proposalId: null, voteFor: false });
       // Reload proposals after voting
       await loadProposals();
@@ -376,8 +382,9 @@ export default function ProposalsPage({
     }
   };
 
-  if (loading) {
-    return <LoadingScreen message="LOADING PROPOSALS..." />;
+  // Don't render page until ALL data is loaded (proposals + treasury) to prevent flashing
+  if (!allDataReady) {
+    return <></>;
   }
 
   return (
@@ -400,18 +407,20 @@ export default function ProposalsPage({
             >
               PROPOSALS
             </Typography>
-            {userAddress && (
+            {isLoggedIn && (
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}
-                onClick={() => setCreateProposalDialogOpen(true)}
-                disabled={!isTopMember}
+                onClick={() => {
+                  if (!walletInitialized) setWalletInitialized(true);
+                  setCreateProposalDialogOpen(true);
+                }}
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.7rem',
-                  backgroundColor: isTopMember ? '#4caf50' : undefined,
+                  backgroundColor: '#4caf50',
                   '&:hover': {
-                    backgroundColor: isTopMember ? '#45a049' : undefined,
+                    backgroundColor: '#45a049',
                   },
                 }}
               >
@@ -420,7 +429,7 @@ export default function ProposalsPage({
             )}
           </Box>
 
-          {!isTopMember && (
+          {isLoggedIn && (
             <Alert 
               severity="info" 
               sx={{ 
@@ -432,7 +441,7 @@ export default function ProposalsPage({
                 }
               }}
             >
-              Only top 6 members with highest RESPECT SCORE can vote
+              Anyone can create proposals. Only top 6 members can vote.
             </Alert>
           )}
 
@@ -482,7 +491,6 @@ export default function ProposalsPage({
                     <ProposalCard
                       key={proposal.proposal_id}
                       proposal={proposal}
-                      isTopMember={isTopMember}
                       onVoteClick={handleVoteClick}
                     />
                   ))
@@ -511,7 +519,6 @@ export default function ProposalsPage({
                     <ProposalCard
                       key={proposal.proposal_id}
                       proposal={proposal}
-                      isTopMember={false}
                       onVoteClick={() => {}}
                     />
                   ))
@@ -954,7 +961,7 @@ export default function ProposalsPage({
         open={createProposalDialogOpen}
         onClose={() => setCreateProposalDialogOpen(false)}
         onCreateProposal={handleCreateProposal}
-        isTopMember={isTopMember}
+        isTopMember={true}
       />
     </>
   );

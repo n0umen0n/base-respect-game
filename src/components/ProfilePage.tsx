@@ -56,9 +56,9 @@ import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 
 interface ProfilePageProps {
   walletAddress: string;
-  respectBalance?: number; // From RespectToken contract
   refreshTrigger?: number; // Timestamp to trigger data refresh
   currentUserAddress?: string; // Address of currently logged in user
+  onLoadingChange?: (loading: boolean) => void; // Callback to notify parent of loading state
 }
 
 interface ContributionHistory {
@@ -315,9 +315,9 @@ function GameHistoryRow({ game }: { game: GameResult }) {
 
 export default function ProfilePage({
   walletAddress,
-  respectBalance = 0,
   refreshTrigger,
   currentUserAddress,
+  onLoadingChange,
 }: ProfilePageProps) {
   const { user, linkTwitter } = usePrivy();
   const navigate = useNavigate();
@@ -339,6 +339,11 @@ export default function ProfilePage({
   const isOwnProfile = currentUserAddress 
     ? currentUserAddress.toLowerCase() === walletAddress.toLowerCase()
     : user?.wallet?.address?.toLowerCase() === walletAddress.toLowerCase();
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
 
   useEffect(() => {
     loadProfileData();
@@ -388,10 +393,13 @@ export default function ProfilePage({
     }
   };
 
+  // Render empty fragment while loading - parent wrapper will show loading screen overlay
+  // This allows useEffect to run and load data
   if (loading) {
-    return <LoadingScreen message="LOADING PROFILE..." />;
+    return <></>;
   }
 
+  // Show error if we're done loading and there's an error
   if (error || !member) {
     return (
       <Box sx={{ padding: 3 }}>

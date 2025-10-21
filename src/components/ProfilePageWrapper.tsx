@@ -1,29 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { usePrivy } from '@privy-io/react-auth';
 import { Box, Alert } from '@mui/material';
-import { useSmartWallet } from '../hooks/useSmartWallet';
-import { useRespectGame } from '../hooks/useRespectGame';
 import ProfilePage from './ProfilePage';
 import { LoadingScreen } from './LoadingSpinner';
 
 export default function ProfilePageWrapper() {
   const { address } = useParams<{ address: string }>();
-  const { user } = usePrivy();
-  const { smartAccountClient, smartAccountAddress, isLoading: walletLoading } = useSmartWallet();
-  
-  // Always call hook, but it will handle null smartAccountClient gracefully
-  const {
-    respectBalance,
-    loading: gameLoading,
-  } = useRespectGame({
-    smartAccountClient: user ? smartAccountClient : null,
-    userAddress: address || null,
-  });
-
-  if ((user && walletLoading) || (user && gameLoading)) {
-    return <LoadingScreen message="LOADING PROFILE..." />;
-  }
+  const [pageLoading, setPageLoading] = useState(true);
 
   if (!address) {
     return (
@@ -33,12 +16,19 @@ export default function ProfilePageWrapper() {
     );
   }
 
+  // Profile page is completely independent - no wallet, no blockchain
+  // Just pure Supabase data loading
   return (
-    <ProfilePage
-      walletAddress={address}
-      respectBalance={respectBalance}
-      currentUserAddress={smartAccountAddress || undefined}
-    />
+    <>
+      {pageLoading && <LoadingScreen message="LOADING PROFILE..." />}
+      <div style={{ display: pageLoading ? 'none' : 'block' }}>
+        <ProfilePage
+          walletAddress={address}
+          currentUserAddress={undefined}
+          onLoadingChange={setPageLoading}
+        />
+      </div>
+    </>
   );
 }
 

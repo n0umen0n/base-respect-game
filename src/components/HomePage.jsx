@@ -18,7 +18,7 @@ import {
   Avatar,
   Link,
 } from '@mui/material';
-import LoadingSpinner from './LoadingSpinner';
+import LoadingSpinner, { LoadingScreen } from './LoadingSpinner';
 
 const HomePage = () => {
   const { login, logout, user, ready, authenticated } = usePrivy();
@@ -27,6 +27,7 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     loadTopMembers();
@@ -45,7 +46,11 @@ const HomePage = () => {
     if (shouldNavigateToGame === 'true' && ready && authenticated && user) {
       console.log('✅ NAVIGATING TO /game NOW');
       sessionStorage.removeItem('navigateToGameAfterLogin');
-      navigate('/game');
+      setIsNavigating(true);
+      // Wait for Privy modal to fully close before navigation (prevents flicker)
+      setTimeout(() => {
+        navigate('/game');
+      }, 500);
     }
   }, [ready, authenticated, user, navigate]);
 
@@ -97,8 +102,10 @@ const HomePage = () => {
     };
   }, [lastScrollY]);
 
-  if (!ready) {
-    return null;
+  // Show loading spinner if Privy is not ready OR if navigating to game
+  // Use LoadingScreen for consistent positioning across the app
+  if (!ready || isNavigating) {
+    return <LoadingScreen />;
   }
 
   return (

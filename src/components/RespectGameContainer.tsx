@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { Box } from '@mui/material';
 import { useSmartWallet } from '../hooks/useSmartWallet';
-import { useRespectGame } from '../hooks/useRespectGame';
 import { getMember, getCurrentGameStage, getMemberContribution, getMemberGroup, getMemberRanking } from '../lib/supabase-respect';
 import ProfileCreation from './ProfileCreation';
 import ContributionSubmission from './ContributionSubmission';
@@ -16,27 +15,30 @@ type View = 'profile-creation' | 'contribution' | 'ranking' | 'profile' | 'propo
 export default function RespectGameContainer() {
   const { user, authenticated } = usePrivy();
   const { smartAccountClient, smartAccountAddress, isLoading: walletLoading } = useSmartWallet();
-  const {
-    gameState,
-    memberInfo,
-    isTopMember,
-    respectBalance,
-    loading: gameLoading,
-    becomeMember,
-    submitContribution,
-    submitRanking,
-    voteOnProposal,
-    getMyGroup,
-    getContribution,
-    refreshData,
-  } = useRespectGame({
-    smartAccountClient,
-    userAddress: smartAccountAddress,
-  });
 
-  const [currentView, setCurrentView] = useState<View | null>(null);
+  // Try to restore last view from sessionStorage for instant refresh
+  const getCachedView = (): View | null => {
+    if (typeof window !== 'undefined') {
+      const cached = sessionStorage.getItem('lastGameView');
+      return cached as View | null;
+    }
+    return null;
+  };
+
+  // NO MORE useRespectGame - all data from Supabase only
+  const [memberData, setMemberData] = useState<any>(null);
+  const [currentView, setCurrentView] = useState<View | null>(getCachedView()); // Start with cached view
+  
+  // Helper to set view and cache it
+  const updateView = (view: View) => {
+    setCurrentView(view);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('lastGameView', view);
+    }
+  };
   const [groupMembers, setGroupMembers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Always show loading initially
+  const [childLoading, setChildLoading] = useState(true); // Track child component loading
   const [loadingMessage, setLoadingMessage] = useState<string>('LOADING GAME...');
   const [profileRefreshTrigger, setProfileRefreshTrigger] = useState<number>(Date.now());
   const [supabaseGameData, setSupabaseGameData] = useState<{
@@ -46,40 +48,77 @@ export default function RespectGameContainer() {
   } | null>(null);
 
   useEffect(() => {
-    if (!walletLoading && !gameLoading && authenticated && smartAccountAddress) {
-      determineView();
+    console.log('🔄 RespectGameContainer effect:', { 
+      walletLoading, 
+      authenticated, 
+      smartAccountAddress 
+    });
+
+    if (!walletLoading && authenticated && smartAccountAddress) {
+      console.log('▶️ Starting determineView...');
+      setLoading(true);
+      setChildLoading(true); // Reset child loading when determining view
+      
+      // Add timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        console.warn('⚠️ Loading timeout - forcing profile view');
+        setLoading(false);
+        setChildLoading(false);
+        updateView('profile');
+      }, 10000); // 10 second timeout
+
+      determineView()
+        .then(() => {
+          console.log('✅ determineView completed successfully');
+        })
+        .catch((err) => {
+          console.error('❌ determineView failed:', err);
+        })
+        .finally(() => {
+          clearTimeout(timeout);
+        });
+
+      return () => clearTimeout(timeout);
+    } else if (!authenticated) {
+      // If not authenticated, stop loading and don't show anything
+      console.log('👤 Not authenticated - clearing view');
+      setLoading(false);
+      setChildLoading(false);
+      setCurrentView(null);
+    } else {
+      console.log('⏳ Waiting for wallet or auth...');
     }
-  }, [walletLoading, gameLoading, authenticated, smartAccountAddress, memberInfo, gameState]);
+  }, [walletLoading, authenticated, smartAccountAddress]);
 
   const determineView = async () => {
     try {
-      setLoading(true);
-
       if (!smartAccountAddress) {
         setLoading(false);
         return;
       }
+
+      console.log('🎮 Determining game view for:', smartAccountAddress);
 
       // Check if user has a profile in Supabase (NOT blockchain)
       const memberData = await getMember(smartAccountAddress);
       
       if (!memberData) {
         // No profile in Supabase, show profile creation
-        setCurrentView('profile-creation');
+        updateView('profile-creation');
         setLoading(false);
         return;
       }
 
       // Check if member is banned
       if (memberData.is_banned) {
-        setCurrentView('profile');
+        updateView('profile');
         setLoading(false);
         return;
       }
 
       // If not approved, show profile
       if (!memberData.is_approved) {
-        setCurrentView('profile');
+        updateView('profile');
         setLoading(false);
         return;
       }
@@ -89,7 +128,7 @@ export default function RespectGameContainer() {
       
       if (!gameStageData) {
         // No game stage data, show profile
-        setCurrentView('profile');
+        updateView('profile');
         setLoading(false);
         return;
       }
@@ -113,10 +152,10 @@ export default function RespectGameContainer() {
 
         if (contribution) {
           // Already submitted, show profile
-          setCurrentView('profile');
+          updateView('profile');
         } else {
           // Has not submitted, show contribution form
-          setCurrentView('contribution');
+          updateView('contribution');
         }
       } else {
         // Ranking Stage ('ContributionRanking')
@@ -128,7 +167,7 @@ export default function RespectGameContainer() {
 
         if (userRanking) {
           // Already submitted ranking, show profile
-          setCurrentView('profile');
+          updateView('profile');
         } else {
           // Has not submitted ranking, check if user has a group assigned
           const groupData = await getMemberGroup(
@@ -159,25 +198,25 @@ export default function RespectGameContainer() {
             );
 
             setGroupMembers(membersWithData);
-            setCurrentView('ranking');
+            updateView('ranking');
           } else {
             // No group assigned yet, show profile
-            setCurrentView('profile');
+            updateView('profile');
           }
         }
       }
 
       setLoading(false);
+      console.log('✅ View determined:', currentView);
     } catch (error) {
-      console.error('Error determining view:', error);
-      setCurrentView('profile');
+      console.error('❌ Error determining view:', error);
+      // On error, default to profile view
+      updateView('profile');
       setLoading(false);
     }
   };
 
   const handleProfileCreated = async () => {
-    await refreshData();
-    
     // Wait a bit for webhook to process and update Supabase
     // Then check Supabase and determine appropriate view
     await new Promise(resolve => setTimeout(resolve, 2000));
@@ -188,11 +227,9 @@ export default function RespectGameContainer() {
     setLoading(true);
     setLoadingMessage('PROCESSING SUBMISSION...');
     
-    await refreshData();
-    
     if (!smartAccountAddress || !supabaseGameData) {
       setLoading(false);
-      setCurrentView('profile');
+      updateView('profile');
       return;
     }
     
@@ -227,18 +264,16 @@ export default function RespectGameContainer() {
     setLoading(false);
     
     // Always navigate to profile after submission
-    setCurrentView('profile');
+    updateView('profile');
   };
 
   const handleRankingSubmitted = async () => {
     setLoading(true);
     setLoadingMessage('PROCESSING SUBMISSION...');
     
-    await refreshData();
-    
     if (!smartAccountAddress || !supabaseGameData) {
       setLoading(false);
-      setCurrentView('profile');
+      updateView('profile');
       return;
     }
     
@@ -273,7 +308,7 @@ export default function RespectGameContainer() {
     setLoading(false);
     
     // Always navigate to profile after submission
-    setCurrentView('profile');
+    updateView('profile');
   };
 
   const handleBecomeMember = async (
@@ -282,75 +317,83 @@ export default function RespectGameContainer() {
     description: string,
     xAccount: string
   ) => {
-    // Submit to blockchain - webhook will save all data from the event
-    await becomeMember(name, profileUrl, description, xAccount);
+    // These handlers will receive blockchain write functions from child components
+    // Child components will handle the smart contract interactions directly
+    throw new Error('becomeMember should be handled by ProfileCreation component');
   };
 
   const handleSubmitContribution = async (contributions: string[], links: string[]) => {
-    await submitContribution(contributions, links);
+    throw new Error('submitContribution should be handled by ContributionSubmission component');
   };
 
   const handleSubmitRanking = async (rankedAddresses: string[]) => {
-    await submitRanking(rankedAddresses);
+    throw new Error('submitRanking should be handled by RankingSubmission component');
   };
 
   const handleVoteOnProposal = async (proposalId: number, voteFor: boolean) => {
-    await voteOnProposal(proposalId, voteFor);
+    throw new Error('voteOnProposal should be handled by ProposalsPage component');
   };
 
-  if (walletLoading || gameLoading || loading) {
+  // Show loading screen while wallet is loading OR while determining view
+  if (walletLoading || loading) {
     return <LoadingScreen message={loadingMessage} />;
   }
 
+  // Don't render anything if we don't have a view yet
   if (!currentView) {
     return <LoadingScreen message="LOADING..." />;
   }
 
+  // Use overlay pattern for child loading
+  const showChildLoading = childLoading;
+
   return (
     <>
-      {currentView === 'profile-creation' && smartAccountAddress && (
-        <ProfileCreation
-          walletAddress={smartAccountAddress}
-          onSuccess={handleProfileCreated}
-          onBecomeMember={handleBecomeMember}
-        />
-      )}
+      {showChildLoading && <LoadingScreen message={loadingMessage} />}
+      <div style={{ display: showChildLoading ? 'none' : 'block' }}>
+        {currentView === 'profile-creation' && smartAccountAddress && (
+          <ProfileCreation
+            walletAddress={smartAccountAddress}
+            onSuccess={handleProfileCreated}
+            onBecomeMember={handleBecomeMember}
+          />
+        )}
 
-      {currentView === 'contribution' && supabaseGameData && (
-        <ContributionSubmission
-          gameNumber={supabaseGameData.gameNumber}
-          nextStageTimestamp={supabaseGameData.nextStageTimestamp}
-          onSubmitContribution={handleSubmitContribution}
-          onNavigate={handleContributionSubmitted}
-        />
-      )}
+        {currentView === 'contribution' && supabaseGameData && (
+          <ContributionSubmission
+            gameNumber={supabaseGameData.gameNumber}
+            nextStageTimestamp={supabaseGameData.nextStageTimestamp}
+            onSubmitContribution={handleSubmitContribution}
+            onNavigate={handleContributionSubmitted}
+          />
+        )}
 
-      {currentView === 'ranking' && supabaseGameData && (
-        <RankingSubmission
-          gameNumber={supabaseGameData.gameNumber}
-          groupMembers={groupMembers}
-          nextSubmissionStageDate={supabaseGameData.nextStageTimestamp}
-          onSubmitRanking={handleSubmitRanking}
-          onNavigate={handleRankingSubmitted}
-        />
-      )}
+        {currentView === 'ranking' && supabaseGameData && (
+          <RankingSubmission
+            gameNumber={supabaseGameData.gameNumber}
+            groupMembers={groupMembers}
+            nextSubmissionStageDate={supabaseGameData.nextStageTimestamp}
+            onSubmitRanking={handleSubmitRanking}
+            onNavigate={handleRankingSubmitted}
+          />
+        )}
 
-      {currentView === 'profile' && smartAccountAddress && (
-        <ProfilePage
-          walletAddress={smartAccountAddress}
-          respectBalance={respectBalance}
-          refreshTrigger={profileRefreshTrigger}
-          currentUserAddress={smartAccountAddress}
-        />
-      )}
+        {currentView === 'profile' && smartAccountAddress && (
+          <ProfilePage
+            walletAddress={smartAccountAddress}
+            refreshTrigger={profileRefreshTrigger}
+            currentUserAddress={smartAccountAddress}
+            onLoadingChange={setChildLoading}
+          />
+        )}
 
-      {currentView === 'proposals' && smartAccountAddress && (
-        <ProposalsPage
-          userAddress={smartAccountAddress}
-          isTopMember={isTopMember}
-          onVote={handleVoteOnProposal}
-        />
-      )}
+        {currentView === 'proposals' && smartAccountAddress && (
+          <ProposalsPage
+            userAddress={smartAccountAddress}
+            onLoadingChange={setChildLoading}
+          />
+        )}
+      </div>
     </>
   );
 }
