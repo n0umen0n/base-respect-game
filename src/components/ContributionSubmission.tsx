@@ -23,6 +23,7 @@ interface ContributionSubmissionProps {
   gameNumber: number;
   nextStageTimestamp: Date;
   onNavigate: () => void;
+  onLoadingChange?: (loading: boolean) => void; // Callback to notify parent of loading state
 }
 
 interface ContributionItem {
@@ -35,6 +36,7 @@ export default function ContributionSubmission({
   gameNumber,
   nextStageTimestamp,
   onNavigate,
+  onLoadingChange,
 }: ContributionSubmissionProps) {
   const [items, setItems] = useState<ContributionItem[]>([
     { id: 1, contribution: '', link: '' },
@@ -43,6 +45,7 @@ export default function ContributionSubmission({
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   // Get smart wallet and blockchain functions
   const { smartAccountClient, smartAccountAddress } = useSmartWallet();
@@ -51,6 +54,16 @@ export default function ContributionSubmission({
     userAddress: smartAccountAddress,
     minimalMode: true,
   });
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
+
+  // Component is ready after initial render
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   // Countdown timer
   useEffect(() => {

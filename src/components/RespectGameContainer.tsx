@@ -313,24 +313,8 @@ export default function RespectGameContainer() {
     updateView('profile');
   };
 
-  const handleBecomeMember = async (
-    name: string,
-    profileUrl: string,
-    description: string,
-    xAccount: string
-  ) => {
-    // These handlers will receive blockchain write functions from child components
-    // Child components will handle the smart contract interactions directly
-    throw new Error('becomeMember should be handled by ProfileCreation component');
-  };
-
-  const handleSubmitContribution = async (contributions: string[], links: string[]) => {
-    throw new Error('submitContribution should be handled by ContributionSubmission component');
-  };
-
-  const handleSubmitRanking = async (rankedAddresses: string[]) => {
-    throw new Error('submitRanking should be handled by RankingSubmission component');
-  };
+  // Note: All blockchain interactions (becomeMember, submitContribution, submitRanking)
+  // are now handled directly by the child components using useRespectGame hook
 
   const handleVoteOnProposal = async (proposalId: number, voteFor: boolean) => {
     throw new Error('voteOnProposal should be handled by ProposalsPage component');
@@ -357,7 +341,7 @@ export default function RespectGameContainer() {
           <ProfileCreation
             walletAddress={smartAccountAddress}
             onSuccess={handleProfileCreated}
-            onBecomeMember={handleBecomeMember}
+            onLoadingChange={setChildLoading}
           />
         )}
 
@@ -366,6 +350,7 @@ export default function RespectGameContainer() {
             gameNumber={supabaseGameData.gameNumber}
             nextStageTimestamp={supabaseGameData.nextStageTimestamp}
             onNavigate={handleContributionSubmitted}
+            onLoadingChange={setChildLoading}
           />
         )}
 
@@ -375,6 +360,7 @@ export default function RespectGameContainer() {
             groupMembers={groupMembers}
             nextSubmissionStageDate={supabaseGameData.nextStageTimestamp}
             onNavigate={handleRankingSubmitted}
+            onLoadingChange={setChildLoading}
           />
         )}
 

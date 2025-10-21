@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   TextField,
@@ -18,24 +19,30 @@ import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ProfilePictureUpload from './ProfilePictureUpload';
 import { uploadProfilePicture, updateMemberXAccount } from '../lib/supabase-respect';
+import { useSmartWallet } from '../hooks/useSmartWallet';
+import { useRespectGame } from '../hooks/useRespectGame';
 
 interface ProfileCreationProps {
   onSuccess: () => void;
   walletAddress: string;
-  onBecomeMember: (
-    name: string,
-    profileUrl: string,
-    description: string,
-    xAccount: string
-  ) => Promise<void>;
+  onLoadingChange?: (loading: boolean) => void; // Callback to notify parent of loading state
 }
 
 export default function ProfileCreation({
   onSuccess,
   walletAddress,
-  onBecomeMember,
+  onLoadingChange,
 }: ProfileCreationProps) {
   const { user, linkTwitter, unlinkTwitter } = usePrivy();
+  const navigate = useNavigate();
+  
+  // Get smart wallet and blockchain functions
+  const { smartAccountClient, smartAccountAddress } = useSmartWallet();
+  const { becomeMember: becomeMemberOnChain } = useRespectGame({
+    smartAccountClient,
+    userAddress: smartAccountAddress,
+    minimalMode: true,
+  });
   const [formData, setFormData] = useState(() => {
     // Try to restore form data from sessionStorage
     const saved = sessionStorage.getItem('profile_form_data');
@@ -55,6 +62,17 @@ export default function ProfileCreation({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [linkingTwitter, setLinkingTwitter] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  // Notify parent of loading state changes
+  React.useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
+
+  // Component is ready after initial render
+  React.useEffect(() => {
+    setLoading(false);
+  }, []);
 
   // Save form data to sessionStorage whenever it changes
   React.useEffect(() => {
@@ -176,16 +194,31 @@ export default function ProfileCreation({
         console.log('No profile image to upload');
       }
 
+      if (!smartAccountClient || !smartAccountAddress) {
+        setError('Wallet not connected. Please refresh the page.');
+        setIsSubmitting(false);
+        setUploadProgress(null);
+        return;
+      }
+
       setUploadProgress('Creating profile...');
+      
+      console.log('🎯 Creating profile on blockchain:', {
+        name: formData.name.trim(),
+        profileUrl,
+        description: formData.description.trim()
+      });
       
       // Call the contract function
       // NOTE: We pass empty string for X account to contract since we'll store it securely in DB
-      await onBecomeMember(
+      await becomeMemberOnChain(
         formData.name.trim(),
         profileUrl,
         formData.description.trim(),
         '' // Don't store X account on-chain, only in DB for security
       );
+      
+      console.log('✅ Profile created on blockchain successfully!');
 
       // If user authenticated with X via Privy, save it to database
       // This is secure because it comes from Privy's verified OAuth
@@ -247,6 +280,8 @@ export default function ProfileCreation({
   const handleSuccessModalClose = () => {
     setShowSuccessModal(false);
     onSuccess();
+    // Navigate to homepage after profile creation
+    navigate('/');
   };
 
   return (
@@ -572,8 +607,10 @@ export default function ProfileCreation({
                 lineHeight: 1.6,
               }}
             >
-              Your profile has been successfully created. You can now participate
-              in the Respect Game!
+              Your profile has been successfully created! 
+              <br />
+              <br />
+              Click "Play" on the homepage to participate in the Respect Game.
             </Typography>
             <Button
               variant="contained"

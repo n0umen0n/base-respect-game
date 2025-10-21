@@ -57,6 +57,7 @@ interface RankingSubmissionProps {
   groupMembers: Member[];
   nextSubmissionStageDate: Date;
   onNavigate: () => void;
+  onLoadingChange?: (loading: boolean) => void; // Callback to notify parent of loading state
 }
 
 function SortableCard({ member, rank }: { member: Member; rank: number }) {
@@ -305,12 +306,14 @@ export default function RankingSubmission({
   groupMembers,
   nextSubmissionStageDate,
   onNavigate,
+  onLoadingChange,
 }: RankingSubmissionProps) {
   const [members, setMembers] = useState(groupMembers);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+  const [loading, setLoading] = useState(true);
 
   // Get smart wallet and blockchain functions
   const { smartAccountClient, smartAccountAddress } = useSmartWallet();
@@ -319,6 +322,16 @@ export default function RankingSubmission({
     userAddress: smartAccountAddress,
     minimalMode: true,
   });
+
+  // Notify parent of loading state changes
+  useEffect(() => {
+    onLoadingChange?.(loading);
+  }, [loading, onLoadingChange]);
+
+  // Component is ready after initial render
+  useEffect(() => {
+    setLoading(false);
+  }, []);
 
   // Sync members state when groupMembers prop changes
   useEffect(() => {
