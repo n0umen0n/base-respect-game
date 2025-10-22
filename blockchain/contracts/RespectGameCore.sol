@@ -105,7 +105,7 @@ contract RespectGameCore is
         string calldata xAccount
     ) external override {
         require(members[msg.sender].wallet == address(0), "Already member");
-        require(bytes(name).length > 0, "Name required");
+        require(bytes(name).length > 0, "Name manda");
 
         // First N members join automatically
         if (memberList.length < membersWithoutApproval) {
@@ -166,12 +166,6 @@ contract RespectGameCore is
 
             memberList.push(msg.sender);
 
-            emit MemberProposalCreated(
-                memberProposals.length - 1,
-                msg.sender,
-                name,
-                block.timestamp
-            );
             emit MemberJoined(
                 msg.sender,
                 name,
@@ -181,6 +175,14 @@ contract RespectGameCore is
                 block.timestamp,
                 false
             );
+
+            emit MemberProposalCreated(
+                memberProposals.length - 1,
+                msg.sender,
+                name,
+                block.timestamp
+            );
+         
         }
     }
 

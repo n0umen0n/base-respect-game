@@ -10,18 +10,20 @@ async function main() {
   console.log(`Updating game parameters on contract at: ${contractAddress}`);
   console.log(`Using signer: ${signer.address}`);
 
-  const RespectGame = await ethers.getContractFactory("RespectGameCore");
-  const contract = RespectGame.attach(contractAddress) as RespectGameCore;
+  const contract = (await ethers.getContractAt(
+    "RespectGameCore",
+    contractAddress
+  )) as unknown as RespectGameCore;
 
   // New parameter values
   const membersWithoutApproval = 5;
-  const submissionLength = 6 * 24 * 60 * 60; // 6 days in seconds
-  const rankingLength = 1 * 24 * 60 * 60; // 1 day in seconds
+  const submissionLength = 10 * 60; // 10 minutes in seconds
+  const rankingLength = 10 * 60; // 10 minutes in seconds
 
   console.log("\nNew Parameters:");
   console.log(`  Members Without Approval: ${membersWithoutApproval}`);
-  console.log(`  Submission Length: ${submissionLength}s (6 days)`);
-  console.log(`  Ranking Length: ${rankingLength}s (1 day)`);
+  console.log(`  Submission Length: ${submissionLength}s (10 minutes)`);
+  console.log(`  Ranking Length: ${rankingLength}s (10 minutes)`);
 
   console.log("\nPress Ctrl+C to cancel, or wait 3 seconds to proceed...");
   await new Promise((resolve) => setTimeout(resolve, 3000));

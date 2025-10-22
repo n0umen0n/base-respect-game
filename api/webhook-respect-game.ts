@@ -497,10 +497,10 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
         );
         // Don't throw error - just skip this proposal
         // The member will be added when MemberJoined event is processed (if it hasn't been already)
-        return { 
-          success: true, 
+        return {
+          success: true,
           action: "skipped_member_not_found",
-          note: "Member not in database yet - possibly old/replayed event"
+          note: "Member not in database yet - possibly old/replayed event",
         };
       }
     }
@@ -517,12 +517,16 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
       .single();
 
     if (existingProposal) {
-      console.log(`⚠️ Proposal ${databaseProposalId} already exists. Skipping duplicate.`);
+      console.log(
+        `⚠️ Proposal ${databaseProposalId} already exists. Skipping duplicate.`
+      );
       return { success: true, action: "skipped_duplicate" };
     }
 
     // Insert as a proposal of type "ApproveMember"
-    console.log(`📝 Inserting proposal ${databaseProposalId} for member ${candidateAddress}...`);
+    console.log(
+      `📝 Inserting proposal ${databaseProposalId} for member ${candidateAddress}...`
+    );
     const { error } = await supabase.from("proposals").insert({
       proposal_id: databaseProposalId,
       proposal_type: "ApproveMember",
@@ -541,7 +545,9 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
       throw error;
     }
 
-    console.log(`✅ Member proposal inserted successfully with ID: ${databaseProposalId}`);
+    console.log(
+      `✅ Member proposal inserted successfully with ID: ${databaseProposalId}`
+    );
 
     return { success: true, action: "member_proposal_created" };
   } catch (error) {

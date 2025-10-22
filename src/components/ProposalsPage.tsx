@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -48,6 +49,19 @@ interface ProposalsPageProps {
   onLoadingChange: (loading: boolean) => void; // Callback to notify parent of loading state
 }
 
+// Helper function to format dates as "22 October 2025"
+function formatProposalDate(dateString: string): string {
+  const date = new Date(dateString);
+  const day = date.getDate();
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  const month = monthNames[date.getMonth()];
+  const year = date.getFullYear();
+  return `${day} ${month} ${year}`;
+}
+
 const PROPOSAL_COLORS = {
   ApproveMember: {
     bg: '#e8f5e9',
@@ -81,9 +95,11 @@ const PROPOSAL_THRESHOLDS = {
 function ProposalCard({
   proposal,
   onVoteClick,
+  navigate,
 }: {
   proposal: LiveProposal;
   onVoteClick: (proposalId: number, voteFor: boolean, isTransfer: boolean, isApproveMember: boolean, targetMemberAddress?: string) => void;
+  navigate: (path: string) => void;
 }) {
   const colors = PROPOSAL_COLORS[proposal.proposal_type as keyof typeof PROPOSAL_COLORS] || PROPOSAL_COLORS.ApproveMember;
   const threshold = PROPOSAL_THRESHOLDS[proposal.proposal_type as keyof typeof PROPOSAL_THRESHOLDS] || 2;
@@ -123,18 +139,6 @@ function ProposalCard({
                   color: 'white',
                 }}
               />
-              {!isTransferProposal && (
-                <Chip
-                  label={proposal.proposal_type.replace(/([A-Z])/g, ' $1').trim().toUpperCase()}
-                  size="small"
-                  sx={{
-                    fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '0.6rem',
-                    backgroundColor: colors.text,
-                    color: 'white',
-                  }}
-                />
-              )}
             </Box>
 
             <Typography
@@ -149,8 +153,39 @@ function ProposalCard({
             >
               {isTransferProposal
                 ? 'Fund Transfer' 
+                : isApproveMemberProposal
+                ? 'Member Approval'
                 : proposal.target_member_name || 'General Proposal'}
             </Typography>
+
+            {isApproveMemberProposal && proposal.target_member_name && proposal.target_member_address && (
+              <Box sx={{ marginBottom: 1.5 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.85rem',
+                    textAlign: 'left',
+                  }}
+                >
+                  <strong>Member: </strong>
+                  <Box
+                    component="span"
+                    onClick={() => navigate(`/profile/${proposal.target_member_address}`)}
+                    sx={{
+                      color: colors.border,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      '&:hover': {
+                        color: colors.text,
+                      },
+                    }}
+                  >
+                    {proposal.target_member_name}
+                  </Box>
+                </Typography>
+              </Box>
+            )}
 
             {isTransferProposal && proposal.transfer_recipient && (
               <Box sx={{ marginBottom: 1.5 }}>
@@ -206,11 +241,13 @@ function ProposalCard({
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, fontSize: '0.85rem', color: 'text.secondary', textAlign: 'left' }}>
+              {!isApproveMemberProposal && (
+                <Typography variant="caption" sx={{ textAlign: 'left' }}>
+                  Proposed by: <strong>{proposal.proposer_name}</strong>
+                </Typography>
+              )}
               <Typography variant="caption" sx={{ textAlign: 'left' }}>
-                Proposed by: <strong>{proposal.proposer_name}</strong>
-              </Typography>
-              <Typography variant="caption" sx={{ textAlign: 'left' }}>
-                {new Date(proposal.created_at).toLocaleDateString()}
+                {formatProposalDate(proposal.created_at)}
               </Typography>
             </Box>
           </Box>
@@ -228,7 +265,7 @@ function ProposalCard({
                   fontSize: '0.6rem',
                 }}
               >
-                {isTransferProposal ? 'APPROVE' : 'FOR'}
+                {isTransferProposal || isApproveMemberProposal ? 'APPROVE' : 'FOR'}
               </Button>
               {!isTransferProposal && !isApproveMemberProposal && (
                 <Button
@@ -266,7 +303,9 @@ function ProposalCard({
               }}
             >
               {isTransferProposal 
-                ? `VOTES: ${proposal.votes_for} APPROVE`
+                ? `VOTES: ${proposal.votes_for}`
+                : isApproveMemberProposal
+                ? `VOTES: ${proposal.votes_for}`
                 : `VOTES: ${proposal.votes_for} FOR / ${proposal.votes_against} AGAINST`}
             </Typography>
             <Typography
@@ -302,6 +341,7 @@ export default function ProposalsPage({
   isLoggedIn,
   onLoadingChange,
 }: ProposalsPageProps) {
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [liveProposals, setLiveProposals] = useState<LiveProposal[]>([]);
   const [historicalProposals, setHistoricalProposals] = useState<LiveProposal[]>([]);
@@ -570,6 +610,7 @@ export default function ProposalsPage({
                       key={proposal.proposal_id}
                       proposal={proposal}
                       onVoteClick={handleVoteClick}
+                      navigate={navigate}
                     />
                   ))
                 ) : (
@@ -598,6 +639,7 @@ export default function ProposalsPage({
                       key={proposal.proposal_id}
                       proposal={proposal}
                       onVoteClick={() => {}}
+                      navigate={navigate}
                     />
                   ))
                 ) : (
