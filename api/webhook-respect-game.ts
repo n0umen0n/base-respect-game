@@ -481,20 +481,27 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
     // If member doesn't exist yet, wait a bit and check again
     if (!existingMember) {
       console.log("Member not found yet, waiting for MemberJoined event...");
-      // Wait 2 seconds for MemberJoined handler to complete
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      // Wait 3 seconds for MemberJoined handler to complete
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
       // Check again
       const { data: memberAfterWait } = await supabase
         .from("members")
         .select("wallet_address")
         .eq("wallet_address", candidateAddress)
         .single();
-      
+
       if (!memberAfterWait) {
-        console.error("Member still not found after waiting. MemberJoined event may have failed.");
-        // Member should exist by now - this is an error condition
-        throw new Error(`Member ${candidateAddress} not found in database`);
+        console.error(
+          "⚠️ Member still not found after waiting. This might be an old/replayed event or events came in separate batches. Skipping proposal creation."
+        );
+        // Don't throw error - just skip this proposal
+        // The member will be added when MemberJoined event is processed (if it hasn't been already)
+        return { 
+          success: true, 
+          action: "skipped_member_not_found",
+          note: "Member not in database yet - possibly old/replayed event"
+        };
       }
     }
 
@@ -502,7 +509,20 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
     // Member proposals: 1000000+, Governance proposals: 0-999999
     const databaseProposalId = 1000000 + memberProposalId;
 
+    // Check if proposal already exists (in case of replayed events)
+    const { data: existingProposal } = await supabase
+      .from("proposals")
+      .select("proposal_id")
+      .eq("proposal_id", databaseProposalId)
+      .single();
+
+    if (existingProposal) {
+      console.log(`⚠️ Proposal ${databaseProposalId} already exists. Skipping duplicate.`);
+      return { success: true, action: "skipped_duplicate" };
+    }
+
     // Insert as a proposal of type "ApproveMember"
+    console.log(`📝 Inserting proposal ${databaseProposalId} for member ${candidateAddress}...`);
     const { error } = await supabase.from("proposals").insert({
       proposal_id: databaseProposalId,
       proposal_type: "ApproveMember",
@@ -517,11 +537,11 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
     });
 
     if (error) {
-      console.error("Error inserting member proposal:", error);
+      console.error("❌ Error inserting member proposal:", error);
       throw error;
     }
 
-    console.log(`✅ Member proposal inserted with ID: ${databaseProposalId}`);
+    console.log(`✅ Member proposal inserted successfully with ID: ${databaseProposalId}`);
 
     return { success: true, action: "member_proposal_created" };
   } catch (error) {
