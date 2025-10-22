@@ -6597,6 +6597,876 @@
           ]
         }
       }
+    },
+    "5af9a68deabd0df7b509b3040705169e67acd5a789fb503fc02562cf0048879a": {
+      "address": "0xe0d2bc411eD9b7bFCA247371Ae229885dc50E792",
+      "txHash": "0xac851c786d85146cb4ea15aca5a16b2a4c09bbe902e2744f682791044b85f051",
+      "layout": {
+        "solcVersion": "0.8.22",
+        "storage": [
+          {
+            "label": "membersWithoutApproval",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:106"
+          },
+          {
+            "label": "periodsForAverage",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:107"
+          },
+          {
+            "label": "respectDistribution",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_array(t_uint256)5_storage",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:108"
+          },
+          {
+            "label": "contributionSubmissionLength",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:109"
+          },
+          {
+            "label": "contributionRankingLength",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:110"
+          },
+          {
+            "label": "currentGameNumber",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:113"
+          },
+          {
+            "label": "currentStage",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_enum(Stage)3172",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:114"
+          },
+          {
+            "label": "nextStageTimestamp",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:115"
+          },
+          {
+            "label": "members",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_mapping(t_address,t_struct(Member)3212_storage)",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:118"
+          },
+          {
+            "label": "memberList",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:119"
+          },
+          {
+            "label": "approvedMemberCount",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:120"
+          },
+          {
+            "label": "topSixMembers",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_array(t_address)6_storage",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:121"
+          },
+          {
+            "label": "memberProposals",
+            "offset": 0,
+            "slot": "21",
+            "type": "t_array(t_struct(MemberProposal)3227_storage)dyn_storage",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:124"
+          },
+          {
+            "label": "memberContributions",
+            "offset": 0,
+            "slot": "22",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(Contribution)3242_storage))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:127"
+          },
+          {
+            "label": "gameContributors",
+            "offset": 0,
+            "slot": "23",
+            "type": "t_mapping(t_uint256,t_array(t_address)dyn_storage)",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:129"
+          },
+          {
+            "label": "groups",
+            "offset": 0,
+            "slot": "24",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Group)3250_storage))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:132"
+          },
+          {
+            "label": "gameTotalGroups",
+            "offset": 0,
+            "slot": "25",
+            "type": "t_mapping(t_uint256,t_uint256)",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:133"
+          },
+          {
+            "label": "memberGroupId",
+            "offset": 0,
+            "slot": "26",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_uint256))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:134"
+          },
+          {
+            "label": "groupSizes",
+            "offset": 0,
+            "slot": "27",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:135"
+          },
+          {
+            "label": "rankings",
+            "offset": 0,
+            "slot": "28",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_address,t_struct(Ranking)3262_storage)))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:138"
+          },
+          {
+            "label": "groupRankers",
+            "offset": 0,
+            "slot": "29",
+            "type": "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_address)dyn_storage))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:140"
+          },
+          {
+            "label": "gameResults",
+            "offset": 0,
+            "slot": "30",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_struct(GameResult)3271_storage))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:143"
+          },
+          {
+            "label": "groupingBatchProgress",
+            "offset": 0,
+            "slot": "31",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:146"
+          },
+          {
+            "label": "rankingCalculationBatchProgress",
+            "offset": 0,
+            "slot": "32",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:147"
+          },
+          {
+            "label": "rankingCalculationGroupProgress",
+            "offset": 0,
+            "slot": "33",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:148"
+          },
+          {
+            "label": "isProcessingStageSwitch",
+            "offset": 0,
+            "slot": "34",
+            "type": "t_bool",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:149"
+          },
+          {
+            "label": "randomSeed",
+            "offset": 0,
+            "slot": "35",
+            "type": "t_uint256",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:152"
+          },
+          {
+            "label": "proposals",
+            "offset": 0,
+            "slot": "36",
+            "type": "t_array(t_struct(Proposal)3303_storage)dyn_storage",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:155"
+          },
+          {
+            "label": "hasVoted",
+            "offset": 0,
+            "slot": "37",
+            "type": "t_mapping(t_uint256,t_mapping(t_address,t_bool))",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:156"
+          },
+          {
+            "label": "respectToken",
+            "offset": 0,
+            "slot": "38",
+            "type": "t_address",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:159"
+          },
+          {
+            "label": "treasury",
+            "offset": 0,
+            "slot": "39",
+            "type": "t_address",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:162"
+          },
+          {
+            "label": "executor",
+            "offset": 0,
+            "slot": "40",
+            "type": "t_address",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:165"
+          },
+          {
+            "label": "governanceContract",
+            "offset": 0,
+            "slot": "41",
+            "type": "t_address",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:168"
+          },
+          {
+            "label": "__gap",
+            "offset": 0,
+            "slot": "42",
+            "type": "t_array(t_uint256)48_storage",
+            "contract": "RespectGameStorage",
+            "src": "contracts/storage/RespectGameStorage.sol:177"
+          },
+          {
+            "label": "coreContract",
+            "offset": 0,
+            "slot": "90",
+            "type": "t_address",
+            "contract": "RespectGameGovernance",
+            "src": "contracts/RespectGameGovernance.sol:20"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)73_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)6_storage": {
+            "label": "address[6]",
+            "numberOfBytes": "192"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_string_storage)dyn_storage": {
+            "label": "string[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(MemberProposal)3227_storage)dyn_storage": {
+            "label": "struct RespectGameStorage.MemberProposal[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Proposal)3303_storage)dyn_storage": {
+            "label": "struct RespectGameStorage.Proposal[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_struct(Transaction)3188_storage)dyn_storage": {
+            "label": "struct RespectGameStorage.Transaction[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_uint256)48_storage": {
+            "label": "uint256[48]",
+            "numberOfBytes": "1536"
+          },
+          "t_array(t_uint256)5_storage": {
+            "label": "uint256[5]",
+            "numberOfBytes": "160"
+          },
+          "t_array(t_uint256)dyn_storage": {
+            "label": "uint256[]",
+            "numberOfBytes": "32"
+          },
+          "t_bytes_storage": {
+            "label": "bytes",
+            "numberOfBytes": "32"
+          },
+          "t_enum(ProposalStatus)3181": {
+            "label": "enum RespectGameStorage.ProposalStatus",
+            "members": [
+              "Pending",
+              "Executed",
+              "Rejected"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(ProposalType)3177": {
+            "label": "enum RespectGameStorage.ProposalType",
+            "members": [
+              "BanMember",
+              "ApproveMember",
+              "TreasuryTransfer",
+              "ExecuteTransactions"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_enum(Stage)3172": {
+            "label": "enum RespectGameStorage.Stage",
+            "members": [
+              "ContributionSubmission",
+              "ContributionRanking"
+            ],
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Contribution)3242_storage)": {
+            "label": "mapping(address => struct RespectGameStorage.Contribution)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(GameResult)3271_storage)": {
+            "label": "mapping(address => struct RespectGameStorage.GameResult)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Member)3212_storage)": {
+            "label": "mapping(address => struct RespectGameStorage.Member)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_struct(Ranking)3262_storage)": {
+            "label": "mapping(address => struct RespectGameStorage.Ranking)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_array(t_address)dyn_storage)": {
+            "label": "mapping(uint256 => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_bool))": {
+            "label": "mapping(uint256 => mapping(address => bool))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(Contribution)3242_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct RespectGameStorage.Contribution))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(GameResult)3271_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct RespectGameStorage.GameResult))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_struct(Ranking)3262_storage))": {
+            "label": "mapping(uint256 => mapping(address => struct RespectGameStorage.Ranking))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(uint256 => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_array(t_address)dyn_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => address[]))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_mapping(t_address,t_struct(Ranking)3262_storage)))": {
+            "label": "mapping(uint256 => mapping(uint256 => mapping(address => struct RespectGameStorage.Ranking)))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_struct(Group)3250_storage))": {
+            "label": "mapping(uint256 => mapping(uint256 => struct RespectGameStorage.Group))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_mapping(t_uint256,t_uint256))": {
+            "label": "mapping(uint256 => mapping(uint256 => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_struct(Group)3250_storage)": {
+            "label": "mapping(uint256 => struct RespectGameStorage.Group)",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_uint256,t_uint256)": {
+            "label": "mapping(uint256 => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Contribution)3242_storage": {
+            "label": "struct RespectGameStorage.Contribution",
+            "members": [
+              {
+                "label": "contributor",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "contributions",
+                "type": "t_array(t_string_storage)dyn_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "links",
+                "type": "t_array(t_string_storage)dyn_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "gameNumber",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "counted",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "5"
+              }
+            ],
+            "numberOfBytes": "192"
+          },
+          "t_struct(GameResult)3271_storage": {
+            "label": "struct RespectGameStorage.GameResult",
+            "members": [
+              {
+                "label": "member",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rank",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "respectEarned",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "gameNumber",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              }
+            ],
+            "numberOfBytes": "128"
+          },
+          "t_struct(Group)3250_storage": {
+            "label": "struct RespectGameStorage.Group",
+            "members": [
+              {
+                "label": "members",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "gameNumber",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "finalized",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_struct(Member)3212_storage": {
+            "label": "struct RespectGameStorage.Member",
+            "members": [
+              {
+                "label": "wallet",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "profileUrl",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "xAccount",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "isApproved",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "isBanned",
+                "type": "t_bool",
+                "offset": 1,
+                "slot": "5"
+              },
+              {
+                "label": "joinedAt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "totalRespectEarned",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "averageRespect",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "respectHistory",
+                "type": "t_array(t_uint256)dyn_storage",
+                "offset": 0,
+                "slot": "9"
+              }
+            ],
+            "numberOfBytes": "320"
+          },
+          "t_struct(MemberProposal)3227_storage": {
+            "label": "struct RespectGameStorage.MemberProposal",
+            "members": [
+              {
+                "label": "candidate",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "profileUrl",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "xAccount",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "createdAt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "executed",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "6"
+              }
+            ],
+            "numberOfBytes": "224"
+          },
+          "t_struct(Proposal)3303_storage": {
+            "label": "struct RespectGameStorage.Proposal",
+            "members": [
+              {
+                "label": "id",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "proposalType",
+                "type": "t_enum(ProposalType)3177",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "proposer",
+                "type": "t_address",
+                "offset": 1,
+                "slot": "1"
+              },
+              {
+                "label": "targetMember",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "transferAmount",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "transferRecipient",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "4"
+              },
+              {
+                "label": "description",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "5"
+              },
+              {
+                "label": "createdAt",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "6"
+              },
+              {
+                "label": "status",
+                "type": "t_enum(ProposalStatus)3181",
+                "offset": 0,
+                "slot": "7"
+              },
+              {
+                "label": "voters",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "8"
+              },
+              {
+                "label": "votesFor",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "9"
+              },
+              {
+                "label": "votesAgainst",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "10"
+              },
+              {
+                "label": "transactions",
+                "type": "t_array(t_struct(Transaction)3188_storage)dyn_storage",
+                "offset": 0,
+                "slot": "11"
+              }
+            ],
+            "numberOfBytes": "384"
+          },
+          "t_struct(Ranking)3262_storage": {
+            "label": "struct RespectGameStorage.Ranking",
+            "members": [
+              {
+                "label": "ranker",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "rankedAddresses",
+                "type": "t_array(t_address)dyn_storage",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "gameNumber",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "groupId",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "timestamp",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(Transaction)3188_storage": {
+            "label": "struct RespectGameStorage.Transaction",
+            "members": [
+              {
+                "label": "target",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "value",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "data",
+                "type": "t_bytes_storage",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
     }
   }
 }

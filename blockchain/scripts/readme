@@ -10,6 +10,7 @@ npx hardhat run scripts/respect-game-split.deploy.ts --network base-mainnet
 UPGRADE:
 
 npx hardhat run scripts/respect-game.manual-upgrade.ts --network base-mainnet
+npx hardhat run scripts/governance.manual-upgrade.ts --network base-mainnet
 
 
 

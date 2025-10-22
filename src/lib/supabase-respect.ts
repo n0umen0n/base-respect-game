@@ -172,6 +172,8 @@ export interface LiveProposal {
   proposer_name: string;
   target_member_address?: string;
   target_member_name?: string;
+  transfer_amount?: number;
+  transfer_recipient?: string;
   description: string;
   status: string;
   votes_for: number;

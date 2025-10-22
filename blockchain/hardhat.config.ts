@@ -12,8 +12,9 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 1, // Aggressive optimization for smallest size
+        runs: 200,
       },
+      viaIR: true, // Enable IR-based code generation to handle stack depth issues
     },
   },
   networks: {

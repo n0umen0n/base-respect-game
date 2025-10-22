@@ -35,7 +35,7 @@ const RESPECT_GAME_CORE_EVENTS = [
 ];
 
 const RESPECT_GAME_GOVERNANCE_EVENTS = [
-  "event ProposalCreated(uint256 indexed proposalId, uint8 proposalType, address indexed proposer, address indexed targetMember, string description, uint256 timestamp)",
+  "event ProposalCreated(uint256 indexed proposalId, uint8 proposalType, address indexed proposer, address indexed targetMember, address[] targets, uint256[] values, bytes[] calldatas, string description, uint256 timestamp)",
   "event ProposalVoted(uint256 indexed proposalId, address indexed voter, bool voteFor, uint256 votesFor, uint256 votesAgainst)",
   "event ProposalExecuted(uint256 indexed proposalId, uint8 proposalType, uint256 timestamp)",
 ];
@@ -489,7 +489,7 @@ async function handleMemberBanned(log: any, txHash: string) {
   }
 }
 
-// ProposalCreated(uint256 indexed proposalId, uint8 proposalType, address indexed proposer, address indexed targetMember, string description, uint256 timestamp)
+// ProposalCreated(uint256 indexed proposalId, uint8 proposalType, address indexed proposer, address indexed targetMember, address[] targets, uint256[] values, bytes[] calldatas, string description, uint256 timestamp)
 async function handleProposalCreated(log: any, txHash: string) {
   try {
     // Decode using ethers
@@ -505,18 +505,67 @@ async function handleProposalCreated(log: any, txHash: string) {
       decoded.args.targetMember !== "0x0000000000000000000000000000000000000000"
         ? decoded.args.targetMember.toLowerCase()
         : null;
+    const targets = decoded.args.targets;
+    const values = decoded.args.values;
+    const calldatas = decoded.args.calldatas;
     const description = decoded.args.description;
     const timestamp = Number(decoded.args.timestamp);
 
     // Map proposal type number to string
+    // Enum values from RespectGameStorage.sol:
+    // 0: BanMember, 1: ApproveMember, 2: TreasuryTransfer, 3: ExecuteTransactions
     const proposalTypeMap: Record<number, string> = {
       0: "BanMember",
       1: "ApproveMember",
-      2: "ExecuteTransactions",
+      2: "TreasuryTransfer",
+      3: "ExecuteTransactions",
     };
     const proposalTypeName = proposalTypeMap[proposalType] || "Unknown";
 
     console.log("📋 Proposal created:", proposalId, "Type:", proposalTypeName);
+
+    // Decode transaction data for transfer proposals
+    let transfer_recipient: string | null = null;
+    let transfer_amount: string | null = null;
+
+    if (proposalTypeName === "ExecuteTransactions" && targets.length > 0) {
+      const firstTarget = targets[0].toLowerCase();
+      const firstValue = values[0];
+      const firstCalldata = calldatas[0];
+
+      // Check if it's an ERC20 transfer (function selector: 0xa9059cbb)
+      if (firstCalldata.startsWith("0xa9059cbb")) {
+        try {
+          // Decode transfer(address recipient, uint256 amount)
+          // Skip 4-byte selector, then 32 bytes for address, then 32 bytes for amount
+          const recipientHex = "0x" + firstCalldata.slice(34, 74); // bytes 10-42 (skip 0xa9059cbb)
+          const amountHex = "0x" + firstCalldata.slice(74, 138); // bytes 42-74
+
+          transfer_recipient = recipientHex.toLowerCase();
+          transfer_amount = BigInt(amountHex).toString();
+
+          console.log("💸 Decoded ERC20 transfer:", {
+            recipient: transfer_recipient,
+            amount: transfer_amount,
+          });
+        } catch (err) {
+          console.error("Error decoding ERC20 transfer:", err);
+        }
+      }
+      // Check if it's an ETH transfer (empty calldata with value)
+      else if (
+        (firstCalldata === "0x" || firstCalldata.length === 0) &&
+        BigInt(firstValue) > 0n
+      ) {
+        transfer_recipient = firstTarget;
+        transfer_amount = BigInt(firstValue).toString();
+
+        console.log("💸 Decoded ETH transfer:", {
+          recipient: transfer_recipient,
+          amount: transfer_amount,
+        });
+      }
+    }
 
     const blockTimestamp = new Date(timestamp * 1000).toISOString();
 
@@ -525,6 +574,8 @@ async function handleProposalCreated(log: any, txHash: string) {
       proposal_type: proposalTypeName,
       proposer_address: proposerAddress,
       target_member_address: targetMemberAddress,
+      transfer_recipient,
+      transfer_amount,
       description: description,
       status: "Pending",
       votes_for: 0,

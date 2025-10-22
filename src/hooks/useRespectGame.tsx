@@ -425,7 +425,7 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
     const hash = await smartAccountClient.writeContract({
       address: RESPECT_GAME_GOVERNANCE_ADDRESS,
       abi: RESPECT_GAME_GOVERNANCE_ABI,
-      functionName: 'createExecuteTransactionsProposal',
+      functionName: 'createProposal',
       args: [[target], [value], [calldata], description],
     });
 

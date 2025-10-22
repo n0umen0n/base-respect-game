@@ -10,6 +10,9 @@ interface IRespectGameGovernance {
         uint8 proposalType,
         address indexed proposer,
         address indexed targetMember,
+        address[] targets,
+        uint256[] values,
+        bytes[] calldatas,
         string description,
         uint256 timestamp
     );
@@ -42,6 +45,22 @@ interface IRespectGameGovernance {
 
     // ==================== PROPOSAL FUNCTIONS ====================
 
+    /**
+     * @notice Create a proposal with arbitrary transactions (PRIMARY FUNCTION)
+     * @param targets Array of target addresses
+     * @param values Array of ETH values to send
+     * @param calldatas Array of call data
+     * @param description Reason for proposal
+     * @return proposalId The ID of the created proposal
+     */
+    function createProposal(
+        address[] calldata targets,
+        uint256[] calldata values,
+        bytes[] calldata calldatas,
+        string calldata description
+    ) external returns (uint256);
+
+    // Legacy functions for backwards compatibility (call createProposal internally)
     function createBanProposal(
         address targetMember,
         string calldata description

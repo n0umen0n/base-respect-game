@@ -59,6 +59,11 @@ const PROPOSAL_COLORS = {
     border: '#f44336',
     text: '#c62828',
   },
+  TreasuryTransfer: {
+    bg: '#e3f2fd',
+    border: '#2196f3',
+    text: '#1565c0',
+  },
   ExecuteTransactions: {
     bg: '#e3f2fd',
     border: '#2196f3',
@@ -69,6 +74,7 @@ const PROPOSAL_COLORS = {
 const PROPOSAL_THRESHOLDS = {
   ApproveMember: 2,
   BanMember: 3,
+  TreasuryTransfer: 4,
   ExecuteTransactions: 4,
 };
 
@@ -77,12 +83,13 @@ function ProposalCard({
   onVoteClick,
 }: {
   proposal: LiveProposal;
-  onVoteClick: (proposalId: number, voteFor: boolean) => void;
+  onVoteClick: (proposalId: number, voteFor: boolean, isTransfer: boolean) => void;
 }) {
   const colors = PROPOSAL_COLORS[proposal.proposal_type as keyof typeof PROPOSAL_COLORS] || PROPOSAL_COLORS.ApproveMember;
   const threshold = PROPOSAL_THRESHOLDS[proposal.proposal_type as keyof typeof PROPOSAL_THRESHOLDS] || 2;
   const totalVotes = proposal.votes_for + proposal.votes_against;
   const progress = totalVotes > 0 ? (proposal.votes_for / totalVotes) * 100 : 0;
+  const isTransferProposal = proposal.proposal_type === 'ExecuteTransactions' || proposal.proposal_type === 'TreasuryTransfer';
 
   return (
     <Card
@@ -115,16 +122,18 @@ function ProposalCard({
                   color: 'white',
                 }}
               />
-              <Chip
-                label={proposal.proposal_type.replace(/([A-Z])/g, ' $1').trim().toUpperCase()}
-                size="small"
-                sx={{
-                  fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.6rem',
-                  backgroundColor: colors.text,
-                  color: 'white',
-                }}
-              />
+              {!isTransferProposal && (
+                <Chip
+                  label={proposal.proposal_type.replace(/([A-Z])/g, ' $1').trim().toUpperCase()}
+                  size="small"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.6rem',
+                    backgroundColor: colors.text,
+                    color: 'white',
+                  }}
+                />
+              )}
             </Box>
 
             <Typography
@@ -136,8 +145,36 @@ function ProposalCard({
                 color: colors.text,
               }}
             >
-              {proposal.target_member_name || (proposal.proposal_type === 'ExecuteTransactions' ? 'Fund Transfer Proposal' : 'General Proposal')}
+              {isTransferProposal
+                ? 'Fund Transfer' 
+                : proposal.target_member_name || 'General Proposal'}
             </Typography>
+
+            {isTransferProposal && proposal.transfer_recipient && (
+              <Box sx={{ marginBottom: 2 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.85rem',
+                    marginBottom: 0.5,
+                  }}
+                >
+                  <strong>To:</strong> {proposal.transfer_recipient}
+                </Typography>
+                {proposal.transfer_amount && (
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontFamily: 'monospace',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    <strong>Amount:</strong> {proposal.transfer_amount}
+                  </Typography>
+                )}
+              </Box>
+            )}
 
             <Typography
               variant="body2"
@@ -166,21 +203,21 @@ function ProposalCard({
                 color="success"
                 size="small"
                 startIcon={<ThumbUpIcon />}
-                onClick={() => onVoteClick(proposal.proposal_id, true)}
+                onClick={() => onVoteClick(proposal.proposal_id, true, isTransferProposal)}
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.6rem',
                 }}
               >
-                FOR
+                {isTransferProposal ? 'APPROVE' : 'FOR'}
               </Button>
-              {proposal.proposal_type !== 'ExecuteTransactions' && (
+              {!isTransferProposal && (
                 <Button
                   variant="contained"
                   color="error"
                   size="small"
                   startIcon={<ThumbDownIcon />}
-                  onClick={() => onVoteClick(proposal.proposal_id, false)}
+                  onClick={() => onVoteClick(proposal.proposal_id, false, isTransferProposal)}
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
                     fontSize: '0.6rem',
@@ -209,7 +246,9 @@ function ProposalCard({
                 fontSize: '0.6rem',
               }}
             >
-              VOTES: {proposal.votes_for} FOR / {proposal.votes_against} AGAINST
+              {isTransferProposal 
+                ? `VOTES: ${proposal.votes_for} APPROVE`
+                : `VOTES: ${proposal.votes_for} FOR / ${proposal.votes_against} AGAINST`}
             </Typography>
             <Typography
               variant="caption"
@@ -254,7 +293,8 @@ export default function ProposalsPage({
     open: boolean;
     proposalId: number | null;
     voteFor: boolean;
-  }>({ open: false, proposalId: null, voteFor: false });
+    isTransfer: boolean;
+  }>({ open: false, proposalId: null, voteFor: false, isTransfer: false });
   const [voting, setVoting] = useState(false);
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [createProposalDialogOpen, setCreateProposalDialogOpen] = useState(false);
@@ -366,12 +406,12 @@ export default function ProposalsPage({
     loadProposals();
   }, []);
 
-  const handleVoteClick = (proposalId: number, voteFor: boolean) => {
+  const handleVoteClick = (proposalId: number, voteFor: boolean, isTransfer: boolean = false) => {
     // Initialize wallet when user tries to vote
     if (!walletInitialized) {
       setWalletInitialized(true);
     }
-    setVoteDialog({ open: true, proposalId, voteFor });
+    setVoteDialog({ open: true, proposalId, voteFor, isTransfer });
   };
 
   const handleVoteConfirm = async () => {
@@ -380,7 +420,7 @@ export default function ProposalsPage({
     try {
       setVoting(true);
       await voteOnProposal(voteDialog.proposalId, voteDialog.voteFor);
-      setVoteDialog({ open: false, proposalId: null, voteFor: false });
+      setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false });
       // Reload proposals after voting
       await loadProposals();
     } catch (err: any) {
@@ -896,7 +936,7 @@ export default function ProposalsPage({
                       color: PROPOSAL_COLORS.ExecuteTransactions.text,
                     }}
                   >
-                    EXECUTE CUSTOM TRANSACTION (4 votes needed)
+                    FUND TRANSFER PROPOSAL (4 votes needed)
                   </Typography>
                 </Box>
               </Box>
@@ -909,7 +949,7 @@ export default function ProposalsPage({
       <Dialog
         open={voteDialog.open}
         onClose={() =>
-          !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false })
+          !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false })
         }
       >
         <DialogTitle
@@ -922,14 +962,14 @@ export default function ProposalsPage({
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to vote{' '}
-            <strong>{voteDialog.voteFor ? 'FOR' : 'AGAINST'}</strong> this proposal?
+            Are you sure you want to {voteDialog.isTransfer ? 'approve' : 'vote'}{' '}
+            <strong>{voteDialog.isTransfer ? (voteDialog.voteFor ? 'APPROVE' : '') : (voteDialog.voteFor ? 'FOR' : 'AGAINST')}</strong> this proposal?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button
             onClick={() =>
-              setVoteDialog({ open: false, proposalId: null, voteFor: false })
+              setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false })
             }
             disabled={voting}
           >
