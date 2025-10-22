@@ -455,14 +455,14 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
       data: log.data,
     });
 
-    const proposalId = Number(decoded.args.proposalId);
+    const memberProposalId = Number(decoded.args.proposalId);
     const candidateAddress = decoded.args.candidate.toLowerCase();
     const name = decoded.args.name;
     const timestamp = Number(decoded.args.timestamp);
 
     console.log(
       "📋 Member proposal created:",
-      proposalId,
+      memberProposalId,
       "Candidate:",
       candidateAddress,
       "Name:",
@@ -471,9 +471,13 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
 
     const blockTimestamp = new Date(timestamp * 1000).toISOString();
 
+    // Use offset to avoid ID collision with governance proposals
+    // Member proposals: 1000000+, Governance proposals: 0-999999
+    const databaseProposalId = 1000000 + memberProposalId;
+
     // Insert as a proposal of type "ApproveMember"
     const { error } = await supabase.from("proposals").insert({
-      proposal_id: proposalId,
+      proposal_id: databaseProposalId,
       proposal_type: "ApproveMember",
       proposer_address: candidateAddress, // The candidate is proposing themselves
       target_member_address: candidateAddress,
@@ -485,7 +489,12 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
       block_timestamp: blockTimestamp,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Error inserting member proposal:", error);
+      throw error;
+    }
+
+    console.log(`✅ Member proposal inserted with ID: ${databaseProposalId}`);
 
     return { success: true, action: "member_proposal_created" };
   } catch (error) {
