@@ -25,6 +25,8 @@ const RESPECT_GAME_GOVERNANCE_ADDRESS =
 // Contract ABIs - Event signatures only
 const RESPECT_GAME_CORE_EVENTS = [
   "event MemberJoined(address indexed member, string name, string profileUrl, string description, string xAccount, uint256 timestamp, bool autoApproved)",
+  "event MemberProposalCreated(uint256 indexed proposalId, address indexed candidate, string name, uint256 timestamp)",
+  "event MemberApprovalVoted(address indexed candidate, address indexed approver, uint256 timestamp)",
   "event ContributionSubmitted(address indexed contributor, uint256 indexed gameNumber, string[] contributions, string[] links, uint256 timestamp)",
   "event RankingSubmitted(address indexed ranker, uint256 indexed gameNumber, uint256 indexed groupId, address[] rankedAddresses, uint256 timestamp)",
   "event RespectDistributed(address indexed member, uint256 indexed gameNumber, uint256 rank, uint256 respectAmount, uint256 newAverageRespect)",
@@ -444,6 +446,113 @@ async function handleGroupAssigned(log: any, txHash: string) {
   }
 }
 
+// MemberProposalCreated(uint256 indexed proposalId, address indexed candidate, string name, uint256 timestamp)
+async function handleMemberProposalCreated(log: any, txHash: string) {
+  try {
+    // Decode using ethers
+    const decoded = coreInterface.parseLog({
+      topics: log.topics,
+      data: log.data,
+    });
+
+    const proposalId = Number(decoded.args.proposalId);
+    const candidateAddress = decoded.args.candidate.toLowerCase();
+    const name = decoded.args.name;
+    const timestamp = Number(decoded.args.timestamp);
+
+    console.log(
+      "📋 Member proposal created:",
+      proposalId,
+      "Candidate:",
+      candidateAddress,
+      "Name:",
+      name
+    );
+
+    const blockTimestamp = new Date(timestamp * 1000).toISOString();
+
+    // Insert as a proposal of type "ApproveMember"
+    const { error } = await supabase.from("proposals").insert({
+      proposal_id: proposalId,
+      proposal_type: "ApproveMember",
+      proposer_address: candidateAddress, // The candidate is proposing themselves
+      target_member_address: candidateAddress,
+      description: `Approve ${name} as a new member`,
+      status: "Pending",
+      votes_for: 0,
+      votes_against: 0,
+      tx_hash: txHash,
+      block_timestamp: blockTimestamp,
+    });
+
+    if (error) throw error;
+
+    return { success: true, action: "member_proposal_created" };
+  } catch (error) {
+    console.error("Error handling MemberProposalCreated:", error);
+    throw error;
+  }
+}
+
+// MemberApprovalVoted(address indexed candidate, address indexed approver, uint256 timestamp)
+async function handleMemberApprovalVoted(log: any, txHash: string) {
+  try {
+    const candidateAddress = decodeAddress(log.topics[1]);
+    const approverAddress = decodeAddress(log.topics[2]);
+
+    console.log(
+      "🗳️ Member approval voted:",
+      "Candidate:",
+      candidateAddress,
+      "Approver:",
+      approverAddress
+    );
+
+    const blockTimestamp = new Date().toISOString();
+
+    // Find the proposal ID for this candidate
+    const { data: proposalData } = await supabase
+      .from("proposals")
+      .select("proposal_id, votes_for")
+      .eq("target_member_address", candidateAddress)
+      .eq("proposal_type", "ApproveMember")
+      .eq("status", "Pending")
+      .single();
+
+    if (!proposalData) {
+      console.log("No proposal found for candidate:", candidateAddress);
+      return { success: true, action: "proposal_not_found" };
+    }
+
+    // Insert vote
+    const { error: voteError } = await supabase.from("proposal_votes").insert({
+      proposal_id: proposalData.proposal_id,
+      voter_address: approverAddress,
+      vote_for: true,
+      tx_hash: txHash,
+      block_timestamp: blockTimestamp,
+    });
+
+    if (voteError) throw voteError;
+
+    // Update proposal vote count
+    const newVotesFor = proposalData.votes_for + 1;
+    const { error: proposalError } = await supabase
+      .from("proposals")
+      .update({
+        votes_for: newVotesFor,
+      })
+      .eq("proposal_id", proposalData.proposal_id);
+
+    if (proposalError) throw proposalError;
+
+    return { success: true, action: "member_approval_voted" };
+  } catch (error) {
+    console.error("Error handling MemberApprovalVoted:", error);
+    throw error;
+  }
+}
+
 // MemberApproved(address indexed member, uint256 timestamp)
 async function handleMemberApproved(log: any, txHash: string) {
   try {
@@ -457,6 +566,16 @@ async function handleMemberApproved(log: any, txHash: string) {
       .eq("wallet_address", memberAddress);
 
     if (error) throw error;
+
+    // Mark the corresponding proposal as executed
+    const { error: proposalError } = await supabase
+      .from("proposals")
+      .update({ status: "Executed" })
+      .eq("target_member_address", memberAddress)
+      .eq("proposal_type", "ApproveMember")
+      .eq("status", "Pending");
+
+    if (proposalError) throw proposalError;
 
     return { success: true, action: "member_approved" };
   } catch (error) {
@@ -731,6 +850,10 @@ async function processEventLog(
     switch (eventName) {
       case "MemberJoined":
         return await handleMemberJoined(log, txHash);
+      case "MemberProposalCreated":
+        return await handleMemberProposalCreated(log, txHash);
+      case "MemberApprovalVoted":
+        return await handleMemberApprovalVoted(log, txHash);
       case "ContributionSubmitted":
         return await handleContributionSubmitted(log, txHash);
       case "RankingSubmitted":

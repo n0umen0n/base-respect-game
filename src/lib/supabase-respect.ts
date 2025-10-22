@@ -152,6 +152,7 @@ export interface TopSixMember {
   average_respect: string; // NUMERIC as string to preserve precision
   total_respect_earned: string; // NUMERIC as string to preserve precision
   rank: number;
+  is_approved?: boolean; // Optional, for displaying approval status
 }
 
 export interface CurrentGameContribution {
@@ -356,13 +357,12 @@ export async function getTopSixMembers(): Promise<TopSixMember[]> {
 }
 
 export async function getAllMembers(): Promise<TopSixMember[]> {
-  // Fetch all approved, non-banned members ordered by respect
+  // Fetch all non-banned members (including non-approved) ordered by respect
   const { data, error } = await supabase
     .from("members")
     .select(
-      "wallet_address, name, profile_url, x_account, x_verified, average_respect::text, total_respect_earned::text"
+      "wallet_address, name, profile_url, x_account, x_verified, average_respect::text, total_respect_earned::text, is_approved"
     )
-    .eq("is_approved", true)
     .eq("is_banned", false)
     .order("average_respect", { ascending: false })
     .order("total_respect_earned", { ascending: false });

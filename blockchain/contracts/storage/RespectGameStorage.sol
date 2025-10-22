@@ -167,12 +167,16 @@ contract RespectGameStorage {
     // Governance contract (for split architecture)
     address public governanceContract;
 
+    // Member Approvals (for top 6 member voting)
+    mapping(address => address[]) public memberApprovers; // candidate => list of approvers
+    mapping(address => mapping(address => bool)) public hasApprovedMember; // candidate => approver => hasApproved
+
     // ==================== STORAGE GAP ====================
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
-     * Reduced from 50 to 48 after adding executor and governanceContract variables.
+     * Reduced from 50 to 46 after adding executor, governanceContract, and approval tracking variables.
      */
-    uint256[48] private __gap;
+    uint256[46] private __gap;
 }

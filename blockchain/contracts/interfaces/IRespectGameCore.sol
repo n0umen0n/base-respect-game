@@ -20,6 +20,11 @@ interface IRespectGameCore {
         string name,
         uint256 timestamp
     );
+    event MemberApprovalVoted(
+        address indexed candidate,
+        address indexed approver,
+        uint256 timestamp
+    );
     event MemberApproved(address indexed member, uint256 timestamp);
     // event MemberBanned(address indexed member, uint256 timestamp);
     event MemberRemoved(address indexed member, uint256 timestamp);
@@ -128,6 +133,12 @@ interface IRespectGameCore {
     // ==================== OWNER FUNCTIONS ====================
 
     function removeMember(address member) external;
+
+    function updateGameParams(
+        uint256 _membersWithoutApproval,
+        uint256 _submissionLength,
+        uint256 _rankingLength
+    ) external;
 
     // ==================== VIEW FUNCTIONS ====================
 

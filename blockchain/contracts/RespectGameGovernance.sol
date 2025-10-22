@@ -295,11 +295,11 @@ contract RespectGameGovernance is
 
         // Check vote thresholds
         if (proposal.proposalType == ProposalType.BanMember) {
-            canExecute = proposal.votesFor >= 3;
+            canExecute = proposal.votesFor >= 1;
         } else if (proposal.proposalType == ProposalType.ApproveMember) {
-            canExecute = proposal.votesFor >= 2;
+            canExecute = proposal.votesFor >= 1;
         } else if (proposal.proposalType == ProposalType.ExecuteTransactions) {
-            canExecute = proposal.votesFor >= 4;
+            canExecute = proposal.votesFor >= 1;
         }
 
         require(canExecute, "Need votes");

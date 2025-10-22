@@ -76,6 +76,19 @@ contract RespectGameCore is
         _;
     }
 
+    /**
+     * @notice Update game parameters
+     */
+    function updateGameParams(
+        uint256 _membersWithoutApproval,
+        uint256 _submissionLength,
+        uint256 _rankingLength
+    ) external onlyOwner {
+        membersWithoutApproval = _membersWithoutApproval;
+        contributionSubmissionLength = _submissionLength;
+        contributionRankingLength = _rankingLength;
+    }
+
     // ==================== MEMBER FUNCTIONS ====================
 
     /**
@@ -172,30 +185,39 @@ contract RespectGameCore is
     }
 
     /**
-     * @notice Approve a member (called by governance contract)
+     * @notice Approve a member (called by top 6 members, requires 2 approvals)
      * @param member Address of member to approve
      */
-    function approveMemberByGovernance(
-        address member
-    ) external override onlyGovernance {
+    function approveMemberByGovernance(address member) external override {
+        require(isTopMember(msg.sender), "Not top member");
         require(members[member].wallet != address(0), "Not member");
         require(!members[member].isApproved, "Already approved");
+        require(!hasApprovedMember[member][msg.sender], "Already voted");
 
-        members[member].isApproved = true;
-        approvedMemberCount++;
+        // Record the approval
+        hasApprovedMember[member][msg.sender] = true;
+        memberApprovers[member].push(msg.sender);
 
-        // Mark corresponding proposal as executed
-        for (uint256 i = 0; i < memberProposals.length; i++) {
-            if (
-                memberProposals[i].candidate == member &&
-                !memberProposals[i].executed
-            ) {
-                memberProposals[i].executed = true;
-                break;
+        emit MemberApprovalVoted(member, msg.sender, block.timestamp);
+
+        // Check if we have 2 approvals
+        if (memberApprovers[member].length >= 2) {
+            members[member].isApproved = true;
+            approvedMemberCount++;
+
+            // Mark corresponding proposal as executed
+            for (uint256 i = 0; i < memberProposals.length; i++) {
+                if (
+                    memberProposals[i].candidate == member &&
+                    !memberProposals[i].executed
+                ) {
+                    memberProposals[i].executed = true;
+                    break;
+                }
             }
-        }
 
-        emit MemberApproved(member, block.timestamp);
+            emit MemberApproved(member, block.timestamp);
+        }
     }
 
     /**

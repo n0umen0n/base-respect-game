@@ -83,13 +83,14 @@ function ProposalCard({
   onVoteClick,
 }: {
   proposal: LiveProposal;
-  onVoteClick: (proposalId: number, voteFor: boolean, isTransfer: boolean) => void;
+  onVoteClick: (proposalId: number, voteFor: boolean, isTransfer: boolean, isApproveMember: boolean, targetMemberAddress?: string) => void;
 }) {
   const colors = PROPOSAL_COLORS[proposal.proposal_type as keyof typeof PROPOSAL_COLORS] || PROPOSAL_COLORS.ApproveMember;
   const threshold = PROPOSAL_THRESHOLDS[proposal.proposal_type as keyof typeof PROPOSAL_THRESHOLDS] || 2;
   const totalVotes = proposal.votes_for + proposal.votes_against;
   const progress = totalVotes > 0 ? (proposal.votes_for / totalVotes) * 100 : 0;
   const isTransferProposal = proposal.proposal_type === 'ExecuteTransactions' || proposal.proposal_type === 'TreasuryTransfer';
+  const isApproveMemberProposal = proposal.proposal_type === 'ApproveMember';
 
   return (
     <Card
@@ -221,7 +222,7 @@ function ProposalCard({
                 color="success"
                 size="small"
                 startIcon={<ThumbUpIcon />}
-                onClick={() => onVoteClick(proposal.proposal_id, true, isTransferProposal)}
+                onClick={() => onVoteClick(proposal.proposal_id, true, isTransferProposal, isApproveMemberProposal, proposal.target_member_address)}
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.6rem',
@@ -229,13 +230,13 @@ function ProposalCard({
               >
                 {isTransferProposal ? 'APPROVE' : 'FOR'}
               </Button>
-              {!isTransferProposal && (
+              {!isTransferProposal && !isApproveMemberProposal && (
                 <Button
                   variant="contained"
                   color="error"
                   size="small"
                   startIcon={<ThumbDownIcon />}
-                  onClick={() => onVoteClick(proposal.proposal_id, false, isTransferProposal)}
+                  onClick={() => onVoteClick(proposal.proposal_id, false, isTransferProposal, isApproveMemberProposal, proposal.target_member_address)}
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
                     fontSize: '0.6rem',
@@ -312,7 +313,9 @@ export default function ProposalsPage({
     proposalId: number | null;
     voteFor: boolean;
     isTransfer: boolean;
-  }>({ open: false, proposalId: null, voteFor: false, isTransfer: false });
+    isApproveMember: boolean;
+    targetMemberAddress?: string;
+  }>({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false });
   const [voting, setVoting] = useState(false);
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [createProposalDialogOpen, setCreateProposalDialogOpen] = useState(false);
@@ -322,6 +325,7 @@ export default function ProposalsPage({
   const { smartAccountClient, smartAccountAddress } = useSmartWallet(walletInitialized && isLoggedIn);
   const {
     voteOnProposal,
+    approveMember,
     createBanProposal,
     createTransferProposal,
   } = useRespectGame({
@@ -424,12 +428,12 @@ export default function ProposalsPage({
     loadProposals();
   }, []);
 
-  const handleVoteClick = (proposalId: number, voteFor: boolean, isTransfer: boolean = false) => {
+  const handleVoteClick = (proposalId: number, voteFor: boolean, isTransfer: boolean = false, isApproveMember: boolean = false, targetMemberAddress?: string) => {
     // Initialize wallet when user tries to vote
     if (!walletInitialized) {
       setWalletInitialized(true);
     }
-    setVoteDialog({ open: true, proposalId, voteFor, isTransfer });
+    setVoteDialog({ open: true, proposalId, voteFor, isTransfer, isApproveMember, targetMemberAddress });
   };
 
   const handleVoteConfirm = async () => {
@@ -437,8 +441,15 @@ export default function ProposalsPage({
 
     try {
       setVoting(true);
-      await voteOnProposal(voteDialog.proposalId, voteDialog.voteFor);
-      setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false });
+      
+      // If it's an ApproveMember proposal, call approveMember instead of voteOnProposal
+      if (voteDialog.isApproveMember && voteDialog.targetMemberAddress) {
+        await approveMember(voteDialog.targetMemberAddress);
+      } else {
+        await voteOnProposal(voteDialog.proposalId, voteDialog.voteFor);
+      }
+      
+      setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false, targetMemberAddress: undefined });
       // Reload proposals after voting
       await loadProposals();
     } catch (err: any) {
@@ -967,7 +978,7 @@ export default function ProposalsPage({
       <Dialog
         open={voteDialog.open}
         onClose={() =>
-          !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false })
+          !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false, targetMemberAddress: undefined })
         }
       >
         <DialogTitle
@@ -980,14 +991,14 @@ export default function ProposalsPage({
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to {voteDialog.isTransfer ? 'approve' : 'vote'}{' '}
-            <strong>{voteDialog.isTransfer ? (voteDialog.voteFor ? 'APPROVE' : '') : (voteDialog.voteFor ? 'FOR' : 'AGAINST')}</strong> this proposal?
+            Are you sure you want to {voteDialog.isTransfer ? 'approve' : voteDialog.isApproveMember ? 'approve' : 'vote'}{' '}
+            <strong>{voteDialog.isTransfer ? (voteDialog.voteFor ? 'APPROVE' : '') : voteDialog.isApproveMember ? 'this member' : (voteDialog.voteFor ? 'FOR' : 'AGAINST')}</strong> {voteDialog.isApproveMember ? '' : 'this proposal'}?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button
             onClick={() =>
-              setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false })
+              setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false, targetMemberAddress: undefined })
             }
             disabled={voting}
           >

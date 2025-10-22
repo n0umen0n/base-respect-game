@@ -110,6 +110,13 @@ const RESPECT_GAME_CORE_ABI = [
     outputs: [{ name: '', type: 'address[6]' }],
     stateMutability: 'view',
   },
+  {
+    name: 'approveMemberByGovernance',
+    type: 'function',
+    inputs: [{ name: 'member', type: 'address' }],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
 ] as const;
 
 const RESPECT_TOKEN_ABI = [
@@ -173,7 +180,7 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'isTopMember',
-          args: [userAddress],
+          args: [userAddress as `0x${string}`],
         });
         
         setIsTopMember(topMember);
@@ -203,19 +210,19 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'getMember',
-          args: [userAddress],
+          args: [userAddress as `0x${string}`],
         }),
         publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
           abi: RESPECT_GAME_CORE_ABI,
           functionName: 'isTopMember',
-          args: [userAddress],
+          args: [userAddress as `0x${string}`],
         }),
         publicClient.readContract({
           address: RESPECT_TOKEN_ADDRESS,
           abi: RESPECT_TOKEN_ABI,
           functionName: 'balanceOf',
-          args: [userAddress],
+          args: [userAddress as `0x${string}`],
         }),
         publicClient.readContract({
           address: RESPECT_GAME_CORE_ADDRESS,
@@ -420,6 +427,20 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
     };
   };
 
+  const approveMember = async (memberAddress: string) => {
+    if (!smartAccountClient) throw new Error('Wallet not connected');
+
+    const hash = await smartAccountClient.writeContract({
+      address: RESPECT_GAME_CORE_ADDRESS,
+      abi: RESPECT_GAME_CORE_ABI,
+      functionName: 'approveMemberByGovernance',
+      args: [memberAddress as `0x${string}`],
+    });
+
+    console.log('Member approval transaction hash:', hash);
+    return hash;
+  };
+
   return {
     gameState,
     memberInfo,
@@ -430,6 +451,7 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
     submitContribution,
     submitRanking,
     voteOnProposal,
+    approveMember,
     createBanProposal,
     createTransferProposal,
     getMyGroup,
