@@ -471,6 +471,33 @@ async function handleMemberProposalCreated(log: any, txHash: string) {
 
     const blockTimestamp = new Date(timestamp * 1000).toISOString();
 
+    // Check if member exists in database (race condition with MemberJoined event)
+    const { data: existingMember } = await supabase
+      .from("members")
+      .select("wallet_address")
+      .eq("wallet_address", candidateAddress)
+      .single();
+
+    // If member doesn't exist yet, wait a bit and check again
+    if (!existingMember) {
+      console.log("Member not found yet, waiting for MemberJoined event...");
+      // Wait 2 seconds for MemberJoined handler to complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Check again
+      const { data: memberAfterWait } = await supabase
+        .from("members")
+        .select("wallet_address")
+        .eq("wallet_address", candidateAddress)
+        .single();
+      
+      if (!memberAfterWait) {
+        console.error("Member still not found after waiting. MemberJoined event may have failed.");
+        // Member should exist by now - this is an error condition
+        throw new Error(`Member ${candidateAddress} not found in database`);
+      }
+    }
+
     // Use offset to avoid ID collision with governance proposals
     // Member proposals: 1000000+, Governance proposals: 0-999999
     const databaseProposalId = 1000000 + memberProposalId;
