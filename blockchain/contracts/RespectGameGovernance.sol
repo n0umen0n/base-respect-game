@@ -268,11 +268,11 @@ contract RespectGameGovernance is
 
         // Different thresholds for different proposal types
         if (proposal.proposalType == ProposalType.BanMember) {
-            shouldExecute = proposal.votesFor >= 3;
+            shouldExecute = proposal.votesFor >= 1;
         } else if (proposal.proposalType == ProposalType.ApproveMember) {
-            shouldExecute = proposal.votesFor >= 2;
+            shouldExecute = proposal.votesFor >= 1;
         } else if (proposal.proposalType == ProposalType.ExecuteTransactions) {
-            shouldExecute = proposal.votesFor >= 4;
+            shouldExecute = proposal.votesFor >= 1;
         }
 
         if (shouldExecute) {

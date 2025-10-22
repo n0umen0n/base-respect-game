@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { parseEther, formatEther, createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 import { CONTRACTS } from '../config/contracts.config';
+import RespectGameGovernanceArtifact from '../contracts/RespectGameGovernance.json';
 
 // Contract ABIs (simplified - add full ABIs in production)
 const RESPECT_GAME_CORE_ABI = [
@@ -121,50 +122,8 @@ const RESPECT_TOKEN_ABI = [
   },
 ] as const;
 
-const RESPECT_GAME_GOVERNANCE_ABI = [
-  {
-    name: 'voteOnProposal',
-    type: 'function',
-    inputs: [
-      { name: 'proposalId', type: 'uint256' },
-      { name: 'voteFor', type: 'bool' },
-    ],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    name: 'createBanProposal',
-    type: 'function',
-    inputs: [
-      { name: 'targetMember', type: 'address' },
-      { name: 'description', type: 'string' },
-    ],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-  },
-  {
-    name: 'createApproveMemberProposal',
-    type: 'function',
-    inputs: [
-      { name: 'targetMember', type: 'address' },
-      { name: 'description', type: 'string' },
-    ],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-  },
-  {
-    name: 'createExecuteTransactionsProposal',
-    type: 'function',
-    inputs: [
-      { name: 'targets', type: 'address[]' },
-      { name: 'values', type: 'uint256[]' },
-      { name: 'calldatas', type: 'bytes[]' },
-      { name: 'description', type: 'string' },
-    ],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'nonpayable',
-  },
-] as const;
+// Import the full ABI from the compiled contract artifact
+const RESPECT_GAME_GOVERNANCE_ABI = RespectGameGovernanceArtifact.abi;
 
 // Contract addresses (imported from centralized config)
 const RESPECT_GAME_CORE_ADDRESS = CONTRACTS.RESPECT_GAME_CORE;

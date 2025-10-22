@@ -45,12 +45,12 @@ import {
   getMemberContribution,
   getMemberRanking,
   getCurrentGameStage,
-  updateMemberXAccount,
   type Member,
   type GameResult,
   type Contribution,
   type Ranking,
 } from '../lib/supabase-respect';
+import { secureUpdateProfile, getPrivyProvider } from '../lib/secure-api';
 import { formatRespectDisplay, formatRespectEarned } from '../lib/formatTokens';
 import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 
@@ -398,12 +398,23 @@ export default function ProfilePage({
             reason: justLinkedTwitter ? 'User just linked' : 'Auto-sync (already linked in Privy)'
           });
 
-          await updateMemberXAccount(
+          // Get Privy provider for signature
+          const provider = await getPrivyProvider();
+          
+          // Use secure API with wallet signature
+          const result = await secureUpdateProfile(
             walletAddress,
-            twitterAccount,
-            twitterVerified,
-            user?.id || ''
+            {
+              xAccount: twitterAccount,
+              xVerified: twitterVerified,
+              privyDid: user?.id || '',
+            },
+            provider || undefined
           );
+
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to update profile');
+          }
 
           console.log('✅ X account saved to database successfully!');
           

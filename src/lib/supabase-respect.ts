@@ -574,11 +574,21 @@ export async function uploadProfilePicture(
 
 /**
  * Update member's verified X account in database
- * This should ONLY be called after Privy Twitter authentication
- * @param walletAddress - The member's wallet address
- * @param xAccount - The verified X account (e.g., "@username")
- * @param xVerified - Whether the X account is verified
- * @param privyDid - The Privy DID to link the X account to this specific user
+ *
+ * ⚠️ DEPRECATED - SECURITY VULNERABILITY ⚠️
+ *
+ * This function is deprecated and should NOT be used.
+ * It allows direct database writes from the frontend which is insecure.
+ *
+ * Use the secure API instead:
+ * import { secureUpdateProfile } from '../lib/secure-api';
+ *
+ * The secure API:
+ * 1. Requires wallet signature verification
+ * 2. Uses service_role key on backend
+ * 3. Prevents unauthorized modifications
+ *
+ * @deprecated Use secureUpdateProfile from secure-api.ts instead
  */
 export async function updateMemberXAccount(
   walletAddress: string,
@@ -586,47 +596,7 @@ export async function updateMemberXAccount(
   xVerified: boolean,
   privyDid: string
 ): Promise<void> {
-  try {
-    console.log("Updating X account in database:", {
-      walletAddress: walletAddress.toLowerCase(),
-      xAccount,
-      xVerified,
-      privyDid: privyDid.substring(0, 20) + "...",
-    });
-
-    // First check if member exists
-    const { data: member, error: checkError } = await supabase
-      .from("members")
-      .select("wallet_address, x_account")
-      .eq("wallet_address", walletAddress.toLowerCase())
-      .maybeSingle(); // Use maybeSingle() to handle 0 or 1 rows
-
-    if (checkError || !member) {
-      console.error("Member not found in database yet:", checkError);
-      throw new Error("Member not found - webhook may not have processed yet");
-    }
-
-    console.log("Member found, current X account:", member.x_account);
-
-    // Update member with X account
-    const { error } = await supabase
-      .from("members")
-      .update({
-        x_account: xAccount,
-        x_verified: xVerified,
-        privy_did: privyDid,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("wallet_address", walletAddress.toLowerCase());
-
-    if (error) {
-      console.error("Error updating X account:", error);
-      throw new Error("Failed to update X account: " + error.message);
-    }
-
-    console.log("✅ X account updated successfully in database");
-  } catch (error: any) {
-    console.error("❌ Error in updateMemberXAccount:", error);
-    throw error;
-  }
+  throw new Error(
+    "SECURITY: updateMemberXAccount is deprecated. Use secureUpdateProfile from secure-api.ts instead."
+  );
 }

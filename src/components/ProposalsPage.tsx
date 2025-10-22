@@ -141,8 +141,9 @@ function ProposalCard({
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
                 fontSize: '0.9rem',
-                marginBottom: 1,
+                marginBottom: 1.5,
                 color: colors.text,
+                textAlign: 'left',
               }}
             >
               {isTransferProposal
@@ -151,13 +152,14 @@ function ProposalCard({
             </Typography>
 
             {isTransferProposal && proposal.transfer_recipient && (
-              <Box sx={{ marginBottom: 2 }}>
+              <Box sx={{ marginBottom: 1.5 }}>
                 <Typography
                   variant="body2"
                   sx={{
                     fontFamily: 'monospace',
                     fontSize: '0.85rem',
-                    marginBottom: 0.5,
+                    marginBottom: 0.75,
+                    textAlign: 'left',
                   }}
                 >
                   <strong>To:</strong> {proposal.transfer_recipient}
@@ -168,9 +170,24 @@ function ProposalCard({
                     sx={{
                       fontFamily: 'monospace',
                       fontSize: '0.85rem',
+                      textAlign: 'left',
                     }}
                   >
-                    <strong>Amount:</strong> {proposal.transfer_amount}
+                    <strong>Amount:</strong> {(() => {
+                      // Format amount with proper decimals
+                      const amount = BigInt(proposal.transfer_amount);
+                      // Detect token type based on amount size (rough heuristic)
+                      // USDC/EURC = 6 decimals, ETH = 18 decimals
+                      if (amount < 1000000000n) { // Less than 1 ETH in wei
+                        // Likely USDC or EURC (6 decimals)
+                        const formatted = (Number(amount) / 1000000).toFixed(2);
+                        return `${formatted} USDC`;
+                      } else {
+                        // Likely ETH (18 decimals)
+                        const formatted = (Number(amount) / 1e18).toFixed(4);
+                        return `${formatted} ETH`;
+                      }
+                    })()}
                   </Typography>
                 )}
               </Box>
@@ -179,18 +196,19 @@ function ProposalCard({
             <Typography
               variant="body2"
               sx={{
-                marginBottom: 2,
+                marginBottom: 1.5,
                 lineHeight: 1.6,
+                textAlign: 'left',
               }}
             >
-              {proposal.description}
+              <strong>Description:</strong> {proposal.description}
             </Typography>
 
-            <Box sx={{ display: 'flex', gap: 2, fontSize: '0.85rem', color: 'text.secondary' }}>
-              <Typography variant="caption">
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, fontSize: '0.85rem', color: 'text.secondary', textAlign: 'left' }}>
+              <Typography variant="caption" sx={{ textAlign: 'left' }}>
                 Proposed by: <strong>{proposal.proposer_name}</strong>
               </Typography>
-              <Typography variant="caption">
+              <Typography variant="caption" sx={{ textAlign: 'left' }}>
                 {new Date(proposal.created_at).toLocaleDateString()}
               </Typography>
             </Box>
