@@ -5,6 +5,7 @@ import StaggeredMenu from './components/StaggeredMenu';
 import PixelBlast from './components/PixelBlast';
 import Shuffle from './components/Shuffle';
 import { useSmartWallet } from './hooks/useSmartWallet';
+import MobileWarning from './components/MobileWarning';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -100,6 +101,7 @@ function App() {
 
   return (
     <>
+      <MobileWarning />
       <div
         className={isMenuOpen ? 'blurred' : ''}
         style={{
