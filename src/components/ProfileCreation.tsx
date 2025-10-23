@@ -125,6 +125,12 @@ export default function ProfileCreation({
     }
   }, [user]);
 
+  // Character limits
+  const CHAR_LIMITS = {
+    name: 50,
+    description: 500,
+  };
+
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -148,6 +154,16 @@ export default function ProfileCreation({
 
     if (formData.name.trim().length < 2) {
       setError('Name must be at least 2 characters');
+      return;
+    }
+
+    if (formData.name.length > CHAR_LIMITS.name) {
+      setError(`Name must be ${CHAR_LIMITS.name} characters or less`);
+      return;
+    }
+
+    if (formData.description.length > CHAR_LIMITS.description) {
+      setError(`Bio must be ${CHAR_LIMITS.description} characters or less`);
       return;
     }
 
@@ -354,6 +370,14 @@ export default function ProfileCreation({
               }}
               disabled={isSubmitting}
               placeholder="Your display name"
+              inputProps={{ maxLength: CHAR_LIMITS.name }}
+              helperText={`${formData.name.length}/${CHAR_LIMITS.name} characters`}
+              FormHelperTextProps={{
+                sx: {
+                  fontSize: '0.65rem',
+                  color: formData.name.length >= CHAR_LIMITS.name * 0.9 ? '#ff9800' : 'text.secondary',
+                }
+              }}
             />
 
             <ProfilePictureUpload
@@ -378,10 +402,12 @@ export default function ProfileCreation({
               }}
               disabled={isSubmitting}
               placeholder="Tell us about yourself..."
-              helperText="Optional: A brief description about you"
+              inputProps={{ maxLength: CHAR_LIMITS.description }}
+              helperText={`${formData.description.length}/${CHAR_LIMITS.description} characters - Optional`}
               FormHelperTextProps={{
                 sx: {
                   fontSize: '0.65rem',
+                  color: formData.description.length >= CHAR_LIMITS.description * 0.9 ? '#ff9800' : 'text.secondary',
                 }
               }}
             />

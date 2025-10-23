@@ -38,6 +38,12 @@ export default function ContributionSubmission({
   onNavigate,
   onLoadingChange,
 }: ContributionSubmissionProps) {
+  // Character limits
+  const CHAR_LIMITS = {
+    contribution: 500,
+    link: 2000,
+  };
+
   const [items, setItems] = useState<ContributionItem[]>([
     { id: 1, contribution: '', link: '' },
   ]);
@@ -139,6 +145,18 @@ export default function ContributionSubmission({
     if (validItems.length === 0) {
       setError('Please add at least one contribution');
       return;
+    }
+
+    // Check character limits
+    for (let i = 0; i < validItems.length; i++) {
+      if (validItems[i].contribution.length > CHAR_LIMITS.contribution) {
+        setError(`Contribution #${i + 1} exceeds ${CHAR_LIMITS.contribution} character limit`);
+        return;
+      }
+      if (validItems[i].link.length > CHAR_LIMITS.link) {
+        setError(`Link #${i + 1} exceeds ${CHAR_LIMITS.link} character limit`);
+        return;
+      }
     }
 
     // Validate all links have proper format if provided
@@ -374,6 +392,14 @@ export default function ContributionSubmission({
                   }}
                   disabled={isSubmitting}
                   placeholder="Contribution description"
+                  inputProps={{ maxLength: CHAR_LIMITS.contribution }}
+                  helperText={`${item.contribution.length}/${CHAR_LIMITS.contribution} characters`}
+                  FormHelperTextProps={{
+                    sx: {
+                      fontSize: '0.6rem',
+                      color: item.contribution.length >= CHAR_LIMITS.contribution * 0.9 ? '#ff9800' : 'text.secondary',
+                    }
+                  }}
                 />
 
                 <Typography
@@ -384,7 +410,7 @@ export default function ContributionSubmission({
                     textAlign: 'left',
                   }}
                 >
-                  Link
+                  Link (Optional)
                 </Typography>
                 <TextField
                   fullWidth
@@ -397,6 +423,14 @@ export default function ContributionSubmission({
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.6rem',
                       opacity: 0.6,
+                    }
+                  }}
+                  inputProps={{ maxLength: CHAR_LIMITS.link }}
+                  helperText={`${item.link.length}/${CHAR_LIMITS.link} characters`}
+                  FormHelperTextProps={{
+                    sx: {
+                      fontSize: '0.6rem',
+                      color: item.link.length >= CHAR_LIMITS.link * 0.9 ? '#ff9800' : 'text.secondary',
                     }
                   }}
                 />

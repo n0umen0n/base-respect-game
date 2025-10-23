@@ -59,6 +59,11 @@ export default function CreateProposalDialog({
   onCreateProposal,
   isTopMember,
 }: CreateProposalDialogProps) {
+  // Character limits
+  const CHAR_LIMITS = {
+    description: 1000,
+  };
+
   const [proposalType, setProposalType] = useState<'ban' | 'transfer'>('transfer');
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,6 +121,11 @@ export default function CreateProposalDialog({
           return;
         }
 
+        if (banDescription.length > CHAR_LIMITS.description) {
+          setError(`Description must be ${CHAR_LIMITS.description} characters or less`);
+          return;
+        }
+
         await onCreateProposal('ban', {
           targetMember,
           description: banDescription,
@@ -134,6 +144,11 @@ export default function CreateProposalDialog({
         const amountNum = parseFloat(amount);
         if (isNaN(amountNum) || amountNum <= 0) {
           setError('Invalid amount');
+          return;
+        }
+
+        if (transferDescription.length > CHAR_LIMITS.description) {
+          setError(`Description must be ${CHAR_LIMITS.description} characters or less`);
           return;
         }
 
@@ -253,6 +268,14 @@ export default function CreateProposalDialog({
                 multiline
                 rows={3}
                 placeholder="Explain why this member should be banned..."
+                inputProps={{ maxLength: CHAR_LIMITS.description }}
+                helperText={`${banDescription.length}/${CHAR_LIMITS.description} characters`}
+                FormHelperTextProps={{
+                  sx: {
+                    fontSize: '0.7rem',
+                    color: banDescription.length >= CHAR_LIMITS.description * 0.9 ? '#ff9800' : 'text.secondary',
+                  }
+                }}
               />
             </>
           ) : (
@@ -306,6 +329,14 @@ export default function CreateProposalDialog({
                 multiline
                 rows={3}
                 placeholder="Explain the purpose of this transfer..."
+                inputProps={{ maxLength: CHAR_LIMITS.description }}
+                helperText={`${transferDescription.length}/${CHAR_LIMITS.description} characters`}
+                FormHelperTextProps={{
+                  sx: {
+                    fontSize: '0.7rem',
+                    color: transferDescription.length >= CHAR_LIMITS.description * 0.9 ? '#ff9800' : 'text.secondary',
+                  }
+                }}
               />
             </>
           )}
