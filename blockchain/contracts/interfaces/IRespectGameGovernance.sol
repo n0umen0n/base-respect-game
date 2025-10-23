@@ -60,12 +60,7 @@ interface IRespectGameGovernance {
         string calldata description
     ) external returns (uint256);
 
-    // Legacy functions for backwards compatibility (call createProposal internally)
-    function createBanProposal(
-        address targetMember,
-        string calldata description
-    ) external returns (uint256);
-
+    // Legacy functions for backwards compatibility
     function createApproveMemberProposal(
         address targetMember,
         string calldata description

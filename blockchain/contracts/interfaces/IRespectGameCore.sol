@@ -130,7 +130,7 @@ interface IRespectGameCore {
 
     function setGovernanceContract(address _governance) external;
 
-    // ==================== OWNER FUNCTIONS ====================
+    // ==================== OWNER OR GOVERNANCE FUNCTIONS ====================
 
     function removeMember(address member) external;
 

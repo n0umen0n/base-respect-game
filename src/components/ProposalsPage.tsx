@@ -107,6 +107,7 @@ function ProposalCard({
   const progress = totalVotes > 0 ? (proposal.votes_for / totalVotes) * 100 : 0;
   const isTransferProposal = proposal.proposal_type === 'ExecuteTransactions' || proposal.proposal_type === 'TreasuryTransfer';
   const isApproveMemberProposal = proposal.proposal_type === 'ApproveMember';
+  const isBanMemberProposal = proposal.proposal_type === 'BanMember';
 
   return (
     <Card
@@ -155,10 +156,41 @@ function ProposalCard({
                 ? 'Fund Transfer' 
                 : isApproveMemberProposal
                 ? 'Member Approval'
+                : isBanMemberProposal
+                ? 'Member Ban'
                 : proposal.target_member_name || 'General Proposal'}
             </Typography>
 
             {isApproveMemberProposal && proposal.target_member_name && proposal.target_member_address && (
+              <Box sx={{ marginBottom: 1.5 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.85rem',
+                    textAlign: 'left',
+                  }}
+                >
+                  <strong>Member: </strong>
+                  <Box
+                    component="span"
+                    onClick={() => navigate(`/profile/${proposal.target_member_address}`)}
+                    sx={{
+                      color: colors.border,
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      '&:hover': {
+                        color: colors.text,
+                      },
+                    }}
+                  >
+                    {proposal.target_member_name}
+                  </Box>
+                </Typography>
+              </Box>
+            )}
+
+            {isBanMemberProposal && proposal.target_member_name && proposal.target_member_address && (
               <Box sx={{ marginBottom: 1.5 }}>
                 <Typography
                   variant="body2"
@@ -241,7 +273,7 @@ function ProposalCard({
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, fontSize: '0.85rem', color: 'text.secondary', textAlign: 'left' }}>
-              {!isApproveMemberProposal && (
+              {!isApproveMemberProposal && !isBanMemberProposal && (
                 <Typography variant="caption" sx={{ textAlign: 'left' }}>
                   Proposed by: <strong>{proposal.proposer_name}</strong>
                 </Typography>
@@ -265,9 +297,9 @@ function ProposalCard({
                   fontSize: '0.6rem',
                 }}
               >
-                {isTransferProposal || isApproveMemberProposal ? 'APPROVE' : 'FOR'}
+                {isTransferProposal || isApproveMemberProposal || isBanMemberProposal ? 'APPROVE' : 'FOR'}
               </Button>
-              {!isTransferProposal && !isApproveMemberProposal && (
+              {!isTransferProposal && !isApproveMemberProposal && !isBanMemberProposal && (
                 <Button
                   variant="contained"
                   color="error"
@@ -305,6 +337,8 @@ function ProposalCard({
               {isTransferProposal 
                 ? `VOTES: ${proposal.votes_for}`
                 : isApproveMemberProposal
+                ? `VOTES: ${proposal.votes_for}`
+                : isBanMemberProposal
                 ? `VOTES: ${proposal.votes_for}`
                 : `VOTES: ${proposal.votes_for} FOR / ${proposal.votes_against} AGAINST`}
             </Typography>
@@ -368,6 +402,7 @@ export default function ProposalsPage({
     approveMember,
     createBanProposal,
     createTransferProposal,
+    isTopMember,
   } = useRespectGame({
     smartAccountClient: walletInitialized && isLoggedIn ? smartAccountClient : null,
     userAddress: walletInitialized && isLoggedIn ? smartAccountAddress : null,
@@ -559,7 +594,7 @@ export default function ProposalsPage({
                 }
               }}
             >
-              Anyone can create proposals. Only top 6 members can vote.
+              Only top 6 members can vote and create proposals.
             </Alert>
           )}
 
@@ -1081,7 +1116,7 @@ export default function ProposalsPage({
         open={createProposalDialogOpen}
         onClose={() => setCreateProposalDialogOpen(false)}
         onCreateProposal={handleCreateProposal}
-        isTopMember={true}
+        isTopMember={isTopMember}
       />
     </>
   );

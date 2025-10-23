@@ -341,11 +341,21 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
   const createBanProposal = async (targetMember: string, description: string) => {
     if (!smartAccountClient) throw new Error('Wallet not connected');
 
+    // Encode the call to removeMember(address)
+    const functionSelector = '0x0c498909'; // removeMember(address)
+    const memberPadded = targetMember.slice(2).padStart(64, '0');
+    const calldata = `${functionSelector}${memberPadded}` as `0x${string}`;
+
     const hash = await smartAccountClient.writeContract({
       address: RESPECT_GAME_GOVERNANCE_ADDRESS,
       abi: RESPECT_GAME_GOVERNANCE_ABI,
-      functionName: 'createBanProposal',
-      args: [targetMember as `0x${string}`, description],
+      functionName: 'createProposal',
+      args: [
+        [RESPECT_GAME_CORE_ADDRESS as `0x${string}`],
+        [0n],
+        [calldata],
+        description
+      ],
     });
 
     console.log('Ban proposal created, transaction hash:', hash);

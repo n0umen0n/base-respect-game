@@ -241,11 +241,15 @@ contract RespectGameCore is
     // }
 
     /**
-     * @notice Remove a member completely from the system (called by owner)
+     * @notice Remove a member completely from the system (called by owner or governance)
      * @param member Address of member to remove
      * @dev This will delete all member-related data from storage
      */
-    function removeMember(address member) external onlyOwner {
+    function removeMember(address member) external {
+        require(
+            msg.sender == owner() || msg.sender == governanceContract,
+            "Only owner or governance"
+        );
         require(members[member].wallet != address(0), "Not a member");
 
         // Decrement approved member count if they were approved

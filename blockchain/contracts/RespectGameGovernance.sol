@@ -182,8 +182,8 @@ contract RespectGameGovernance is
         if (target == coreContract && calldata_.length >= 4) {
             bytes4 selector = bytes4(calldata_[0:4]);
 
-            // banMemberByGovernance(address) = 0x3c8463a1
-            if (selector == 0x3c8463a1) {
+            // removeMember(address) = 0x0c498909
+            if (selector == 0x0c498909) {
                 return ProposalType.BanMember;
             }
             // approveMemberByGovernance(address) = 0x9e75ab97
@@ -433,32 +433,6 @@ contract RespectGameGovernance is
     // ==================== LEGACY FUNCTIONS (For Backwards Compatibility) ====================
 
     /**
-     * @notice Create a proposal to ban a member
-     * @dev DEPRECATED: Use createProposal() instead
-     * This function is kept for backwards compatibility and convenience
-     */
-    function createBanProposal(
-        address targetMember,
-        string calldata description
-    ) external override returns (uint256) {
-        // Encode the call to banMemberByGovernance(address)
-        bytes memory callData = abi.encodeWithSignature(
-            "banMemberByGovernance(address)",
-            targetMember
-        );
-
-        address[] memory targets = new address[](1);
-        uint256[] memory values = new uint256[](1);
-        bytes[] memory calldatas = new bytes[](1);
-
-        targets[0] = coreContract;
-        values[0] = 0;
-        calldatas[0] = callData;
-
-        return this.createProposal(targets, values, calldatas, description);
-    }
-
-    /**
      * @notice Create a proposal to approve a member
      * @dev DEPRECATED: Use createProposal() instead
      * This function is kept for backwards compatibility and convenience
@@ -467,21 +441,51 @@ contract RespectGameGovernance is
         address targetMember,
         string calldata description
     ) external override returns (uint256) {
+        require(_isTopMember(msg.sender), "Not top");
+
         // Encode the call to approveMemberByGovernance(address)
         bytes memory callData = abi.encodeWithSignature(
             "approveMemberByGovernance(address)",
             targetMember
         );
 
+        uint256 proposalId = proposals.length;
+
+        Proposal storage newProposal = proposals.push();
+        newProposal.id = proposalId;
+        newProposal.proposer = msg.sender;
+        newProposal.description = description;
+        newProposal.createdAt = block.timestamp;
+        newProposal.status = ProposalStatus.Pending;
+        newProposal.votesFor = 0;
+        newProposal.votesAgainst = 0;
+        newProposal.proposalType = ProposalType.ApproveMember;
+        newProposal.targetMember = targetMember;
+
+        newProposal.transactions.push(
+            Transaction({target: coreContract, value: 0, data: callData})
+        );
+
         address[] memory targets = new address[](1);
         uint256[] memory values = new uint256[](1);
         bytes[] memory calldatas = new bytes[](1);
-
         targets[0] = coreContract;
         values[0] = 0;
         calldatas[0] = callData;
 
-        return this.createProposal(targets, values, calldatas, description);
+        emit ProposalCreated(
+            proposalId,
+            uint8(ProposalType.ApproveMember),
+            msg.sender,
+            targetMember,
+            targets,
+            values,
+            calldatas,
+            description,
+            block.timestamp
+        );
+
+        return proposalId;
     }
 
     /**
@@ -495,6 +499,49 @@ contract RespectGameGovernance is
         bytes[] calldata calldatas,
         string calldata description
     ) external override returns (uint256) {
-        return this.createProposal(targets, values, calldatas, description);
+        require(_isTopMember(msg.sender), "Not top");
+        require(targets.length > 0, "No transactions");
+        require(
+            targets.length == values.length &&
+                values.length == calldatas.length,
+            "Length mismatch"
+        );
+
+        uint256 proposalId = proposals.length;
+
+        Proposal storage newProposal = proposals.push();
+        newProposal.id = proposalId;
+        newProposal.proposer = msg.sender;
+        newProposal.description = description;
+        newProposal.createdAt = block.timestamp;
+        newProposal.status = ProposalStatus.Pending;
+        newProposal.votesFor = 0;
+        newProposal.votesAgainst = 0;
+        newProposal.proposalType = ProposalType.ExecuteTransactions;
+        newProposal.targetMember = address(0);
+
+        for (uint i = 0; i < targets.length; i++) {
+            newProposal.transactions.push(
+                Transaction({
+                    target: targets[i],
+                    value: values[i],
+                    data: calldatas[i]
+                })
+            );
+        }
+
+        emit ProposalCreated(
+            proposalId,
+            uint8(ProposalType.ExecuteTransactions),
+            msg.sender,
+            address(0),
+            targets,
+            values,
+            calldatas,
+            description,
+            block.timestamp
+        );
+
+        return proposalId;
     }
 }
