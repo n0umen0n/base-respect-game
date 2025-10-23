@@ -602,14 +602,12 @@ export default function ProfileCreation({
             </Typography>
             <Typography
               sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
                 marginBottom: 3,
-                fontSize: '0.9rem',
-                lineHeight: 1.6,
+                fontSize: '0.7rem',
+                lineHeight: 1.8,
               }}
             >
-              Your profile has been successfully created! 
-              <br />
-              <br />
               Click "Play" on the homepage to participate in the Respect Game.
             </Typography>
             <Button

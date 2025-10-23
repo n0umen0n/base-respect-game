@@ -110,6 +110,18 @@ export default function ContributionSubmission({
     );
   };
 
+  // Validate URL format
+  const isValidUrl = (urlString: string): boolean => {
+    if (!urlString.trim()) return true; // Empty is okay (optional)
+    
+    try {
+      const url = new URL(urlString);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -127,6 +139,15 @@ export default function ContributionSubmission({
     if (validItems.length === 0) {
       setError('Please add at least one contribution');
       return;
+    }
+
+    // Validate all links have proper format if provided
+    for (let i = 0; i < validItems.length; i++) {
+      const link = validItems[i].link.trim();
+      if (link && !isValidUrl(link)) {
+        setError(`Invalid link format in contribution #${i + 1}. Please use a valid URL (e.g., https://example.com)`);
+        return;
+      }
     }
 
     try {
@@ -325,8 +346,17 @@ export default function ContributionSubmission({
                   )}
                 </Box>
 
+                <Typography
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.65rem',
+                    marginBottom: 1,
+                    textAlign: 'left',
+                  }}
+                >
+                  Contribution
+                </Typography>
                 <TextField
-                  label="Contribution"
                   fullWidth
                   multiline
                   rows={3}
@@ -346,14 +376,22 @@ export default function ContributionSubmission({
                   placeholder="Contribution description"
                 />
 
+                <Typography
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.65rem',
+                    marginBottom: 1,
+                    textAlign: 'left',
+                  }}
+                >
+                  Link
+                </Typography>
                 <TextField
-                  label="Link"
                   fullWidth
                   value={item.link}
                   onChange={(e) => updateContribution(item.id, 'link', e.target.value)}
                   disabled={isSubmitting}
                   placeholder="https://..."
-                  helperText="Link to your contribution (GitHub, Twitter, etc.)"
                   sx={{
                     '& .MuiInputBase-input::placeholder': {
                       fontFamily: '"Press Start 2P", sans-serif',

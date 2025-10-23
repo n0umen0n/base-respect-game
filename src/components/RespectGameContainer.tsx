@@ -116,13 +116,6 @@ export default function RespectGameContainer() {
         return;
       }
 
-      // If not approved, show profile
-      if (!memberData.is_approved) {
-        updateView('profile');
-        setLoading(false);
-        return;
-      }
-
       // Get current game stage from Supabase
       const gameStageData = await getCurrentGameStage();
       
@@ -159,6 +152,13 @@ export default function RespectGameContainer() {
         }
       } else {
         // Ranking Stage ('ContributionRanking')
+        // If not approved, can't participate in ranking - show profile
+        if (!memberData.is_approved) {
+          updateView('profile');
+          setLoading(false);
+          return;
+        }
+        
         // First check if user has already submitted their ranking
         const userRanking = await getMemberRanking(
           smartAccountAddress,

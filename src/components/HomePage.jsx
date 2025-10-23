@@ -23,6 +23,8 @@ import {
   Box,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import CancelIcon from '@mui/icons-material/Cancel';
 import LoadingSpinner, { LoadingScreen } from './LoadingSpinner';
 
 const HomePage = () => {
@@ -558,14 +560,12 @@ const HomePage = () => {
                             >
                               {member.x_account}
                             </Link>
-                            {member.x_verified && (
-                              <span title="Verified" style={{ fontSize: '1rem' }}>✅</span>
-                            )}
+                            <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />
                           </div>
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center', color: '#999' }}>
                             <span>missing</span>
-                            <span style={{ fontSize: '1rem' }}>❌</span>
+                            <CancelIcon sx={{ fontSize: 18, color: '#f44336' }} />
                           </div>
                         )}
                       </TableCell>
