@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -50,7 +50,7 @@ import {
   type Contribution,
   type Ranking,
 } from '../lib/supabase-respect';
-import { secureUpdateProfile, getPrivyProvider } from '../lib/secure-api';
+import { secureUpdateProfile } from '../lib/secure-api';
 import { formatRespectDisplay, formatRespectEarned } from '../lib/formatTokens';
 import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 
@@ -320,6 +320,7 @@ export default function ProfilePage({
   onLoadingChange,
 }: ProfilePageProps) {
   const { user, linkTwitter } = usePrivy();
+  const { wallets } = useWallets();
   const navigate = useNavigate();
   const [member, setMember] = useState<Member | null>(null);
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
@@ -398,8 +399,12 @@ export default function ProfilePage({
             reason: justLinkedTwitter ? 'User just linked' : 'Auto-sync (already linked in Privy)'
           });
 
-          // Get Privy provider for signature
-          const provider = await getPrivyProvider();
+          // Get Privy embedded wallet (never triggers MetaMask)
+          const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+          
+          if (!embeddedWallet) {
+            throw new Error('No Privy embedded wallet found. Please log in.');
+          }
           
           // Use secure API with wallet signature
           const result = await secureUpdateProfile(
@@ -409,7 +414,7 @@ export default function ProfilePage({
               xVerified: twitterVerified,
               privyDid: user?.id || '',
             },
-            provider || undefined
+            embeddedWallet
           );
 
           if (!result.success) {

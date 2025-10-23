@@ -3,6 +3,9 @@
  *
  * This module provides secure methods to update backend data
  * by signing messages with the user's wallet.
+ *
+ * IMPORTANT: This module is designed to work ONLY with Privy embedded wallets
+ * to avoid triggering MetaMask or other external wallet popups.
  */
 
 import { BrowserProvider } from "ethers";
@@ -10,6 +13,8 @@ import { BrowserProvider } from "ethers";
 /**
  * Update member profile securely
  * Requires wallet signature to prove ownership
+ *
+ * REQUIRES: A Privy embedded wallet provider must be passed to avoid MetaMask popup
  */
 export async function secureUpdateProfile(
   walletAddress: string,
@@ -21,22 +26,21 @@ export async function secureUpdateProfile(
     xVerified?: boolean;
     privyDid?: string;
   },
-  provider?: BrowserProvider // Optional: Privy embedded wallet provider
+  privyEmbeddedWallet?: any // Privy embedded wallet object from useWallets()
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Get the signer (wallet)
-    let signer;
-
-    if (provider) {
-      // Use provided provider (e.g., Privy embedded wallet)
-      signer = await provider.getSigner();
-    } else if (typeof window !== "undefined" && (window as any).ethereum) {
-      // Fallback to MetaMask or other injected wallet
-      const browserProvider = new BrowserProvider((window as any).ethereum);
-      signer = await browserProvider.getSigner();
-    } else {
-      throw new Error("No wallet provider found");
+    // Get the signer from Privy embedded wallet ONLY
+    // DO NOT use window.ethereum as it triggers MetaMask
+    if (!privyEmbeddedWallet) {
+      throw new Error(
+        "Privy embedded wallet is required. Please log in first."
+      );
     }
+
+    // Get the EIP-1193 provider from Privy embedded wallet
+    const provider = await privyEmbeddedWallet.getEthereumProvider();
+    const browserProvider = new BrowserProvider(provider);
+    const signer = await browserProvider.getSigner();
 
     // Create message to sign
     const timestamp = Date.now();
@@ -78,22 +82,5 @@ export async function secureUpdateProfile(
       success: false,
       error: error.message || "Failed to update profile",
     };
-  }
-}
-
-/**
- * Helper to get BrowserProvider from Privy
- * Call this if you're using Privy embedded wallets
- */
-export async function getPrivyProvider(): Promise<BrowserProvider | null> {
-  try {
-    // Check if window.ethereum exists (Privy injects this)
-    if (typeof window !== "undefined" && (window as any).ethereum) {
-      return new BrowserProvider((window as any).ethereum);
-    }
-    return null;
-  } catch (error) {
-    console.error("Error getting Privy provider:", error);
-    return null;
   }
 }

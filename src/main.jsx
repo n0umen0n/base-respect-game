@@ -30,7 +30,6 @@ root.render(
       appearance: {
         theme: 'light',
         accentColor: '#676FFF',
-        walletList: ['metamask', 'coinbase_wallet', 'walletconnect']
       },
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
@@ -38,12 +37,6 @@ root.render(
       },
       mfa: {
         requireForAppWallets: true,
-      },
-      externalWallets: {
-        walletConnect: {
-          // Your WalletConnect project ID
-          projectId: 'replace-with-your-walletconnect-project-id',
-        },
       },
     }}
   >
