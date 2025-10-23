@@ -677,12 +677,17 @@ async function handleMemberRemoved(log: any, txHash: string) {
     const memberAddress = decodeAddress(log.topics[1]);
     const timestamp = decodeUint256(log.data);
 
-    console.log("🗑️ Member removed:", memberAddress);
+    console.log("🚫 Member removed/banned:", memberAddress);
 
-    // Delete the member from the database
+    // Instead of deleting, mark as banned and reset RESPECT score
+    // This preserves all historical data (contributions, rankings, etc.)
     const { error } = await supabase
       .from("members")
-      .delete()
+      .update({
+        is_banned: true,
+        average_respect: 0,
+        total_respect_earned: 0,
+      })
       .eq("wallet_address", memberAddress);
 
     if (error) throw error;
@@ -697,10 +702,10 @@ async function handleMemberRemoved(log: any, txHash: string) {
 
     if (proposalError) {
       console.error("Error updating proposals:", proposalError);
-      // Don't throw - member removal succeeded
+      // Don't throw - member ban succeeded
     }
 
-    return { success: true, action: "member_removed" };
+    return { success: true, action: "member_banned" };
   } catch (error) {
     console.error("Error handling MemberRemoved:", error);
     throw error;
