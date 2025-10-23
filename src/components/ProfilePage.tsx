@@ -548,6 +548,17 @@ export default function ProfilePage({
                   }}
                 />
               )}
+              {!member.is_approved && (
+                <Chip
+                  label="PENDING APPROVAL"
+                  color="warning"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.5rem',
+                    marginBottom: 1,
+                  }}
+                />
+              )}
               <Typography
                 variant="h4"
                 sx={{
@@ -688,25 +699,15 @@ export default function ProfilePage({
                 </Typography>
               )}
 
-              <Box
-                sx={{
-                  display: 'flex',
-                  gap: 2,
-                  flexWrap: 'wrap',
-                  justifyContent: { xs: 'center', md: 'flex-start' },
-                }}
-              >
-                {!member.is_approved && (
-                  <Chip
-                    label="PENDING APPROVAL"
-                    color="warning"
-                    sx={{
-                      fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.6rem',
-                    }}
-                  />
-                )}
-                {member.is_banned && (
+              {member.is_banned && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    gap: 2,
+                    flexWrap: 'wrap',
+                    justifyContent: { xs: 'center', md: 'flex-start' },
+                  }}
+                >
                   <Chip
                     label="BANNED"
                     color="error"
@@ -715,8 +716,8 @@ export default function ProfilePage({
                       fontSize: '0.6rem',
                     }}
                   />
-                )}
-              </Box>
+                </Box>
+              )}
             </Box>
 
             {/* Stats Cards - Right column */}

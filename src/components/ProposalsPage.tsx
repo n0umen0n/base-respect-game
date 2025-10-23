@@ -529,7 +529,21 @@ export default function ProposalsPage({
       await loadProposals();
     } catch (err: any) {
       console.error('Error voting:', err);
-      setError(err.message || 'Failed to submit vote');
+      
+      // Decode common error messages
+      const errorStr = err.message || err.toString();
+      let userFriendlyError = 'Failed to submit vote';
+      
+      if (errorStr.includes('Already voted') || errorStr.includes('416c726561647920766f746564')) {
+        // '416c726561647920766f746564' is hex for "Already voted"
+        userFriendlyError = 'You have already voted on this proposal';
+      } else if (errorStr.includes('Not top')) {
+        userFriendlyError = 'Only top 6 members can vote on proposals';
+      } else if (errorStr.includes('Already approved')) {
+        userFriendlyError = 'This member is already approved';
+      }
+      
+      setError(userFriendlyError);
     } finally {
       setVoting(false);
     }
