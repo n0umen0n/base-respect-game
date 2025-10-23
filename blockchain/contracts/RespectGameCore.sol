@@ -182,7 +182,6 @@ contract RespectGameCore is
                 name,
                 block.timestamp
             );
-         
         }
     }
 

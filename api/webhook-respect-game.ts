@@ -950,31 +950,59 @@ async function processEventLog(
  * Main webhook handler
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Log request details for debugging
+  console.log("🎣 Webhook received!");
+  console.log("Method:", req.method);
+  console.log("Headers:", JSON.stringify(req.headers, null, 2));
+
+  const bodyString = req.body ? JSON.stringify(req.body) : "(no body)";
+  console.log("Body preview:", bodyString.substring(0, 500));
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    console.log("🎣 Respect Game webhook received!");
-
     // Verify signature
     const signature = req.headers["x-alchemy-signature"] as string;
+
+    if (!signature) {
+      console.error("❌ No signature header found");
+      console.error("Available headers:", Object.keys(req.headers));
+      return res.status(401).json({ error: "Missing signature" });
+    }
+
     const body = JSON.stringify(req.body);
 
-    if (!signature || !verifySignature(body, signature)) {
+    if (!ALCHEMY_SIGNING_KEY) {
+      console.error("❌ ALCHEMY_WEBHOOK_SIGNING_KEY not set in environment");
+      return res.status(500).json({ error: "Server configuration error" });
+    }
+
+    if (!verifySignature(body, signature)) {
       console.error("❌ Invalid signature");
+      console.error(
+        "Expected signature calculation for body:",
+        body.substring(0, 200)
+      );
       return res.status(401).json({ error: "Invalid signature" });
     }
 
     console.log("✅ Signature verified");
 
     const payload = req.body;
-    const results = [];
+
+    if (!payload) {
+      console.error("❌ Empty payload");
+      return res.status(400).json({ error: "Empty payload" });
+    }
+
+    const results: any[] = [];
 
     // Handle GraphQL webhook
     if (payload.event?.data?.block?.logs) {
       const logs = payload.event.data.block.logs;
-      console.log(`📋 Processing ${logs.length} logs`);
+      console.log(`📋 Processing GraphQL webhook with ${logs.length} logs`);
 
       for (const log of logs) {
         const contractAddr = log.account?.address?.toLowerCase();
@@ -989,7 +1017,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           try {
             const result = await processEventLog(log, txHash, contractAddr);
             if (result) results.push(result);
-          } catch (error) {
+          } catch (error: any) {
             console.error(
               "❌ Failed to process individual event, continuing with others:",
               error
@@ -1004,7 +1032,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Handle Address Activity webhook
     else if (payload.event?.activity) {
       const activities = payload.event.activity;
-      console.log(`📋 Processing ${activities.length} activities`);
+      console.log(
+        `📋 Processing Address Activity webhook with ${activities.length} activities`
+      );
 
       for (const activity of activities) {
         if (activity.log && activity.log.topics) {
@@ -1024,7 +1054,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 contractAddr
               );
               if (result) results.push(result);
-            } catch (error) {
+            } catch (error: any) {
               console.error(
                 "❌ Failed to process individual event, continuing with others:",
                 error
@@ -1036,6 +1066,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           }
         }
       }
+    }
+    // Handle new webhook format (direct logs array)
+    else if (payload.logs && Array.isArray(payload.logs)) {
+      console.log(
+        `📋 Processing direct logs array with ${payload.logs.length} logs`
+      );
+
+      for (const log of payload.logs) {
+        const contractAddr = log.address?.toLowerCase();
+        console.log("🔍 Checking log from:", contractAddr);
+
+        if (
+          contractAddr === RESPECT_GAME_CORE_ADDRESS ||
+          contractAddr === RESPECT_GAME_GOVERNANCE_ADDRESS
+        ) {
+          console.log("✅ Address matches! Processing...");
+          const txHash = log.transactionHash || log.transaction?.hash;
+          try {
+            const result = await processEventLog(log, txHash, contractAddr);
+            if (result) results.push(result);
+          } catch (error: any) {
+            console.error(
+              "❌ Failed to process individual event, continuing with others:",
+              error
+            );
+            results.push({ success: false, error: error.message });
+          }
+        } else {
+          console.log("⏭️ Address doesn't match, skipping");
+        }
+      }
+    } else {
+      console.error("❌ Unknown webhook format!");
+      console.error("Payload structure:", JSON.stringify(payload, null, 2));
+      return res.status(400).json({
+        error: "Unknown webhook format",
+        receivedKeys: Object.keys(payload),
+        hasEvent: !!payload.event,
+        hasLogs: !!payload.logs,
+        eventKeys: payload.event ? Object.keys(payload.event) : null,
+      });
     }
 
     console.log(`✅ Processed ${results.length} events successfully`);
