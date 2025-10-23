@@ -210,15 +210,15 @@ export default function ContributionSubmission({
 
   const handleAddToCalendar = () => {
     const rankingPhaseStart = new Date(nextStageTimestamp);
-    // Assume ranking phase is ~24 hours, set reminder to middle (12 hours in)
-    const midPhaseTime = new Date(rankingPhaseStart.getTime() + 12 * 60 * 60 * 1000);
-    const endDate = new Date(midPhaseTime.getTime() + 60 * 60 * 1000); // 1 hour event duration
+    // Set reminder to 1 hour after ranking phase starts
+    const reminderTime = new Date(rankingPhaseStart.getTime() + 1 * 60 * 60 * 1000);
+    const endDate = new Date(reminderTime.getTime() + 10 * 60 * 1000); // 10 minute event duration
 
     const title = encodeURIComponent('Respect Game - Ranking Phase');
     const details = encodeURIComponent('Submit your rankings for the Respect Game');
-    const location = encodeURIComponent('https://respectgame.xyz');
+    const location = encodeURIComponent('https://respectgame.app');
 
-    const startDateStr = midPhaseTime.toISOString().replace(/-|:|\.\d+/g, '');
+    const startDateStr = reminderTime.toISOString().replace(/-|:|\.\d+/g, '');
     const endDateStr = endDate.toISOString().replace(/-|:|\.\d+/g, '');
 
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateStr}/${endDateStr}&details=${details}&location=${location}`;

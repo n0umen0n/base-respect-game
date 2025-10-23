@@ -137,7 +137,8 @@ interface IRespectGameCore {
     function updateGameParams(
         uint256 _membersWithoutApproval,
         uint256 _submissionLength,
-        uint256 _rankingLength
+        uint256 _rankingLength,
+        uint256 _nextStageTimestamp
     ) external;
 
     // ==================== VIEW FUNCTIONS ====================

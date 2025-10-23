@@ -45,6 +45,27 @@ The secure API had a fallback that accessed `window.ethereum` directly:
 
 When MetaMask is installed, accessing `window.ethereum` triggers MetaMask to open automatically.
 
+### 3. Automatic Twitter Sync with Signature Request
+
+**File:** `src/components/ProfilePage.tsx`
+
+The profile page had a `useEffect` that automatically synced Twitter data to the database:
+
+```typescript
+if (
+  twitterAccount &&
+  isOwnProfile &&
+  member &&
+  member.x_account !== twitterAccount &&
+  (justLinkedTwitter || (twitterAccount && !member.x_account))  // <-- PROBLEM
+) {
+  // Automatically triggers secureUpdateProfile which requires signature
+  const result = await secureUpdateProfile(...);
+}
+```
+
+The condition `(twitterAccount && !member.x_account)` meant: "If user has Twitter in Privy but not in database, auto-sync it". This caused an **automatic signature request** when users visited their profile page, without them clicking anything.
+
 ## Solutions Implemented
 
 ### 1. Removed External Wallets from Privy Config
@@ -191,11 +212,51 @@ const result = await secureUpdateProfile(
 );
 ```
 
+### 4. Prevent Automatic Signature Requests
+
+**File:** `src/components/ProfilePage.tsx`
+
+**Changes:**
+
+- Removed automatic Twitter sync condition
+- Only sync when user explicitly clicks "Connect X" button
+- Signature requests now ONLY happen as direct result of user actions
+
+**Before:**
+
+```typescript
+// This ran automatically when profile loaded if Twitter was in Privy but not DB
+if (
+  twitterAccount &&
+  isOwnProfile &&
+  member &&
+  member.x_account !== twitterAccount &&
+  (justLinkedTwitter || (twitterAccount && !member.x_account))  // Auto-sync
+) {
+  await secureUpdateProfile(...); // Triggers signature popup
+}
+```
+
+**After:**
+
+```typescript
+// Only runs when user explicitly clicks "Connect X" button
+if (
+  justLinkedTwitter &&  // ONLY when user clicked button
+  twitterAccount &&
+  isOwnProfile &&
+  member &&
+  member.x_account !== twitterAccount
+) {
+  await secureUpdateProfile(...); // Signature only on user action
+}
+```
+
 ## Files Modified
 
 1. ✅ `src/main.jsx` - Removed external wallet configuration
 2. ✅ `src/lib/secure-api.ts` - Removed window.ethereum access and getPrivyProvider
-3. ✅ `src/components/ProfilePage.tsx` - Updated to use Privy embedded wallet
+3. ✅ `src/components/ProfilePage.tsx` - Updated to use Privy embedded wallet AND removed automatic signature requests
 
 ## Verification
 
@@ -233,27 +294,37 @@ All `getEthereumProvider()` calls use Privy embedded wallet:
 3. **Expected:** Only Privy login modal appears
 4. **Expected:** MetaMask does NOT open
 
-### Test Case 2: Navigate to Profile
+### Test Case 2: Navigate to Profile (No Auto-Signature)
 
 1. Log in with Privy
 2. Click "My Profile" from menu
 3. **Expected:** Profile loads without any wallet popups
 4. **Expected:** MetaMask does NOT open
+5. **Expected:** NO Privy signature request appears automatically
 
-### Test Case 3: Link Twitter/X Account
+### Test Case 3: Link Twitter/X Account (Signature on Button Click Only)
 
 1. Log in with Privy
 2. Navigate to your profile
-3. Click "Connect X"
-4. Complete Twitter linking
-5. **Expected:** Twitter modal appears and completes
-6. **Expected:** MetaMask does NOT open during signing
+3. Click "Connect X" button
+4. Complete Twitter OAuth flow
+5. **Expected:** Privy asks for signature ONLY after Twitter OAuth completes
+6. **Expected:** Signature happens as direct result of clicking "Connect X"
+7. **Expected:** MetaMask does NOT open
 
 ### Test Case 4: Users Without MetaMask
 
 1. Use browser without MetaMask
 2. Complete all flows
 3. **Expected:** Everything works identically
+
+### Test Case 5: User Already Has Twitter Linked in Privy
+
+1. User previously linked Twitter in Privy (different session)
+2. User logs in and visits their profile
+3. **Expected:** NO automatic signature request
+4. **Expected:** Profile loads normally without any popups
+5. If user wants to sync Twitter to database, they can click "Connect X" manually
 
 ## Technical Details
 
@@ -289,9 +360,40 @@ This approach:
 ## Benefits
 
 1. **Consistent UX** - All users see only Privy, regardless of what wallets they have installed
-2. **No Confusion** - Users won't see unexpected MetaMask popups
-3. **Simplified Flow** - Single wallet provider (Privy) for all operations
-4. **Future-Proof** - Code is isolated from any browser extension wallet changes
+2. **No Unexpected Popups** - No MetaMask popups, no random signature requests
+3. **User Control** - Signatures only requested when user explicitly clicks buttons
+4. **Clear Intent** - Every wallet action has a clear user-initiated trigger
+5. **Simplified Flow** - Single wallet provider (Privy) for all operations
+6. **Future-Proof** - Code is isolated from any browser extension wallet changes
+
+## Key Principles Applied
+
+### 1. No Automatic Wallet Actions
+
+**Rule:** Never trigger wallet signatures or transactions automatically in `useEffect` or on page load.
+
+**Why:** Users should always know WHY they're being asked to sign something. Automatic signatures feel like a security risk and create poor UX.
+
+**How:** All wallet actions must be direct responses to user button clicks.
+
+### 2. Explicit User Intent
+
+**Rule:** Every signature request must have a clear, visible user action that triggered it (button click, form submission, etc.)
+
+**Why:** Users need to understand what they're signing and why.
+
+**How:**
+
+- ✅ User clicks "Connect X" → Privy asks for signature (clear cause & effect)
+- ❌ User visits profile → Privy randomly asks for signature (confusing)
+
+### 3. Isolated Wallet Provider
+
+**Rule:** Use only Privy embedded wallets, never access `window.ethereum` or external wallets.
+
+**Why:** Prevents interference from MetaMask and other browser wallet extensions.
+
+**How:** Always get wallet from Privy's `useWallets()` hook, never from window object.
 
 ## Notes
 
@@ -299,3 +401,5 @@ This approach:
 - Smart contract interactions still work through Privy embedded wallets
 - No changes needed to blockchain contracts or backend APIs
 - All previous features continue to work exactly as before
+- Twitter linking still works, but now only syncs to DB when user clicks "Connect X"
+- Users with Twitter already in Privy can still link it later by clicking the button

@@ -82,11 +82,13 @@ contract RespectGameCore is
     function updateGameParams(
         uint256 _membersWithoutApproval,
         uint256 _submissionLength,
-        uint256 _rankingLength
+        uint256 _rankingLength,
+        uint256 _nextStageTimestamp
     ) external onlyOwner {
         membersWithoutApproval = _membersWithoutApproval;
         contributionSubmissionLength = _submissionLength;
         contributionRankingLength = _rankingLength;
+        nextStageTimestamp = _nextStageTimestamp;
     }
 
     // ==================== MEMBER FUNCTIONS ====================
@@ -215,6 +217,23 @@ contract RespectGameCore is
                     memberProposals[i].executed = true;
                     break;
                 }
+            }
+
+            // Check if they submitted a contribution for current game while unapproved
+            // If so, add them to the game (only if we're still in submission stage)
+            Contribution storage contribution = memberContributions[
+                currentGameNumber
+            ][member];
+            if (
+                contribution.contributor != address(0) &&
+                !contribution.counted &&
+                currentStage == Stage.ContributionSubmission
+            ) {
+                // Mark contribution as counted
+                contribution.counted = true;
+
+                // Add to game contributors
+                gameContributors[currentGameNumber].push(member);
             }
 
             emit MemberApproved(member, block.timestamp);

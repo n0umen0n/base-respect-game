@@ -417,14 +417,16 @@ export default function RankingSubmission({
   };
 
   const handleAddToCalendar = () => {
-    const startDate = new Date(nextSubmissionStageDate);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000);
+    // Calculate next contribution date (5 days after ranking ends)
+    const nextContributionDate = new Date(nextSubmissionStageDate);
+    nextContributionDate.setDate(nextContributionDate.getDate() + 5);
+    const endDate = new Date(nextContributionDate.getTime() + 10 * 60 * 1000); // 10 minute event
 
     const title = encodeURIComponent('Respect Game - Contribution Submission');
     const details = encodeURIComponent('Submit your contributions for the next Respect Game');
-    const location = encodeURIComponent('https://respectgame.xyz');
+    const location = encodeURIComponent('https://respectgame.app');
 
-    const startDateStr = startDate.toISOString().replace(/-|:|\.\d+/g, '');
+    const startDateStr = nextContributionDate.toISOString().replace(/-|:|\.\d+/g, '');
     const endDateStr = endDate.toISOString().replace(/-|:|\.\d+/g, '');
 
     const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startDateStr}/${endDateStr}&details=${details}&location=${location}`;
@@ -652,7 +654,7 @@ export default function RankingSubmission({
                   lineHeight: 1.8,
                 }}
               >
-                SUBMIT YOUR NEXT CONTRIBUTIONS ON:
+                PLEASE SUBMIT YOUR NEXT CONTRIBUTIONS ON:
               </Typography>
               <Typography
                 variant="h6"
@@ -664,10 +666,10 @@ export default function RankingSubmission({
                 }}
               >
                 {(() => {
-                  // Calculate the last day of next contribution phase (6 days after it starts)
-                  const lastSubmissionDay = new Date(nextSubmissionStageDate);
-                  lastSubmissionDay.setDate(lastSubmissionDay.getDate() + 6);
-                  return formatDateWithOrdinal(lastSubmissionDay);
+                  // Calculate next contribution submission date (5 days after ranking ends)
+                  const nextContributionDate = new Date(nextSubmissionStageDate);
+                  nextContributionDate.setDate(nextContributionDate.getDate() + 5);
+                  return formatDateWithOrdinal(nextContributionDate);
                 })()}
               </Typography>
               <Button

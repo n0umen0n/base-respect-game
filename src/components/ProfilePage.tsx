@@ -372,31 +372,29 @@ export default function ProfilePage({
   }, [walletAddress, refreshTrigger]);
 
   // Watch for Twitter account and sync with database
-  // This handles two cases:
-  // 1. User just clicked link button and Twitter data arrives
-  // 2. User already has Twitter linked in Privy but it's missing from database
+  // ONLY when user explicitly clicked the "Connect X" button
+  // This prevents automatic/unexpected signature popups
   useEffect(() => {
     const saveTwitterToDatabase = async () => {
       // Only save if:
-      // 1. Twitter account is available from Privy
-      // 2. It's the user's own profile
-      // 3. Member data is loaded
-      // 4. Member doesn't already have this X account in database
-      // 5. EITHER: User just clicked link button OR Twitter exists but not in DB
+      // 1. User EXPLICITLY clicked "Connect X" button (justLinkedTwitter flag)
+      // 2. Twitter account is available from Privy
+      // 3. It's the user's own profile
+      // 4. Member data is loaded
+      // 5. Member doesn't already have this X account in database
       if (
+        justLinkedTwitter &&
         twitterAccount && 
         isOwnProfile && 
         member && 
-        member.x_account !== twitterAccount &&
-        (justLinkedTwitter || (twitterAccount && !member.x_account))
+        member.x_account !== twitterAccount
       ) {
         try {
-          console.log('🔗 Syncing Twitter account to database:', {
+          console.log('🔗 Syncing Twitter account to database (user clicked Connect X):', {
             walletAddress,
             twitterAccount,
             twitterVerified,
             privyId: user?.id,
-            reason: justLinkedTwitter ? 'User just linked' : 'Auto-sync (already linked in Privy)'
           });
 
           // Get Privy embedded wallet (never triggers MetaMask)

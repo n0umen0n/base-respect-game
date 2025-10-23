@@ -17,13 +17,19 @@ async function main() {
 
   // New parameter values
   const membersWithoutApproval = 5;
-  const submissionLength = 10 * 60; // 10 minutes in seconds
-  const rankingLength = 10 * 60; // 10 minutes in seconds
+  const submissionLength = 6 * 24 * 60 * 60; // 6 days in seconds
+  const rankingLength = 1 * 24 * 60 * 60; // 1 day in seconds
+  const nextStageTimestamp = Math.floor(Date.now() / 1000) + 1 * 60; // Current time + 1 minute
 
   console.log("\nNew Parameters:");
   console.log(`  Members Without Approval: ${membersWithoutApproval}`);
-  console.log(`  Submission Length: ${submissionLength}s (10 minutes)`);
-  console.log(`  Ranking Length: ${rankingLength}s (10 minutes)`);
+  console.log(`  Submission Length: ${submissionLength}s (6 days)`);
+  console.log(`  Ranking Length: ${rankingLength}s (1 day)`);
+  console.log(
+    `  Next Stage Timestamp: ${nextStageTimestamp} (${new Date(
+      nextStageTimestamp * 1000
+    ).toISOString()})`
+  );
 
   console.log("\nPress Ctrl+C to cancel, or wait 3 seconds to proceed...");
   await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -36,7 +42,8 @@ async function main() {
       .updateGameParams(
         membersWithoutApproval,
         submissionLength,
-        rankingLength
+        rankingLength,
+        nextStageTimestamp
       );
     console.log(`Transaction sent with hash: ${tx.hash}`);
 
@@ -51,6 +58,7 @@ async function main() {
     const newMembersWithoutApproval = await contract.membersWithoutApproval();
     const newSubmissionLength = await contract.contributionSubmissionLength();
     const newRankingLength = await contract.contributionRankingLength();
+    const newNextStageTimestamp = await contract.nextStageTimestamp();
 
     console.log("\nConfirmed New Values:");
     console.log(
@@ -65,6 +73,11 @@ async function main() {
       `  Ranking Length: ${newRankingLength.toString()}s (${
         Number(newRankingLength) / (24 * 60 * 60)
       } days)`
+    );
+    console.log(
+      `  Next Stage Timestamp: ${newNextStageTimestamp.toString()} (${new Date(
+        Number(newNextStageTimestamp) * 1000
+      ).toISOString()})`
     );
   } catch (error: any) {
     console.error("\n❌ Transaction failed!");
