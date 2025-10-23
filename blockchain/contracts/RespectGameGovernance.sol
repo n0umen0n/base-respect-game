@@ -182,8 +182,8 @@ contract RespectGameGovernance is
         if (target == coreContract && calldata_.length >= 4) {
             bytes4 selector = bytes4(calldata_[0:4]);
 
-            // removeMember(address) = 0x0c498909
-            if (selector == 0x0c498909) {
+            // removeMember(address) = 0x0b1ca49a
+            if (selector == 0x0b1ca49a) {
                 return ProposalType.BanMember;
             }
             // approveMemberByGovernance(address) = 0x9e75ab97

@@ -342,7 +342,10 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
     if (!smartAccountClient) throw new Error('Wallet not connected');
 
     // Encode the call to removeMember(address)
-    const functionSelector = '0x0c498909'; // removeMember(address)
+    // Function signature: removeMember(address)
+    const functionSelector = '0x0b1ca49a'; // removeMember(address)
+    
+    // Encode parameters: member address (32 bytes)
     const memberPadded = targetMember.slice(2).padStart(64, '0');
     const calldata = `${functionSelector}${memberPadded}` as `0x${string}`;
 
