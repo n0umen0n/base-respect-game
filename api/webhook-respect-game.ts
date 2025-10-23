@@ -34,6 +34,7 @@ const RESPECT_GAME_CORE_EVENTS = [
   "event GroupAssigned(uint256 indexed gameNumber, uint256 indexed groupId, address[] members)",
   "event MemberApproved(address indexed member, uint256 timestamp)",
   "event MemberBanned(address indexed member, uint256 timestamp)",
+  "event MemberRemoved(address indexed member, uint256 timestamp)",
 ];
 
 const RESPECT_GAME_GOVERNANCE_EVENTS = [
@@ -670,6 +671,42 @@ async function handleMemberBanned(log: any, txHash: string) {
   }
 }
 
+// MemberRemoved(address indexed member, uint256 timestamp)
+async function handleMemberRemoved(log: any, txHash: string) {
+  try {
+    const memberAddress = decodeAddress(log.topics[1]);
+    const timestamp = decodeUint256(log.data);
+
+    console.log("🗑️ Member removed:", memberAddress);
+
+    // Delete the member from the database
+    const { error } = await supabase
+      .from("members")
+      .delete()
+      .eq("wallet_address", memberAddress);
+
+    if (error) throw error;
+
+    // Also cancel any pending approval proposals for this member
+    const { error: proposalError } = await supabase
+      .from("proposals")
+      .update({ status: "Rejected" })
+      .eq("target_member_address", memberAddress)
+      .eq("proposal_type", "ApproveMember")
+      .eq("status", "Pending");
+
+    if (proposalError) {
+      console.error("Error updating proposals:", proposalError);
+      // Don't throw - member removal succeeded
+    }
+
+    return { success: true, action: "member_removed" };
+  } catch (error) {
+    console.error("Error handling MemberRemoved:", error);
+    throw error;
+  }
+}
+
 // ProposalCreated(uint256 indexed proposalId, uint8 proposalType, address indexed proposer, address indexed targetMember, address[] targets, uint256[] values, bytes[] calldatas, string description, uint256 timestamp)
 async function handleProposalCreated(log: any, txHash: string) {
   try {
@@ -930,6 +967,8 @@ async function processEventLog(
         return await handleMemberApproved(log, txHash);
       case "MemberBanned":
         return await handleMemberBanned(log, txHash);
+      case "MemberRemoved":
+        return await handleMemberRemoved(log, txHash);
       case "ProposalCreated":
         return await handleProposalCreated(log, txHash);
       case "ProposalVoted":
