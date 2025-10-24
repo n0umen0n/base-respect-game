@@ -588,16 +588,6 @@ We welcome contributions from the community! Here's how you can help:
 
 ---
 
-## 🐛 Known Issues & Limitations
-
-See [IMPLEMENTATION_STATUS.md](./IMPLEMENTATION_STATUS.md) for details:
-
-- Gas optimization for very large groups (>100 members)
-- Mobile UI improvements in progress
-- X/Twitter verification partially implemented
-
----
-
 ## 📝 License
 
 This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE) file for details.
@@ -613,16 +603,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](./LICENSE
 - **[Pimlico](https://pimlico.io/)** - Account abstraction infrastructure
 - **[Supabase](https://supabase.com/)** - Real-time database platform
 
----
 
-## 📞 Support & Community
-
-- **GitHub Issues**: [Report bugs or request features](https://github.com/yourusername/vladrespect/issues)
-- **GitHub Discussions**: [Ask questions or share ideas](https://github.com/yourusername/vladrespect/discussions)
-- **Twitter**: [@RespectGame](https://twitter.com/respectgame)
-- **Discord**: [Join our community](#) (Coming soon)
-
----
 
 <div align="center">
 
