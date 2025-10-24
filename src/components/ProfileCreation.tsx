@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -18,7 +18,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ProfilePictureUpload from './ProfilePictureUpload';
-import { uploadProfilePicture, updateMemberXAccount } from '../lib/supabase-respect';
+import { uploadProfilePicture } from '../lib/supabase-respect';
+import { secureUpdateProfile } from '../lib/secure-api';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
 
@@ -34,6 +35,7 @@ export default function ProfileCreation({
   onLoadingChange,
 }: ProfileCreationProps) {
   const { user, linkTwitter, unlinkTwitter } = usePrivy();
+  const { wallets } = useWallets();
   const navigate = useNavigate();
   
   // Get smart wallet and blockchain functions
@@ -259,12 +261,27 @@ export default function ProfileCreation({
             // Wait 2 seconds before each attempt
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            await updateMemberXAccount(
+            // Get Privy embedded wallet (never triggers MetaMask)
+            const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+            
+            if (!embeddedWallet) {
+              throw new Error('No Privy embedded wallet found. Please log in.');
+            }
+            
+            // Use secure API with wallet signature
+            const result = await secureUpdateProfile(
               walletAddress,
-              twitterAccount,
-              twitterVerified,
-              user.id // Privy DID - proves this X account belongs to this Privy user
+              {
+                xAccount: twitterAccount,
+                xVerified: twitterVerified,
+                privyDid: user.id || '',
+              },
+              embeddedWallet
             );
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to update profile');
+            }
             
             console.log('✅ X account saved to database successfully!');
             saved = true;
