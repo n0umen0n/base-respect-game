@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -50,7 +50,7 @@ import {
   type Contribution,
   type Ranking,
 } from '../lib/supabase-respect';
-import { secureUpdateProfile } from '../lib/secure-api';
+// Removed secureUpdateProfile - using simple API for X account linking
 import { formatRespectDisplay, formatRespectEarned } from '../lib/formatTokens';
 import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
 
@@ -320,7 +320,6 @@ export default function ProfilePage({
   onLoadingChange,
 }: ProfilePageProps) {
   const { user, linkTwitter } = usePrivy();
-  const { wallets } = useWallets();
   const navigate = useNavigate();
   const [member, setMember] = useState<Member | null>(null);
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
@@ -397,26 +396,24 @@ export default function ProfilePage({
             privyId: user?.id,
           });
 
-          // Get Privy embedded wallet (never triggers MetaMask)
-          const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
-          
-          if (!embeddedWallet) {
-            throw new Error('No Privy embedded wallet found. Please log in.');
-          }
-          
-          // Use secure API with wallet signature
-          const result = await secureUpdateProfile(
-            walletAddress,
-            {
+          // Call simple API (no signature required - Privy DID provides authentication)
+          const response = await fetch('/api/save-x-account', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              walletAddress,
               xAccount: twitterAccount,
               xVerified: twitterVerified,
               privyDid: user?.id || '',
-            },
-            embeddedWallet
-          );
+            }),
+          });
 
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to update profile');
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to save X account');
           }
 
           console.log('✅ X account saved to database successfully!');

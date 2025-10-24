@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -19,7 +19,6 @@ import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
 import ProfilePictureUpload from './ProfilePictureUpload';
 import { uploadProfilePicture } from '../lib/supabase-respect';
-import { secureUpdateProfile } from '../lib/secure-api';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
 
@@ -35,7 +34,6 @@ export default function ProfileCreation({
   onLoadingChange,
 }: ProfileCreationProps) {
   const { user, linkTwitter, unlinkTwitter } = usePrivy();
-  const { wallets } = useWallets();
   const navigate = useNavigate();
   
   // Get smart wallet and blockchain functions
@@ -111,7 +109,7 @@ export default function ProfileCreation({
   const twitterAccount = user?.twitter?.username 
     ? `@${user.twitter.username}` 
     : '';
-  const twitterVerified = user?.twitter?.verified || false;
+  const twitterVerified = (user?.twitter as any)?.verified || false;
 
   // Debug: Log Privy user data
   React.useEffect(() => {
@@ -120,7 +118,7 @@ export default function ProfileCreation({
         id: user.id,
         hasTwitter: !!user.twitter,
         twitterUsername: user.twitter?.username,
-        twitterVerified: user.twitter?.verified,
+        twitterVerified: (user.twitter as any)?.verified,
         twitterSubject: user.twitter?.subject,
         fullTwitterObject: user.twitter
       });
@@ -250,49 +248,47 @@ export default function ProfileCreation({
           privyId: user.id
         });
         
-        // Wait for webhook to create member in database (takes 2-5 seconds)
-        // Then update with X account info
-        let retries = 0;
-        const maxRetries = 10;
+        // Wait for webhook to create member in database (takes 3-4 seconds)
+        // Try up to 3 times with increasing delays
         let saved = false;
+        const delays = [3000, 2000, 2000]; // 3s, 2s, 2s = max 7 seconds
         
-        while (retries < maxRetries && !saved) {
+        for (let attempt = 0; attempt < delays.length && !saved; attempt++) {
           try {
-            // Wait 2 seconds before each attempt
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Wait before attempt
+            await new Promise(resolve => setTimeout(resolve, delays[attempt]));
             
-            // Get Privy embedded wallet (never triggers MetaMask)
-            const embeddedWallet = wallets.find((wallet) => wallet.walletClientType === 'privy');
+            console.log(`Attempt ${attempt + 1}/${delays.length} to save X account`);
             
-            if (!embeddedWallet) {
-              throw new Error('No Privy embedded wallet found. Please log in.');
-            }
-            
-            // Use secure API with wallet signature
-            const result = await secureUpdateProfile(
-              walletAddress,
-              {
+            // Call simple API (no signature required during profile creation)
+            const response = await fetch('/api/save-x-account', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                walletAddress,
                 xAccount: twitterAccount,
                 xVerified: twitterVerified,
-                privyDid: user.id || '',
-              },
-              embeddedWallet
-            );
+                privyDid: user.id,
+              }),
+            });
             
-            if (!result.success) {
-              throw new Error(result.error || 'Failed to update profile');
+            const data = await response.json();
+            
+            if (response.ok) {
+              console.log('✅ X account saved to database successfully!');
+              saved = true;
+            } else {
+              throw new Error(data.error || 'Failed to save X account');
             }
-            
-            console.log('✅ X account saved to database successfully!');
-            saved = true;
           } catch (xError: any) {
-            retries++;
-            console.log(`Attempt ${retries}/${maxRetries} to save X account:`, xError.message);
+            console.log(`Attempt ${attempt + 1}/${delays.length} failed:`, xError.message);
             
-            if (retries >= maxRetries) {
-              console.error('❌ Failed to save X account after all retries:', xError);
+            if (attempt === delays.length - 1) {
+              console.error('❌ Failed to save X account after all attempts:', xError);
               // Show a warning but don't fail the profile creation
-              setError('Profile created but X account could not be saved. Please refresh and try linking X again.');
+              setError('Profile created! X account will be linked automatically when you view your profile.');
             }
           }
         }
