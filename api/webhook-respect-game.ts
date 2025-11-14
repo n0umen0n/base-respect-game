@@ -1044,9 +1044,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const results: any[] = [];
 
     // Handle GraphQL webhook
-    if (payload.event?.data?.block?.logs) {
-      const logs = payload.event.data.block.logs;
+    if (payload.event?.data?.block) {
+      // Check if logs exist, otherwise treat as empty array
+      const logs = payload.event.data.block.logs || [];
       console.log(`📋 Processing GraphQL webhook with ${logs.length} logs`);
+
+      // If no logs, this is a block with no matching events - return success
+      if (logs.length === 0) {
+        console.log("✅ No logs in this block, returning success");
+        return res.status(200).json({
+          success: true,
+          processed: 0,
+          results: [],
+        });
+      }
 
       for (const log of logs) {
         const contractAddr = log.account?.address?.toLowerCase();
