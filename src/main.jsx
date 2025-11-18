@@ -33,7 +33,7 @@ root.render(
       },
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
-        requireUserPasswordOnCreate: true,
+        requireUserPasswordOnCreate: false,
       },
       mfa: {
         requireForAppWallets: true,
