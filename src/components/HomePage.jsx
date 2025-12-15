@@ -5,6 +5,7 @@ import AnimatedContent from './AnimatedContent';
 import Button from '@mui/material/Button';
 import Shuffle from './Shuffle';
 import ProfileCard from './ProfileCard';
+import GorillaAnimation from './GorillaAnimation';
 import { getTopSixMembers, getAllMembers } from '../lib/supabase-respect';
 import { formatRespectDisplay } from '../lib/formatTokens';
 
@@ -163,14 +164,14 @@ const HomePage = () => {
         </button>
       )}
       <Shuffle
-        text="RESPECT GAME"
+        text="DAO OF THE APES"
         tag="div"
         style={{
           fontFamily: '"Press Start 2P", sans-serif',
-          fontSize: '4rem',
+          fontSize: '3.5rem',
           lineHeight: 1,
           color: 'black',
-          marginBottom: 'calc(1.5rem + 15px)'
+          marginBottom: '1.5rem'
         }}
         shuffleDirection="right"
         duration={0.35}
@@ -183,41 +184,66 @@ const HomePage = () => {
         triggerOnHover={true}
         respectReducedMotion={true}
       />
+      
       <AnimatedContent
-        distance={150}
+        distance={80}
         direction="vertical"
         reverse={false}
-        duration={1.2}
-        ease="bounce.out"
-        initialOpacity={0.2}
+        duration={0.8}
+        ease="power2.out"
+        initialOpacity={0}
         animateOpacity
-        scale={1.1}
         threshold={0.2}
-        delay={0.3}
+        delay={0.15}
       >
-        <div style={{ display: 'inline-block' }}>
-          <Button
-            variant="contained"
-            onClick={handleButtonClick}
-            sx={{
-              fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '1rem',
-              textTransform: 'uppercase',
-              backgroundColor: 'black',
-              color: 'white',
-              borderRadius: '9999px',
-              padding: '1rem 2rem',
-              '&:hover': {
-                backgroundColor: '#333'
-              }
-            }}
-          >
-            {user ? 'PLAY' : 'Log in to play'}
-          </Button>
+        <div style={{
+          maxWidth: '700px',
+          margin: '0 auto 2rem',
+          textAlign: 'center',
+          padding: '0 1rem'
+        }}>
+          <p style={{
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '1.5rem',
+            lineHeight: 1.8,
+            color: '#333',
+            marginBottom: '3.5rem'
+          }}>
+            What have you done to pump the $RESOURCE price?
+          </p>
+          <p style={{
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '1.1rem',
+            lineHeight: 1.8,
+            color: '#555',
+            marginBottom: '2rem'
+          }}>
+            Submit your contribution to get $RESOURCEs
+          </p>
+          <div style={{ marginBottom: '3rem' }}>
+            <Button
+              variant="contained"
+              onClick={handleButtonClick}
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1rem',
+                textTransform: 'uppercase',
+                backgroundColor: 'black',
+                color: 'white',
+                borderRadius: '9999px',
+                padding: '1rem 2rem',
+                '&:hover': {
+                  backgroundColor: '#333'
+                }
+              }}
+            >
+              SUBMIT
+            </Button>
+          </div>
         </div>
       </AnimatedContent>
 
-      <div style={{ marginTop: '4rem' }}>
+      <div style={{ marginTop: '6rem' }}>
         <AnimatedContent
           distance={150}
           direction="vertical"
@@ -239,17 +265,19 @@ const HomePage = () => {
               margin: '2rem 0 1rem 0'
             }}
           >
-            LEADERBOARD
+            APE LEADERBOARD
           </h2>
-          <p
-            style={{
-              fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '1rem',
-              color: '#000000',
-              textAlign: 'center'
-            }}
-          >
-            MOST RESPECTED BASE COMMUNITY MEMBERS
+          <p style={{
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '0.85rem',
+            lineHeight: 1.6,
+            color: '#000',
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#f5f5f5',
+            border: '3px solid #000',
+            display: 'inline-block'
+          }}>
+            10% of $RESOURCEs controlled by top 6 Alpha Apes
           </p>
         </AnimatedContent>
         <AnimatedContent
@@ -317,13 +345,13 @@ const HomePage = () => {
           <Box
             sx={{
               maxWidth: '1200px',
-              margin: '4rem auto 0.75rem',
+              margin: '0.5rem auto 0.75rem',
               padding: '0 2rem'
             }}
           >
             <TextField
               fullWidth
-              placeholder="Search members by name..."
+              placeholder="Search ape by name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
@@ -589,6 +617,9 @@ const HomePage = () => {
           </TableContainer>
         </AnimatedContent>
       </div>
+
+      {/* Animated gorilla that appears after content loads */}
+      <GorillaAnimation show={!loading} delay={1500} />
     </div>
   );
 };
