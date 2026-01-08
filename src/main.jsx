@@ -30,13 +30,12 @@ root.render(
       appearance: {
         theme: 'light',
         accentColor: '#676FFF',
+        welcomeMessage: 'Welcome to DAO OF THE APES',
       },
       embeddedWallets: {
         createOnLogin: 'users-without-wallets',
         requireUserPasswordOnCreate: false,
-      },
-      mfa: {
-        requireForAppWallets: true,
+        noPromptOnSignature: true,
       },
     }}
   >

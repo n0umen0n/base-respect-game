@@ -208,6 +208,38 @@ export default function ContributionSubmission({
     return `${day}${getOrdinalSuffix(day)} of ${month} ${year}`;
   };
 
+  const getTimeUntilRanking = () => {
+    const now = new Date().getTime();
+    const target = new Date(nextStageTimestamp).getTime();
+    const difference = target - now;
+
+    if (difference <= 0) {
+      return null;
+    }
+
+    const totalHours = Math.floor(difference / (1000 * 60 * 60));
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) {
+      return {
+        text: `${days} ${days === 1 ? 'DAY' : 'DAYS'} ${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
+        lessThan24Hours: false
+      };
+    } else if (hours > 0) {
+      return {
+        text: `${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
+        lessThan24Hours: true
+      };
+    } else {
+      return {
+        text: `${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
+        lessThan24Hours: true
+      };
+    }
+  };
+
   const handleAddToCalendar = () => {
     const rankingPhaseStart = new Date(nextStageTimestamp);
     // Set reminder to 1 hour after ranking phase starts
@@ -248,19 +280,6 @@ export default function ContributionSubmission({
           }}
         >
           <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
-            <Typography
-              variant="h4"
-              component="h1"
-              gutterBottom
-              sx={{
-                fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1.5rem',
-                marginBottom: 2,
-              }}
-            >
-              SUBMIT CONTRIBUTIONS
-            </Typography>
-
             <Chip
               label={`GAME #${gameNumber}`}
               sx={{
@@ -268,16 +287,29 @@ export default function ContributionSubmission({
                 fontSize: '0.7rem',
                 backgroundColor: '#000',
                 color: '#fff',
-                marginBottom: 2,
+                marginBottom: 4,
               }}
             />
+
+            <Typography
+              variant="h4"
+              component="h1"
+              gutterBottom
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '1.5rem',
+                marginBottom: 4,
+              }}
+            >
+              What have you done to pump the $RESOURCE price?
+            </Typography>
 
             <Box
               sx={{
                 padding: 2,
                 backgroundColor: '#f5f5f5',
                 borderRadius: 2,
-                marginTop: 2,
+                marginTop: 3,
               }}
             >
               <Typography
@@ -288,7 +320,7 @@ export default function ContributionSubmission({
                   marginBottom: 1,
                 }}
               >
-                TIME LEFT UNTIL RANKING STAGE
+                TIME LEFT
               </Typography>
               <Typography
                 variant="h6"
@@ -311,21 +343,6 @@ export default function ContributionSubmission({
           )}
 
           <form onSubmit={handleSubmit}>
-            <Typography
-              variant="body1"
-              sx={{
-                fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '0.7rem',
-                marginBottom: 3,
-                lineHeight: 1.8,
-              }}
-            >
-              Please share how you have contributed to the Base community in the past week.
-              <br />
-              <br />
-              You can add links as proof of work.
-            </Typography>
-
             {items.map((item, index) => (
               <Box
                 key={item.id}
@@ -341,7 +358,6 @@ export default function ContributionSubmission({
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    marginBottom: 2,
                   }}
                 >
                   <Typography
@@ -364,16 +380,6 @@ export default function ContributionSubmission({
                   )}
                 </Box>
 
-                <Typography
-                  sx={{
-                    fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '0.65rem',
-                    marginBottom: 1,
-                    textAlign: 'left',
-                  }}
-                >
-                  Contribution
-                </Typography>
                 <TextField
                   fullWidth
                   multiline
@@ -391,7 +397,7 @@ export default function ContributionSubmission({
                     }
                   }}
                   disabled={isSubmitting}
-                  placeholder="Contribution description"
+                  placeholder="Examples: I made a tweet, I bought $RESOURCES, I joined Telegram channel, I reposted on X"
                   inputProps={{ maxLength: CHAR_LIMITS.contribution }}
                   helperText={`${item.contribution.length}/${CHAR_LIMITS.contribution} characters`}
                   FormHelperTextProps={{
@@ -535,20 +541,39 @@ export default function ContributionSubmission({
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.65rem',
-                  marginBottom: 1,
-                }}
-              >
-                PLEASE COME BACK FOR THE RANKING STAGE ON:
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: '0.85rem',
                   marginBottom: 2,
+                  lineHeight: 1.8,
                 }}
               >
-                {formatDateWithOrdinal(new Date(nextStageTimestamp))}
+                PLEASE COME BACK FOR THE RANKING STAGE{getTimeUntilRanking() ? ' IN:' : ' ON:'}
               </Typography>
+              {getTimeUntilRanking() && (
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    marginBottom: getTimeUntilRanking()?.lessThan24Hours ? 2 : 1,
+                  }}
+                >
+                  {getTimeUntilRanking()?.text}
+                </Typography>
+              )}
+              {(!getTimeUntilRanking()?.lessThan24Hours) && (
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.85rem',
+                    marginBottom: 2,
+                    color: getTimeUntilRanking() ? 'text.secondary' : 'text.primary',
+                  }}
+                >
+                  {formatDateWithOrdinal(new Date(nextStageTimestamp))}
+                </Typography>
+              )}
               <Button
                 startIcon={<CalendarTodayIcon />}
                 onClick={handleAddToCalendar}

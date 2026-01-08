@@ -14,7 +14,7 @@ interface LoadingSpinnerProps {
   color?: string;
 }
 
-export default function LoadingSpinner({ size = 60, color = '#0052FF' }: LoadingSpinnerProps) {
+export default function LoadingSpinner({ size = 60, color = '#22C55E' }: LoadingSpinnerProps) {
   const dotSize = size / 5;
   const spacing = size / 4;
 

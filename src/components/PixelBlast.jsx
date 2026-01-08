@@ -168,44 +168,157 @@ float Bayer2(vec2 a) {
 #define Bayer4(a) (Bayer2(.5*(a))*0.25 + Bayer2(a))
 #define Bayer8(a) (Bayer4(.5*(a))*0.25 + Bayer2(a))
 
-#define FBM_OCTAVES     5
-#define FBM_LACUNARITY  1.25
-#define FBM_GAIN        1.0
-
 float hash11(float n){ return fract(sin(n)*43758.5453); }
+float hash21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
-float vnoise(vec3 p){
-  vec3 ip = floor(p);
-  vec3 fp = fract(p);
-  float n000 = hash11(dot(ip + vec3(0.0,0.0,0.0), vec3(1.0,57.0,113.0)));
-  float n100 = hash11(dot(ip + vec3(1.0,0.0,0.0), vec3(1.0,57.0,113.0)));
-  float n010 = hash11(dot(ip + vec3(0.0,1.0,0.0), vec3(1.0,57.0,113.0)));
-  float n110 = hash11(dot(ip + vec3(1.0,1.0,0.0), vec3(1.0,57.0,113.0)));
-  float n001 = hash11(dot(ip + vec3(0.0,0.0,1.0), vec3(1.0,57.0,113.0)));
-  float n101 = hash11(dot(ip + vec3(1.0,0.0,1.0), vec3(1.0,57.0,113.0)));
-  float n011 = hash11(dot(ip + vec3(0.0,1.0,1.0), vec3(1.0,57.0,113.0)));
-  float n111 = hash11(dot(ip + vec3(1.0,1.0,1.0), vec3(1.0,57.0,113.0)));
-  vec3 w = fp*fp*fp*(fp*(fp*6.0-15.0)+10.0);
-  float x00 = mix(n000, n100, w.x);
-  float x10 = mix(n010, n110, w.x);
-  float x01 = mix(n001, n101, w.x);
-  float x11 = mix(n011, n111, w.x);
-  float y0  = mix(x00, x10, w.y);
-  float y1  = mix(x01, x11, w.y);
-  return mix(y0, y1, w.z) * 2.0 - 1.0;
+// Draw a chunky palm frond with hanging leaf segments (pixel art style)
+float drawFrond(vec2 p, float angle, float len, float stemW, float droop, float wind) {
+  float c = cos(angle);
+  float s = sin(angle);
+  vec2 rp = vec2(p.x * c + p.y * s, -p.x * s + p.y * c);
+  
+  if (rp.x < 0.0 || rp.x > len) return 0.0;
+  
+  float t = rp.x / len;
+  
+  // Main stem curves downward
+  float curve = droop * t * t * 2.0 + wind * t;
+  rp.y -= curve;
+  
+  // Draw main stem (spine of the frond)
+  if (abs(rp.y) < stemW * (1.0 - t * 0.6)) return 1.0;
+  
+  // Draw chunky leaf segments hanging off the stem
+  float segmentSpacing = len * 0.18;
+  float segmentIdx = floor(rp.x / segmentSpacing);
+  float segmentStart = segmentIdx * segmentSpacing;
+  float segmentT = segmentStart / len;
+  
+  // Each segment droops from the stem
+  if (segmentIdx >= 1.0 && segmentIdx < 5.0) {
+    float localX = rp.x - segmentStart;
+    float segmentLen = segmentSpacing * (1.2 - segmentT * 0.3);
+    float segmentDroop = 0.4 + segmentT * 0.6; // More droop toward tip
+    
+    // Leaf segment curves down
+    float leafY = rp.y + curve; // Relative to stem
+    float leafCurve = segmentDroop * (localX / segmentLen);
+    
+    // Upper leaves (above stem)
+    float upperLeafW = stemW * 2.5 * (1.0 - segmentT * 0.4);
+    if (leafY > 0.0 && leafY < upperLeafW) {
+      float leafTaper = 1.0 - localX / segmentLen;
+      if (localX > 0.0 && localX < segmentLen * 0.8 && leafY < upperLeafW * leafTaper) return 1.0;
+    }
+    
+    // Lower leaves (below stem) - these hang down more
+    float lowerLeafLen = segmentLen * (1.0 + segmentDroop * 0.5);
+    float lowerY = -leafY - leafCurve * localX * 2.0;
+    float lowerLeafW = stemW * 3.0 * (1.0 - segmentT * 0.3);
+    if (lowerY > 0.0 && lowerY < lowerLeafW) {
+      float leafTaper = 1.0 - localX / lowerLeafLen;
+      if (localX > 0.0 && localX < lowerLeafLen && lowerY < lowerLeafW * leafTaper) return 1.0;
+    }
+  }
+  
+  return 0.0;
 }
 
-float fbm2(vec2 uv, float t){
-  vec3 p = vec3(uv * uScale, t);
-  float amp = 1.0;
-  float freq = 1.0;
-  float sum = 1.0;
-  for (int i = 0; i < FBM_OCTAVES; ++i){
-    sum  += amp * vnoise(p * freq);
-    freq *= FBM_LACUNARITY;
-    amp  *= FBM_GAIN;
+// Pixel art style palm tree with curved trunk
+float palmTree(vec2 uv, vec2 base, float scale, float seed, float time, float opacity) {
+  if (opacity < 0.01) return 0.0;
+  
+  float result = 0.0;
+  vec2 p = uv - base;
+  
+  // Tree leans based on seed (some left, some right)
+  float leanDir = (hash11(seed + 5.0) > 0.5) ? 1.0 : -1.0;
+  float baseLean = 0.04 * scale * leanDir;
+  
+  // Animated sway
+  float swayPhase = seed * 6.28;
+  float sway = sin(time * 1.2 + swayPhase) * 0.025 * scale;
+  
+  // === CURVED TRUNK ===
+  float trunkH = 0.16 * scale;
+  float trunkBaseW = 0.018 * scale;
+  
+  if (p.y > -0.005 * scale && p.y < trunkH) {
+    float t = p.y / trunkH;
+    // S-curve lean like in the reference
+    float curve = baseLean * t + sway * t * t;
+    curve += sin(t * 2.5) * 0.015 * scale * leanDir;
+    // Tapered - thick at bottom
+    float w = trunkBaseW * (1.0 - t * 0.45);
+    if (abs(p.x - curve) < w) result = 1.0;
   }
-  return sum * 0.5 + 0.5;
+  
+  // === CROWN ===
+  vec2 crown = vec2(baseLean + sway, trunkH);
+  vec2 cp = p - crown;
+  
+  float frondLen = 0.11 * scale;
+  float stemW = 0.006 * scale;
+  float baseDroop = 0.08 * scale;
+  
+  // Wind
+  float wind = sin(time * 1.8 + seed * 3.14) * 0.025 * scale;
+  
+  // Main fronds - spread out like in the reference image
+  // Top-left frond (goes up-left, droops)
+  result = max(result, drawFrond(cp, -0.6, frondLen * 1.1, stemW * 1.2, baseDroop * 0.9, wind * 0.8));
+  // Left frond (more horizontal, heavy droop)
+  result = max(result, drawFrond(cp, -1.2, frondLen * 0.95, stemW, baseDroop * 1.5, wind * 0.5));
+  // Top-right frond
+  result = max(result, drawFrond(cp, 0.5, frondLen * 1.15, stemW * 1.3, baseDroop * 0.85, wind));
+  // Right frond (horizontal, droops down)
+  result = max(result, drawFrond(cp, 1.1, frondLen, stemW * 1.1, baseDroop * 1.4, wind * 0.6));
+  // Back center frond (points up)
+  result = max(result, drawFrond(cp, -0.1, frondLen * 1.0, stemW * 1.1, baseDroop * 1.0, wind * 0.9));
+  // Drooping front fronds
+  result = max(result, drawFrond(cp, -1.6, frondLen * 0.8, stemW * 0.9, baseDroop * 2.0, wind * 0.3));
+  result = max(result, drawFrond(cp, 1.5, frondLen * 0.75, stemW * 0.9, baseDroop * 2.2, wind * 0.3));
+  
+  return result * opacity;
+}
+
+// Pattern with fade in/out
+float palmTreePattern(vec2 uv, float time) {
+  float result = 0.0;
+  float gridSize = 0.38;
+  
+  vec2 baseCell = floor(uv / gridSize);
+  
+  for (int i = -1; i <= 1; i++) {
+    for (int j = -1; j <= 1; j++) {
+      vec2 cellId = baseCell + vec2(float(i), float(j));
+      float cellHash = hash21(cellId);
+      
+      // ~40% of cells have trees
+      if (cellHash > 0.4) continue;
+      
+      // Position with jitter
+      vec2 treePos = (cellId + 0.5) * gridSize;
+      treePos.x += (hash21(cellId + 0.1) - 0.5) * gridSize * 0.6;
+      treePos.y += (hash21(cellId + 0.2) - 0.5) * gridSize * 0.5;
+      
+      // Fade cycle - trees appear and disappear
+      float cycleOffset = hash21(cellId + 0.5) * 30.0;
+      float cycleDuration = 12.0 + hash21(cellId + 0.6) * 8.0; // 12-20 sec cycles
+      float cycleTime = mod(time + cycleOffset, cycleDuration);
+      
+      // Smooth fade in/out
+      float fadeIn = smoothstep(0.0, cycleDuration * 0.15, cycleTime);
+      float fadeOut = 1.0 - smoothstep(cycleDuration * 0.85, cycleDuration, cycleTime);
+      float opacity = fadeIn * fadeOut;
+      
+      float treeScale = 0.8 + hash21(cellId + 0.3) * 0.4;
+      
+      result = max(result, palmTree(uv, treePos, treeScale, cellHash * 100.0, time, opacity));
+    }
+  }
+  
+  return result;
 }
 
 float maskCircle(vec2 p, float cov){
@@ -231,21 +344,24 @@ float maskDiamond(vec2 p, float cov){
 
 void main(){
   float pixelSize = uPixelSize;
-  vec2 fragCoord = gl_FragCoord.xy - uResolution * .5;
+  vec2 fragCoord = gl_FragCoord.xy;
   float aspectRatio = uResolution.x / uResolution.y;
 
   vec2 pixelId = floor(fragCoord / pixelSize);
   vec2 pixelUV = fract(fragCoord / pixelSize);
 
-  float cellPixelSize = 8.0 * pixelSize;
-  vec2 cellId = floor(fragCoord / cellPixelSize);
-  vec2 cellCoord = cellId * cellPixelSize;
-  vec2 uv = cellCoord / uResolution * vec2(aspectRatio, 1.0);
+  // Normalized UV coordinates for palm tree pattern
+  vec2 uv = fragCoord / uResolution;
+  uv.x *= aspectRatio;
+  
+  // Scale the pattern
+  uv *= uScale;
 
-  float base = fbm2(uv, uTime * 0.05);
-  base = base * 0.5 - 0.65;
-
-  float feed = base + (uDensity - 0.5) * 0.3;
+  // Get palm tree pattern value
+  float palm = palmTreePattern(uv, uTime);
+  
+  // Apply density control
+  float feed = palm * (0.5 + uDensity * 0.5);
 
   float speed     = uRippleSpeed;
   float thickness = uRippleThickness;
@@ -256,10 +372,11 @@ void main(){
     for (int i = 0; i < MAX_CLICKS; ++i){
       vec2 pos = uClickPos[i];
       if (pos.x < 0.0) continue;
-      float cellPixelSize = 8.0 * pixelSize;
-      vec2 cuv = (((pos - uResolution * .5 - cellPixelSize * .5) / (uResolution))) * vec2(aspectRatio, 1.0);
+      vec2 clickUV = pos / uResolution;
+      clickUV.x *= aspectRatio;
+      clickUV *= uScale;
       float t = max(uTime - uClickTimes[i], 0.0);
-      float r = distance(uv, cuv);
+      float r = distance(uv, clickUV);
       float waveR = speed * t;
       float ring  = exp(-pow((r - waveR) / thickness, 2.0));
       float atten = exp(-dampT * t) * exp(-dampR * r);
@@ -268,7 +385,7 @@ void main(){
   }
 
   float bayer = Bayer8(fragCoord / uPixelSize) - 0.5;
-  float bw = step(0.5, feed + bayer);
+  float bw = step(0.5, feed + bayer * 0.3);
 
   float h = fract(sin(dot(floor(fragCoord / uPixelSize), vec2(127.1, 311.7))) * 43758.5453);
   float jitterScale = 1.0 + (h - 0.5) * uPixelJitter;

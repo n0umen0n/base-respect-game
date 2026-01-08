@@ -21,6 +21,9 @@ import ProfilePictureUpload from './ProfilePictureUpload';
 import { uploadProfilePicture } from '../lib/supabase-respect';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
+import { createPublicClient, http } from 'viem';
+import { base } from 'viem/chains';
+import { CONTRACTS } from '../config/contracts.config';
 
 interface ProfileCreationProps {
   onSuccess: () => void;
@@ -287,8 +290,7 @@ export default function ProfileCreation({
             
             if (attempt === delays.length - 1) {
               console.error('❌ Failed to save X account after all attempts:', xError);
-              // Show a warning but don't fail the profile creation
-              setError('Profile created! X account will be linked automatically when you view your profile.');
+              // Silent fail - X account will be linked when viewing profile
             }
           }
         }
@@ -306,11 +308,35 @@ export default function ProfileCreation({
     }
   };
 
-  const handleSuccessModalClose = () => {
+  const handleSuccessModalClose = async () => {
     setShowSuccessModal(false);
     onSuccess();
-    // Navigate to homepage after profile creation
-    navigate('/');
+    
+    // Check current game stage to determine navigation
+    try {
+      const publicClient = createPublicClient({
+        chain: base,
+        transport: http('https://base-mainnet.g.alchemy.com/v2/ge46HCVEaL0VN6UKS5Yw9'),
+      });
+      
+      const stage = await publicClient.readContract({
+        address: CONTRACTS.RESPECT_GAME_CORE,
+        abi: [{ name: 'getCurrentStage', type: 'function', inputs: [], outputs: [{ type: 'uint8' }], stateMutability: 'view' }],
+        functionName: 'getCurrentStage',
+      });
+      
+      if (stage === 0) {
+        // Submission stage - go to game
+        navigate('/game');
+      } else {
+        // Ranking stage - go to profile
+        navigate(`/profile/${smartAccountAddress}`);
+      }
+    } catch (error) {
+      console.error('Error checking game stage:', error);
+      // Default to game if we can't check stage
+      navigate('/game');
+    }
   };
 
   return (
@@ -357,7 +383,7 @@ export default function ProfileCreation({
               lineHeight: 1.8,
             }}
           >
-            PLEASE LET OTHERS KNOW WHO ARE THEY PLAYING WITH
+            LET OTHERS KNOW WHO ARE THEY PLAYING WITH
           </Typography>
 
           {error && (
@@ -634,20 +660,10 @@ export default function ProfileCreation({
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
                 fontSize: '1.2rem',
-                marginBottom: 2,
+                marginBottom: 3,
               }}
             >
               PROFILE CREATED!
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: '"Press Start 2P", sans-serif',
-                marginBottom: 3,
-                fontSize: '0.7rem',
-                lineHeight: 1.8,
-              }}
-            >
-              Click "Play" on the homepage to participate in the Respect Game.
             </Typography>
             <Button
               variant="contained"

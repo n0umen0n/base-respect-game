@@ -450,7 +450,7 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
       args: [memberAddress as `0x${string}`],
     });
 
-    console.log('Member approval transaction hash:', hash);
+    console.log('Ape approval transaction hash:', hash);
     return hash;
   };
 

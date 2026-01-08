@@ -103,7 +103,7 @@ export default function CreateProposalDialog({
     setError(null);
 
     if (!isTopMember) {
-      setError('Only top 6 members can create proposals');
+      setError('Only top 6 apes can create proposals');
       return;
     }
 
@@ -117,7 +117,7 @@ export default function CreateProposalDialog({
         }
 
         if (!validateAddress(targetMember)) {
-          setError('Invalid target member address');
+          setError('Invalid target ape address');
           return;
         }
 
@@ -170,7 +170,7 @@ export default function CreateProposalDialog({
       // Check if it's the "Not top" error (user not in top 6)
       const errorStr = err.message || err.toString();
       if (errorStr.includes('4e6f7420746f70') || errorStr.includes('Not top')) {
-        errorMessage = 'Only top 6 members can create proposals. Keep contributing to move up the leaderboard!';
+        errorMessage = 'Only top 6 apes can create proposals. Keep contributing to move up the leaderboard!';
       } else if (errorStr.includes('revert')) {
         errorMessage = 'Transaction reverted. Please check your permissions and try again.';
       } else if (err.message) {
@@ -196,7 +196,7 @@ export default function CreateProposalDialog({
       <DialogContent>
         {!isTopMember && (
           <Alert severity="warning" sx={{ marginBottom: 2 }}>
-            Only top 6 members can create proposals
+            Only top 6 apes can create proposals
           </Alert>
         )}
 
@@ -239,14 +239,14 @@ export default function CreateProposalDialog({
                 fontSize: '0.6rem',
               }}
             >
-              BAN MEMBER
+              BAN APE
             </ToggleButton>
           </ToggleButtonGroup>
 
           {proposalType === 'ban' ? (
             <>
               <TextField
-                label="Target Member Address"
+                label="Target Ape Address"
                 value={targetMember}
                 onChange={(e) => setTargetMember(e.target.value)}
                 fullWidth
@@ -267,7 +267,7 @@ export default function CreateProposalDialog({
                 margin="normal"
                 multiline
                 rows={3}
-                placeholder="Explain why this member should be banned..."
+                placeholder="Explain why this ape should be banned..."
                 inputProps={{ maxLength: CHAR_LIMITS.description }}
                 helperText={`${banDescription.length}/${CHAR_LIMITS.description} characters`}
                 FormHelperTextProps={{

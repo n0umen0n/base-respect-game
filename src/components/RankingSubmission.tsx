@@ -41,6 +41,8 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
+// @ts-ignore - image import
+import defaultApe from '../assets/default-ape.svg';
 
 interface Member {
   address: string;
@@ -109,7 +111,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
             </Typography>
 
             <Avatar
-              src={member.profileUrl}
+              src={member.profileUrl || defaultApe}
               alt={member.name}
               sx={{
                 width: 60,
@@ -416,6 +418,42 @@ export default function RankingSubmission({
     return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
   };
 
+  const getTimeUntilNextContribution = () => {
+    // Calculate next contribution date (5 days after ranking ends)
+    const nextContributionDate = new Date(nextSubmissionStageDate);
+    nextContributionDate.setDate(nextContributionDate.getDate() + 5);
+    
+    const now = Date.now();
+    const target = nextContributionDate.getTime();
+    const difference = target - now;
+
+    if (difference <= 0) {
+      return null;
+    }
+
+    const totalHours = Math.floor(difference / (1000 * 60 * 60));
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (days > 0) {
+      return {
+        text: `${days} ${days === 1 ? 'DAY' : 'DAYS'} ${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
+        lessThan24Hours: false
+      };
+    } else if (hours > 0) {
+      return {
+        text: `${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
+        lessThan24Hours: true
+      };
+    } else {
+      return {
+        text: `${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
+        lessThan24Hours: true
+      };
+    }
+  };
+
   const handleAddToCalendar = () => {
     // Calculate next contribution date (5 days after ranking ends)
     const nextContributionDate = new Date(nextSubmissionStageDate);
@@ -485,7 +523,7 @@ export default function RankingSubmission({
                 lineHeight: 1.8,
               }}
             >
-              Drag and drop to rank members from 1st (best) to last.
+              Drag and drop to rank apes from 1st (best) to last.
             </Typography>
             
             <Box sx={{ height: '1rem' }} />
@@ -654,24 +692,40 @@ export default function RankingSubmission({
                   lineHeight: 1.8,
                 }}
               >
-                PLEASE SUBMIT YOUR NEXT CONTRIBUTIONS ON:
+                PLEASE SUBMIT YOUR NEXT CONTRIBUTIONS{getTimeUntilNextContribution() ? ' IN:' : ' ON:'}
               </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.9rem',
-                  color: '#000',
-                  marginBottom: 2,
-                }}
-              >
-                {(() => {
-                  // Calculate next contribution submission date (5 days after ranking ends)
-                  const nextContributionDate = new Date(nextSubmissionStageDate);
-                  nextContributionDate.setDate(nextContributionDate.getDate() + 5);
-                  return formatDateWithOrdinal(nextContributionDate);
-                })()}
-              </Typography>
+              {getTimeUntilNextContribution() && (
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.9rem',
+                    color: '#000',
+                    fontWeight: 'bold',
+                    marginBottom: getTimeUntilNextContribution()?.lessThan24Hours ? 2 : 1,
+                  }}
+                >
+                  {getTimeUntilNextContribution()?.text}
+                </Typography>
+              )}
+              {(!getTimeUntilNextContribution()?.lessThan24Hours) && (
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: '0.9rem',
+                    color: getTimeUntilNextContribution() ? 'text.secondary' : '#000',
+                    marginBottom: 2,
+                  }}
+                >
+                  {(() => {
+                    // Calculate next contribution submission date (5 days after ranking ends)
+                    const nextContributionDate = new Date(nextSubmissionStageDate);
+                    nextContributionDate.setDate(nextContributionDate.getDate() + 5);
+                    return formatDateWithOrdinal(nextContributionDate);
+                  })()}
+                </Typography>
+              )}
               <Button
                 startIcon={<CalendarTodayIcon />}
                 onClick={handleAddToCalendar}

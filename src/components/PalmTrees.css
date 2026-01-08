@@ -1,0 +1,52 @@
+.palm-trees-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.palm-tree {
+  position: absolute;
+  opacity: 0;
+  transform-origin: bottom center;
+  animation: 
+    sway var(--sway-duration, 3s) ease-in-out infinite alternate,
+    fadeInOut var(--cycle-duration, 30s) ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+  animation-fill-mode: backwards;
+  filter: saturate(0.75) brightness(1.05);
+  will-change: opacity, transform;
+}
+
+@keyframes sway {
+  0% {
+    transform: rotate(-3deg);
+  }
+  100% {
+    transform: rotate(3deg);
+  }
+}
+
+/* Smooth fade in/out cycle - no JavaScript needed */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.3;
+  }
+  70% {
+    opacity: 0.3;
+  }
+  85% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+

@@ -16,15 +16,15 @@ async function main() {
   )) as unknown as RespectGameCore;
 
   // New parameter values
-  const membersWithoutApproval = 5;
-  const submissionLength = 6 * 24 * 60 * 60; // 6 days in seconds
-  const rankingLength = 1 * 24 * 60 * 60; // 1 day in seconds
+  const membersWithoutApproval = 100;
+  const submissionLength = 1 * 60 * 60; // 1 hour in seconds
+  const rankingLength = 20 * 60; // 20 minutes in seconds
   const nextStageTimestamp = Math.floor(Date.now() / 1000) + 1 * 60; // Current time + 1 minute
 
   console.log("\nNew Parameters:");
   console.log(`  Members Without Approval: ${membersWithoutApproval}`);
-  console.log(`  Submission Length: ${submissionLength}s (6 days)`);
-  console.log(`  Ranking Length: ${rankingLength}s (1 day)`);
+  console.log(`  Submission Length: ${submissionLength}s (1 hour)`);
+  console.log(`  Ranking Length: ${rankingLength}s (20 minutes)`);
   console.log(
     `  Next Stage Timestamp: ${nextStageTimestamp} (${new Date(
       nextStageTimestamp * 1000
@@ -54,6 +54,10 @@ async function main() {
 
     console.log("\n✅ Game parameters updated successfully!");
 
+    // Wait a bit for RPC to sync before reading back
+    console.log("\nWaiting for RPC to sync...");
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
     // Read back the values to confirm
     const newMembersWithoutApproval = await contract.membersWithoutApproval();
     const newSubmissionLength = await contract.contributionSubmissionLength();
@@ -66,13 +70,13 @@ async function main() {
     );
     console.log(
       `  Submission Length: ${newSubmissionLength.toString()}s (${
-        Number(newSubmissionLength) / (24 * 60 * 60)
-      } days)`
+        Number(newSubmissionLength) / (60 * 60)
+      } hours)`
     );
     console.log(
       `  Ranking Length: ${newRankingLength.toString()}s (${
-        Number(newRankingLength) / (24 * 60 * 60)
-      } days)`
+        Number(newRankingLength) / 60
+      } minutes)`
     );
     console.log(
       `  Next Stage Timestamp: ${newNextStageTimestamp.toString()} (${new Date(

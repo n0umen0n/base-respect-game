@@ -36,7 +36,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
 // @ts-ignore - image import
-import profileImage from '../assets/profile.jpg';
+import defaultApe from '../assets/default-ape.svg';
 import {
   getMember,
   getMembers,
@@ -254,7 +254,7 @@ function GameHistoryRow({ game, memberName }: { game: GameResult; memberName?: s
                         color: '#0052FF',
                       }}
                     >
-                      {memberName ? `${memberName.toUpperCase()} RANKED:` : 'MEMBERS RANKED:'}
+                      {memberName ? `${memberName.toUpperCase()} RANKED:` : 'APES RANKED:'}
                     </Typography>
                     {loadingMembers ? (
                       <Box sx={{ display: 'flex', justifyContent: 'center', paddingTop: 1, paddingBottom: 2 }}>
@@ -288,7 +288,7 @@ function GameHistoryRow({ game, memberName }: { game: GameResult; memberName?: s
                                 #{index + 1}
                               </Typography>
                               <Avatar 
-                                src={member.profile_url || profileImage} 
+                                src={member.profile_url || defaultApe} 
                                 alt={member.name}
                                 sx={{ width: 40, height: 40 }}
                               />
@@ -334,7 +334,12 @@ export default function ProfilePage({
   const [tabValue, setTabValue] = useState(0);
   const [linkingTwitter, setLinkingTwitter] = useState(false);
   const [rankedMembers, setRankedMembers] = useState<Member[]>([]);
-  const [justLinkedTwitter, setJustLinkedTwitter] = useState(false);
+  // Persist justLinkedTwitter flag across OAuth redirect using sessionStorage
+  const [justLinkedTwitter, setJustLinkedTwitter] = useState(() => {
+    // Check if we're returning from X OAuth flow
+    const saved = sessionStorage.getItem('profile_page_linking_twitter');
+    return saved === walletAddress?.toLowerCase();
+  });
   
   // Check if viewing own profile - use currentUserAddress if provided, fallback to Privy wallet
   const isOwnProfile = currentUserAddress 
@@ -418,7 +423,8 @@ export default function ProfilePage({
 
           console.log('✅ X account saved to database successfully!');
           
-          // Reset the flag
+          // Reset the flag and clear sessionStorage
+          sessionStorage.removeItem('profile_page_linking_twitter');
           setJustLinkedTwitter(false);
           
           // Reload profile data to show the updated X account
@@ -426,6 +432,7 @@ export default function ProfilePage({
         } catch (err: any) {
           console.error('❌ Failed to save X account:', err);
           setError(err.message || 'Failed to save X account. Please try again.');
+          sessionStorage.removeItem('profile_page_linking_twitter');
           setJustLinkedTwitter(false);
         }
       }
@@ -488,7 +495,7 @@ export default function ProfilePage({
   if (error || !member) {
     return (
       <Box sx={{ padding: 3 }}>
-        <Alert severity="error">{error || 'Member not found'}</Alert>
+        <Alert severity="error">{error || 'Ape not found'}</Alert>
       </Box>
     );
   }
@@ -523,7 +530,7 @@ export default function ProfilePage({
             }}
           >
             <Avatar
-              src={member.profile_url}
+              src={member.profile_url || defaultApe}
               alt={member.name}
               sx={{
                 width: 150,
@@ -536,7 +543,7 @@ export default function ProfilePage({
             <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' }, minWidth: 0 }}>
               {member.is_approved && (
                 <Chip
-                  label="APPROVED MEMBER"
+                  label="APPROVED APE"
                   color="success"
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
@@ -615,7 +622,8 @@ export default function ProfilePage({
                         setError(null);
                         console.log('🔗 Starting X account linking...');
                         
-                        // Set flag to indicate user clicked link button
+                        // Store flag in sessionStorage to survive OAuth redirect
+                        sessionStorage.setItem('profile_page_linking_twitter', walletAddress.toLowerCase());
                         setJustLinkedTwitter(true);
                         
                         // Trigger Privy OAuth flow
@@ -626,6 +634,7 @@ export default function ProfilePage({
                       } catch (err) {
                         console.error('❌ Failed to link Twitter:', err);
                         setError('Failed to link Twitter account. Please try again.');
+                        sessionStorage.removeItem('profile_page_linking_twitter');
                         setJustLinkedTwitter(false);
                       } finally {
                         setLinkingTwitter(false);
@@ -933,7 +942,7 @@ export default function ProfilePage({
                             #{index + 1}
                           </Typography>
                           <Avatar
-                            src={rankedMember.profile_url}
+                            src={rankedMember.profile_url || defaultApe}
                             alt={rankedMember.name}
                             sx={{
                               width: 40,
@@ -1187,7 +1196,7 @@ export default function ProfilePage({
                         lineHeight: 1.8,
                       }}
                     >
-                      Not playing, member has not submitted contributions for this game.
+                      Not playing, ape has not submitted contributions for this game.
                     </Typography>
                   </Alert>
 
@@ -1361,7 +1370,7 @@ export default function ProfilePage({
                   marginBottom: 3,
                 }}
               >
-                MEMBERS VOUCHED FOR
+                APES VOUCHED FOR
               </Typography>
 
               {vouchedFor.length > 0 ? (
@@ -1388,7 +1397,7 @@ export default function ProfilePage({
                           }}
                         >
                           <Avatar
-                            src={vouchedMember.profile_url}
+                            src={vouchedMember.profile_url || defaultApe}
                             alt={vouchedMember.name}
                             sx={{ width: 50, height: 50, borderRadius: 2 }}
                           />
@@ -1438,7 +1447,7 @@ export default function ProfilePage({
                       lineHeight: 1,
                     }}
                   >
-                    Haven't vouched for any members yet
+                    Haven't vouched for any apes yet
                   </Typography>
                 </Alert>
               )}

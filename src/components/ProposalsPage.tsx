@@ -63,12 +63,12 @@ function formatProposalDate(dateString: string): string {
 }
 
 const PROPOSAL_COLORS = {
-  ApproveMember: {
+  ApproveApe: {
     bg: '#e8f5e9',
     border: '#4caf50',
     text: '#2e7d32',
   },
-  BanMember: {
+  BanApe: {
     bg: '#ffebee',
     border: '#f44336',
     text: '#c62828',
@@ -86,8 +86,8 @@ const PROPOSAL_COLORS = {
 };
 
 const PROPOSAL_THRESHOLDS = {
-  ApproveMember: 2,
-  BanMember: 3,
+  ApproveApe: 2,
+  BanApe: 3,
   TreasuryTransfer: 4,
   ExecuteTransactions: 4,
 };
@@ -98,16 +98,16 @@ function ProposalCard({
   navigate,
 }: {
   proposal: LiveProposal;
-  onVoteClick: (proposalId: number, voteFor: boolean, isTransfer: boolean, isApproveMember: boolean, targetMemberAddress?: string) => void;
+  onVoteClick: (proposalId: number, voteFor: boolean, isTransfer: boolean, isApproveApe: boolean, targetMemberAddress?: string) => void;
   navigate: (path: string) => void;
 }) {
-  const colors = PROPOSAL_COLORS[proposal.proposal_type as keyof typeof PROPOSAL_COLORS] || PROPOSAL_COLORS.ApproveMember;
+  const colors = PROPOSAL_COLORS[proposal.proposal_type as keyof typeof PROPOSAL_COLORS] || PROPOSAL_COLORS.ApproveApe;
   const threshold = PROPOSAL_THRESHOLDS[proposal.proposal_type as keyof typeof PROPOSAL_THRESHOLDS] || 2;
   const totalVotes = proposal.votes_for + proposal.votes_against;
   const progress = totalVotes > 0 ? (proposal.votes_for / totalVotes) * 100 : 0;
   const isTransferProposal = proposal.proposal_type === 'ExecuteTransactions' || proposal.proposal_type === 'TreasuryTransfer';
-  const isApproveMemberProposal = proposal.proposal_type === 'ApproveMember';
-  const isBanMemberProposal = proposal.proposal_type === 'BanMember';
+  const isApproveApeProposal = proposal.proposal_type === 'ApproveMember';
+  const isBanApeProposal = proposal.proposal_type === 'BanMember';
 
   return (
     <Card
@@ -154,14 +154,14 @@ function ProposalCard({
             >
               {isTransferProposal
                 ? 'Fund Transfer' 
-                : isApproveMemberProposal
-                ? 'Member Approval'
-                : isBanMemberProposal
-                ? 'Member Ban'
+                : isApproveApeProposal
+                ? 'Ape Approval'
+                : isBanApeProposal
+                ? 'Ape Ban'
                 : proposal.target_member_name || 'General Proposal'}
             </Typography>
 
-            {isApproveMemberProposal && proposal.target_member_name && proposal.target_member_address && (
+            {isApproveApeProposal && proposal.target_member_name && proposal.target_member_address && (
               <Box sx={{ marginBottom: 1.5 }}>
                 <Typography
                   variant="body2"
@@ -171,7 +171,7 @@ function ProposalCard({
                     textAlign: 'left',
                   }}
                 >
-                  <strong>Member: </strong>
+                  <strong>Ape: </strong>
                   <Box
                     component="span"
                     onClick={() => navigate(`/profile/${proposal.target_member_address}`)}
@@ -190,7 +190,7 @@ function ProposalCard({
               </Box>
             )}
 
-            {isBanMemberProposal && proposal.target_member_name && proposal.target_member_address && (
+            {isBanApeProposal && proposal.target_member_name && proposal.target_member_address && (
               <Box sx={{ marginBottom: 1.5 }}>
                 <Typography
                   variant="body2"
@@ -200,7 +200,7 @@ function ProposalCard({
                     textAlign: 'left',
                   }}
                 >
-                  <strong>Member: </strong>
+                  <strong>Ape: </strong>
                   <Box
                     component="span"
                     onClick={() => navigate(`/profile/${proposal.target_member_address}`)}
@@ -273,7 +273,7 @@ function ProposalCard({
             </Typography>
 
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.25, fontSize: '0.85rem', color: 'text.secondary', textAlign: 'left' }}>
-              {!isApproveMemberProposal && !isBanMemberProposal && (
+              {!isApproveApeProposal && !isBanApeProposal && (
                 <Typography variant="caption" sx={{ textAlign: 'left' }}>
                   Proposed by: <strong>{proposal.proposer_name}</strong>
                 </Typography>
@@ -291,21 +291,21 @@ function ProposalCard({
                 color="success"
                 size="small"
                 startIcon={<ThumbUpIcon />}
-                onClick={() => onVoteClick(proposal.proposal_id, true, isTransferProposal, isApproveMemberProposal, proposal.target_member_address)}
+                onClick={() => onVoteClick(proposal.proposal_id, true, isTransferProposal, isApproveApeProposal, proposal.target_member_address)}
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
                   fontSize: '0.6rem',
                 }}
               >
-                {isTransferProposal || isApproveMemberProposal || isBanMemberProposal ? 'APPROVE' : 'FOR'}
+                {isTransferProposal || isApproveApeProposal || isBanApeProposal ? 'APPROVE' : 'FOR'}
               </Button>
-              {!isTransferProposal && !isApproveMemberProposal && !isBanMemberProposal && (
+              {!isTransferProposal && !isApproveApeProposal && !isBanApeProposal && (
                 <Button
                   variant="contained"
                   color="error"
                   size="small"
                   startIcon={<ThumbDownIcon />}
-                  onClick={() => onVoteClick(proposal.proposal_id, false, isTransferProposal, isApproveMemberProposal, proposal.target_member_address)}
+                  onClick={() => onVoteClick(proposal.proposal_id, false, isTransferProposal, isApproveApeProposal, proposal.target_member_address)}
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
                     fontSize: '0.6rem',
@@ -336,9 +336,9 @@ function ProposalCard({
             >
               {isTransferProposal 
                 ? `VOTES: ${proposal.votes_for}`
-                : isApproveMemberProposal
+                : isApproveApeProposal
                 ? `VOTES: ${proposal.votes_for}`
-                : isBanMemberProposal
+                : isBanApeProposal
                 ? `VOTES: ${proposal.votes_for}`
                 : `VOTES: ${proposal.votes_for} FOR / ${proposal.votes_against} AGAINST`}
             </Typography>
@@ -387,9 +387,9 @@ export default function ProposalsPage({
     proposalId: number | null;
     voteFor: boolean;
     isTransfer: boolean;
-    isApproveMember: boolean;
+    isApproveApe: boolean;
     targetMemberAddress?: string;
-  }>({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false });
+  }>({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveApe: false });
   const [voting, setVoting] = useState(false);
   const [copySnackbarOpen, setCopySnackbarOpen] = useState(false);
   const [createProposalDialogOpen, setCreateProposalDialogOpen] = useState(false);
@@ -470,7 +470,7 @@ export default function ProposalsPage({
       // Decode the error message for better user feedback
       const errorStr = err.message || err.toString();
       if (errorStr.includes('4e6f7420746f70') || errorStr.includes('Not top')) {
-        throw new Error('Only top 6 members can create proposals. Keep contributing to move up the leaderboard!');
+        throw new Error('Only top 6 apes can create proposals. Keep contributing to move up the leaderboard!');
       }
       
       throw err;
@@ -503,12 +503,12 @@ export default function ProposalsPage({
     loadProposals();
   }, []);
 
-  const handleVoteClick = (proposalId: number, voteFor: boolean, isTransfer: boolean = false, isApproveMember: boolean = false, targetMemberAddress?: string) => {
+  const handleVoteClick = (proposalId: number, voteFor: boolean, isTransfer: boolean = false, isApproveApe: boolean = false, targetMemberAddress?: string) => {
     // Initialize wallet when user tries to vote
     if (!walletInitialized) {
       setWalletInitialized(true);
     }
-    setVoteDialog({ open: true, proposalId, voteFor, isTransfer, isApproveMember, targetMemberAddress });
+    setVoteDialog({ open: true, proposalId, voteFor, isTransfer, isApproveApe, targetMemberAddress });
   };
 
   const handleVoteConfirm = async () => {
@@ -517,14 +517,14 @@ export default function ProposalsPage({
     try {
       setVoting(true);
       
-      // If it's an ApproveMember proposal, call approveMember instead of voteOnProposal
-      if (voteDialog.isApproveMember && voteDialog.targetMemberAddress) {
+      // If it's an ApproveApe proposal, call approveMember instead of voteOnProposal
+      if (voteDialog.isApproveApe && voteDialog.targetMemberAddress) {
         await approveMember(voteDialog.targetMemberAddress);
       } else {
         await voteOnProposal(voteDialog.proposalId, voteDialog.voteFor);
       }
       
-      setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false, targetMemberAddress: undefined });
+      setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveApe: false, targetMemberAddress: undefined });
       // Reload proposals after voting
       await loadProposals();
     } catch (err: any) {
@@ -538,9 +538,9 @@ export default function ProposalsPage({
         // '416c726561647920766f746564' is hex for "Already voted"
         userFriendlyError = 'You have already voted on this proposal';
       } else if (errorStr.includes('Not top')) {
-        userFriendlyError = 'Only top 6 members can vote on proposals';
+        userFriendlyError = 'Only top 6 apes can vote on proposals';
       } else if (errorStr.includes('Already approved')) {
-        userFriendlyError = 'This member is already approved';
+        userFriendlyError = 'This ape is already approved';
       }
       
       setError(userFriendlyError);
@@ -608,7 +608,7 @@ export default function ProposalsPage({
                 }
               }}
             >
-              Only top 6 members can vote and create proposals.
+              Only top 6 apes can vote and create proposals.
             </Alert>
           )}
 
@@ -997,8 +997,8 @@ export default function ProposalsPage({
                   sx={{
                     width: 40,
                     height: 40,
-                    backgroundColor: PROPOSAL_COLORS.ApproveMember.bg,
-                    border: `2px solid ${PROPOSAL_COLORS.ApproveMember.border}`,
+                    backgroundColor: PROPOSAL_COLORS.ApproveApe.bg,
+                    border: `2px solid ${PROPOSAL_COLORS.ApproveApe.border}`,
                     borderRadius: 1,
                   }}
                 />
@@ -1007,10 +1007,10 @@ export default function ProposalsPage({
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.7rem',
-                      color: PROPOSAL_COLORS.ApproveMember.text,
+                      color: PROPOSAL_COLORS.ApproveApe.text,
                     }}
                   >
-                    APPROVE MEMBER (2 votes needed)
+                    APPROVE APE (2 votes needed)
                   </Typography>
                 </Box>
               </Box>
@@ -1020,8 +1020,8 @@ export default function ProposalsPage({
                   sx={{
                     width: 40,
                     height: 40,
-                    backgroundColor: PROPOSAL_COLORS.BanMember.bg,
-                    border: `2px solid ${PROPOSAL_COLORS.BanMember.border}`,
+                    backgroundColor: PROPOSAL_COLORS.BanApe.bg,
+                    border: `2px solid ${PROPOSAL_COLORS.BanApe.border}`,
                     borderRadius: 1,
                   }}
                 />
@@ -1030,10 +1030,10 @@ export default function ProposalsPage({
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontSize: '0.7rem',
-                      color: PROPOSAL_COLORS.BanMember.text,
+                      color: PROPOSAL_COLORS.BanApe.text,
                     }}
                   >
-                    BAN MEMBER (3 votes needed)
+                    BAN APE (3 votes needed)
                   </Typography>
                 </Box>
               </Box>
@@ -1069,7 +1069,7 @@ export default function ProposalsPage({
       <Dialog
         open={voteDialog.open}
         onClose={() =>
-          !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false, targetMemberAddress: undefined })
+          !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveApe: false, targetMemberAddress: undefined })
         }
       >
         <DialogTitle
@@ -1082,14 +1082,14 @@ export default function ProposalsPage({
         </DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to {voteDialog.isTransfer ? 'approve' : voteDialog.isApproveMember ? 'approve' : 'vote'}{' '}
-            <strong>{voteDialog.isTransfer ? (voteDialog.voteFor ? 'APPROVE' : '') : voteDialog.isApproveMember ? 'this member' : (voteDialog.voteFor ? 'FOR' : 'AGAINST')}</strong> {voteDialog.isApproveMember ? '' : 'this proposal'}?
+            Are you sure you want to {voteDialog.isTransfer ? 'approve' : voteDialog.isApproveApe ? 'approve' : 'vote'}{' '}
+            <strong>{voteDialog.isTransfer ? (voteDialog.voteFor ? 'APPROVE' : '') : voteDialog.isApproveApe ? 'this ape' : (voteDialog.voteFor ? 'FOR' : 'AGAINST')}</strong> {voteDialog.isApproveApe ? '' : 'this proposal'}?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button
             onClick={() =>
-              setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveMember: false, targetMemberAddress: undefined })
+              setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveApe: false, targetMemberAddress: undefined })
             }
             disabled={voting}
           >

@@ -8,6 +8,7 @@ import ProfileCard from './ProfileCard';
 import GorillaAnimation from './GorillaAnimation';
 import { getTopSixMembers, getAllMembers } from '../lib/supabase-respect';
 import { formatRespectDisplay } from '../lib/formatTokens';
+import defaultApe from '../assets/default-ape.svg';
 
 import {
   Table,
@@ -209,16 +210,7 @@ const HomePage = () => {
             color: '#333',
             marginBottom: '3.5rem'
           }}>
-            What have you done to pump the $RESOURCE price?
-          </p>
-          <p style={{
-            fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '1.1rem',
-            lineHeight: 1.8,
-            color: '#555',
-            marginBottom: '2rem'
-          }}>
-            Submit your contribution to get $RESOURCEs
+            Play Respect Game to PUMP $RESOURCE price
           </p>
           <div style={{ marginBottom: '3rem' }}>
             <Button
@@ -237,7 +229,7 @@ const HomePage = () => {
                 }
               }}
             >
-              SUBMIT
+              Enter Jungle
             </Button>
           </div>
         </div>
@@ -294,18 +286,16 @@ const HomePage = () => {
         >
           <div
             style={{
-              display: 'flex',
-              flexWrap: 'wrap',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 380px)',
               gap: '2rem',
-              padding: '0 2rem 2rem',
-              width: '100%',
-              maxWidth: '800px',
-              margin: '0 auto',
-              justifyContent: 'center'
+              padding: '2rem',
+              width: 'fit-content',
+              margin: '0 auto'
             }}
           >
             {loading ? (
-              <div style={{ paddingTop: '2rem' }}>
+              <div style={{ paddingTop: '2rem', gridColumn: 'span 2', textAlign: 'center' }}>
                 <LoadingSpinner size={60} />
               </div>
             ) : topMembers.length > 0 ? (
@@ -319,12 +309,11 @@ const HomePage = () => {
                   profileUrl={member.profile_url}
                   xVerified={member.x_verified || false}
                   walletAddress={member.wallet_address}
-                  style={{ flex: '0 1 340px' }}
                 />
               ))
             ) : (
-              <p style={{ fontFamily: '"Press Start 2P", sans-serif', fontSize: '0.8rem' }}>
-                No members yet. Be the first to join!
+              <p style={{ fontFamily: '"Press Start 2P", sans-serif', fontSize: '0.8rem', gridColumn: 'span 2' }}>
+                No apes yet. Be the first to join!
               </p>
             )}
           </div>
@@ -351,7 +340,7 @@ const HomePage = () => {
           >
             <TextField
               fullWidth
-              placeholder="Search ape by name..."
+              placeholder="Search by ape name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               InputProps={{
@@ -491,7 +480,7 @@ const HomePage = () => {
                         py: 4
                       }}
                     >
-                      {searchQuery ? 'No members found matching your search' : 'No additional members yet'}
+                      {searchQuery ? 'No apes found matching your search' : 'No additional apes yet'}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -541,7 +530,7 @@ const HomePage = () => {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
                           <Avatar
-                            src={member.profile_url}
+                            src={member.profile_url || defaultApe}
                             alt={member.name}
                             sx={{
                               width: 48,

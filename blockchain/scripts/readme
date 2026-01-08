@@ -18,6 +18,7 @@ DEBUG PROPOSAL:
 PROPOSAL_ID=8 npx hardhat run scripts/check-proposal.ts --network base-mainnet
 
 npx hardhat run scripts/updateGameParams.ts --network base-mainnet
+npx hardhat run scripts/switchStageDetailed.ts --network base-mainnet
 
 TEST:
 

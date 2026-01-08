@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import StaggeredMenu from './components/StaggeredMenu';
-import PixelBlast from './components/PixelBlast';
+import PalmTrees from './components/PalmTrees';
 import Shuffle from './components/Shuffle';
 import { useSmartWallet } from './hooks/useSmartWallet';
 import MobileWarning from './components/MobileWarning';
@@ -37,30 +37,9 @@ function App() {
     
     // Add external links (marked as secondary for different styling)
     items.push({ 
-      label: 'ORGANIZATION', 
-      ariaLabel: 'Visit Hypha organization', 
-      link: 'https://app.hypha.earth/en/dho/respect-game-ceo/overview',
-      secondary: true
-    });
-    
-    items.push({ 
-      label: 'GITHUB', 
-      ariaLabel: 'View GitHub repository', 
-      link: 'https://github.com/n0umen0n/base-respect-game',
-      secondary: true
-    });
-    
-    items.push({ 
-      label: 'CRYPTO SWAG', 
-      ariaLabel: 'Get crypto swag', 
-      link: 'https://moodcyi.com/',
-      secondary: true
-    });
-    
-    items.push({ 
       label: 'TELEGRAM', 
       ariaLabel: 'Join Telegram community', 
-      link: 'https://t.me/respectgameofficial',
+      link: 'https://t.me/daooftheapes',
       secondary: true
     });
     
@@ -102,33 +81,8 @@ function App() {
   return (
     <>
       <MobileWarning />
-      <div
-        className={isMenuOpen ? 'blurred' : ''}
-        style={{
-          width: '100%',
-          height: '100vh',
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          zIndex: -1,
-          pointerEvents: 'none'
-        }}
-      >
-        <PixelBlast
-          variant="square"
-          pixelSize={18}
-          color="#F5F5F5"
-          patternScale={3}
-          patternDensity={0.3}
-          pixelSizeJitter={0.5}
-          enableRipples
-          rippleSpeed={0.4}
-          rippleThickness={0.12}
-          rippleIntensityScale={1.5}
-          speed={0.6}
-          edgeFade={0.25}
-          transparent
-        />
+      <div className={isMenuOpen ? 'blurred' : ''}>
+        <PalmTrees count={28} />
       </div>
       <div
         className={`w-screen min-h-screen flex flex-col items-center text-center ${
@@ -241,9 +195,9 @@ function App() {
           menuButtonColor="#1a1a1a"
           openMenuButtonColor="#1a1a1a"
           changeMenuColorOnOpen={true}
-          colors={['#80A8FF', '#0052FF']}
+          colors={['#86EFAC', '#22C55E']}
           logoUrl={null}
-          accentColor="#0052FF"
+          accentColor="#22C55E"
           onMenuOpen={() => setIsMenuOpen(true)}
           onMenuClose={() => setIsMenuOpen(false)}
         />
