@@ -1,14 +1,14 @@
 /**
  * Smart Wallet Configuration
  *
- * Update this file with your Pimlico API key and other settings.
+ * Configure via environment variables.
  * Get your API key from: https://dashboard.pimlico.io/
  */
 
 export const SMART_WALLET_CONFIG = {
   // Pimlico API Key - REQUIRED
-  // Get this from https://dashboard.pimlico.io/
-  PIMLICO_API_KEY: "pim_QLArWNZ7mLYArXrcmBFY5i",
+  // Set VITE_PIMLICO_API_KEY in your environment variables
+  PIMLICO_API_KEY: import.meta.env.VITE_PIMLICO_API_KEY || "",
 
   // Network - Currently set to Base mainnet
   // Change to 'base-sepolia' for testnet
@@ -40,12 +40,9 @@ export const SMART_WALLET_CONFIG = {
 export function validateConfig(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  if (
-    !SMART_WALLET_CONFIG.PIMLICO_API_KEY ||
-    SMART_WALLET_CONFIG.PIMLICO_API_KEY === "YOUR_PIMLICO_API_KEY"
-  ) {
+  if (!SMART_WALLET_CONFIG.PIMLICO_API_KEY) {
     errors.push(
-      "PIMLICO_API_KEY is not set. Please update src/config/smartWallet.config.ts"
+      "VITE_PIMLICO_API_KEY environment variable is not set. Add it to your .env file or Vercel environment variables."
     );
   }
 
@@ -53,7 +50,7 @@ export function validateConfig(): { valid: boolean; errors: string[] } {
     console.log("🔧 Smart Wallet Configuration:", {
       network: SMART_WALLET_CONFIG.NETWORK,
       chainId: SMART_WALLET_CONFIG.CHAIN_ID,
-      hasApiKey: SMART_WALLET_CONFIG.PIMLICO_API_KEY !== "YOUR_PIMLICO_API_KEY",
+      hasApiKey: !!SMART_WALLET_CONFIG.PIMLICO_API_KEY,
       bundlerUrl: SMART_WALLET_CONFIG.BUNDLER_URL.replace(
         SMART_WALLET_CONFIG.PIMLICO_API_KEY,
         "***"
