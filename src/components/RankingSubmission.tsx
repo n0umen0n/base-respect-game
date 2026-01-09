@@ -314,7 +314,6 @@ export default function RankingSubmission({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
   const [loading, setLoading] = useState(true);
 
   // Get smart wallet and blockchain functions
@@ -339,23 +338,6 @@ export default function RankingSubmission({
   useEffect(() => {
     setMembers(groupMembers);
   }, [groupMembers]);
-
-  // Countdown timer for results availability
-  useEffect(() => {
-    const updateCountdown = () => {
-      const timeDiff = new Date(nextSubmissionStageDate).getTime() - Date.now();
-      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-      
-      setCountdown({ days: Math.max(0, days), hours: Math.max(0, hours), minutes: Math.max(0, minutes) });
-    };
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 60000); // Update every minute
-
-    return () => clearInterval(interval);
-  }, [nextSubmissionStageDate]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -419,12 +401,9 @@ export default function RankingSubmission({
   };
 
   const getTimeUntilNextContribution = () => {
-    // Calculate next contribution date (5 days after ranking ends)
-    const nextContributionDate = new Date(nextSubmissionStageDate);
-    nextContributionDate.setDate(nextContributionDate.getDate() + 5);
-    
+    // nextSubmissionStageDate is already the date when next contribution stage starts
     const now = Date.now();
-    const target = nextContributionDate.getTime();
+    const target = new Date(nextSubmissionStageDate).getTime();
     const difference = target - now;
 
     if (difference <= 0) {
@@ -455,9 +434,8 @@ export default function RankingSubmission({
   };
 
   const handleAddToCalendar = () => {
-    // Calculate next contribution date (5 days after ranking ends)
+    // nextSubmissionStageDate is already the date when next contribution stage starts
     const nextContributionDate = new Date(nextSubmissionStageDate);
-    nextContributionDate.setDate(nextContributionDate.getDate() + 5);
     const endDate = new Date(nextContributionDate.getTime() + 10 * 60 * 1000); // 10 minute event
 
     const title = encodeURIComponent('Respect Game - Contribution Submission');
@@ -585,8 +563,8 @@ export default function RankingSubmission({
           >
             {isSubmitting ? (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <span>SUBMITTING</span>
                 <LoadingSpinner size={24} color="#ffffff" />
-                <span>SUBMITTING...</span>
               </Box>
             ) : (
               'SUBMIT RANKING'
@@ -636,45 +614,8 @@ export default function RankingSubmission({
                 marginBottom: 3,
               }}
             >
-              THANK YOU!
+              RANKING SUBMITTED!
             </Typography>
-            <Box
-              sx={{
-                padding: 2,
-                backgroundColor: '#f5f5f5',
-                borderRadius: 2,
-                marginBottom: 2,
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.65rem',
-                  marginBottom: 2,
-                  lineHeight: 1.8,
-                }}
-              >
-                RESULTS WILL BE AVAILABLE ON YOUR PROFILE PAGE IN:
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.9rem',
-                  color: '#000',
-                  fontWeight: 'bold',
-                }}
-              >
-                {countdown.days > 0 ? (
-                  `${countdown.days} ${countdown.days === 1 ? 'DAY' : 'DAYS'} ${countdown.hours} ${countdown.hours === 1 ? 'HOUR' : 'HOURS'}`
-                ) : countdown.hours > 0 ? (
-                  `${countdown.hours} ${countdown.hours === 1 ? 'HOUR' : 'HOURS'} ${countdown.minutes} ${countdown.minutes === 1 ? 'MINUTE' : 'MINUTES'}`
-                ) : (
-                  `${countdown.minutes} ${countdown.minutes === 1 ? 'MINUTE' : 'MINUTES'}`
-                )}
-              </Typography>
-            </Box>
             <Box
               sx={{
                 padding: 2,
@@ -692,7 +633,7 @@ export default function RankingSubmission({
                   lineHeight: 1.8,
                 }}
               >
-                PLEASE SUBMIT YOUR NEXT CONTRIBUTIONS{getTimeUntilNextContribution() ? ' IN:' : ' ON:'}
+                KEEP PUMPING, NEXT GAME STARTS{getTimeUntilNextContribution() ? ' IN:' : ' ON:'}
               </Typography>
               {getTimeUntilNextContribution() && (
                 <Typography
@@ -718,12 +659,7 @@ export default function RankingSubmission({
                     marginBottom: 2,
                   }}
                 >
-                  {(() => {
-                    // Calculate next contribution submission date (5 days after ranking ends)
-                    const nextContributionDate = new Date(nextSubmissionStageDate);
-                    nextContributionDate.setDate(nextContributionDate.getDate() + 5);
-                    return formatDateWithOrdinal(nextContributionDate);
-                  })()}
+                  {formatDateWithOrdinal(new Date(nextSubmissionStageDate))}
                 </Typography>
               )}
               <Button

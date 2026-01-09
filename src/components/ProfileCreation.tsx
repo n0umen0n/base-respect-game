@@ -66,6 +66,7 @@ export default function ProfileCreation({
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [linkingTwitter, setLinkingTwitter] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isContinuing, setIsContinuing] = useState(false);
 
   // Notify parent of loading state changes
   React.useEffect(() => {
@@ -309,7 +310,7 @@ export default function ProfileCreation({
   };
 
   const handleSuccessModalClose = async () => {
-    setShowSuccessModal(false);
+    setIsContinuing(true);
     onSuccess();
     
     // Check current game stage to determine navigation
@@ -325,6 +326,7 @@ export default function ProfileCreation({
         functionName: 'getCurrentStage',
       });
       
+      setShowSuccessModal(false);
       if (stage === 0) {
         // Submission stage - go to game
         navigate('/game');
@@ -334,6 +336,7 @@ export default function ProfileCreation({
       }
     } catch (error) {
       console.error('Error checking game stage:', error);
+      setShowSuccessModal(false);
       // Default to game if we can't check stage
       navigate('/game');
     }
@@ -600,8 +603,8 @@ export default function ProfileCreation({
             >
               {isSubmitting ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <span>{uploadProgress || 'CREATING'}</span>
                   <LoadingSpinner size={24} color="#ffffff" />
-                  <span>{uploadProgress || 'CREATING...'}</span>
                 </Box>
               ) : (
                 'CREATE PROFILE'
@@ -668,6 +671,7 @@ export default function ProfileCreation({
             <Button
               variant="contained"
               onClick={handleSuccessModalClose}
+              disabled={isContinuing}
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
                 fontSize: '0.875rem',
@@ -676,9 +680,20 @@ export default function ProfileCreation({
                 '&:hover': {
                   backgroundColor: '#333',
                 },
+                '&.Mui-disabled': {
+                  backgroundColor: '#000',
+                  color: '#fff',
+                },
               }}
             >
-              CONTINUE
+              {isContinuing ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <span>LOADING</span>
+                  <LoadingSpinner size={20} color="#ffffff" />
+                </Box>
+              ) : (
+                'CONTINUE'
+              )}
             </Button>
           </Box>
         </Fade>

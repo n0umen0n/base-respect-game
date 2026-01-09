@@ -52,6 +52,7 @@ export default function ContributionSubmission({
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [timeLeft, setTimeLeft] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [modalCountdown, setModalCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
   // Get smart wallet and blockchain functions
   const { smartAccountClient, smartAccountAddress } = useSmartWallet();
@@ -96,6 +97,34 @@ export default function ContributionSubmission({
 
     return () => clearInterval(interval);
   }, [nextStageTimestamp]);
+
+  // Live countdown for success modal
+  useEffect(() => {
+    if (!showSuccessModal) return;
+
+    const updateModalCountdown = () => {
+      const now = new Date().getTime();
+      const target = new Date(nextStageTimestamp).getTime();
+      const difference = target - now;
+
+      if (difference <= 0) {
+        setModalCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+      setModalCountdown({ days, hours, minutes, seconds });
+    };
+
+    updateModalCountdown();
+    const interval = setInterval(updateModalCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, [showSuccessModal, nextStageTimestamp]);
 
   const addContribution = () => {
     const newId = Math.max(...items.map((item) => item.id)) + 1;
@@ -187,56 +216,6 @@ export default function ContributionSubmission({
       setError(err.message || 'Failed to submit contribution. Please try again.');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const formatDateWithOrdinal = (date: Date) => {
-    const day = date.getDate();
-    const month = date.toLocaleString('en-US', { month: 'long' });
-    const year = date.getFullYear();
-    
-    const getOrdinalSuffix = (day: number) => {
-      if (day > 3 && day < 21) return 'th';
-      switch (day % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
-    
-    return `${day}${getOrdinalSuffix(day)} of ${month} ${year}`;
-  };
-
-  const getTimeUntilRanking = () => {
-    const now = new Date().getTime();
-    const target = new Date(nextStageTimestamp).getTime();
-    const difference = target - now;
-
-    if (difference <= 0) {
-      return null;
-    }
-
-    const totalHours = Math.floor(difference / (1000 * 60 * 60));
-    const days = Math.floor(totalHours / 24);
-    const hours = totalHours % 24;
-    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) {
-      return {
-        text: `${days} ${days === 1 ? 'DAY' : 'DAYS'} ${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
-        lessThan24Hours: false
-      };
-    } else if (hours > 0) {
-      return {
-        text: `${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
-        lessThan24Hours: true
-      };
-    } else {
-      return {
-        text: `${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
-        lessThan24Hours: true
-      };
     }
   };
 
@@ -474,8 +453,8 @@ export default function ContributionSubmission({
             >
               {isSubmitting ? (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <span>SUBMITTING</span>
                   <LoadingSpinner size={24} color="#ffffff" />
-                  <span>SUBMITTING...</span>
                 </Box>
               ) : (
                 'SUBMIT CONTRIBUTIONS'
@@ -545,35 +524,125 @@ export default function ContributionSubmission({
                   lineHeight: 1.8,
                 }}
               >
-                PLEASE COME BACK FOR THE RANKING STAGE{getTimeUntilRanking() ? ' IN:' : ' ON:'}
+                PLEASE COME BACK FOR THE RANKING STAGE IN:
               </Typography>
-              {getTimeUntilRanking() && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: 1.5,
+                  marginBottom: 2,
+                }}
+              >
+                {modalCountdown.days > 0 && (
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        color: '#000',
+                      }}
+                    >
+                      {modalCountdown.days}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: '"Press Start 2P", sans-serif',
+                        fontSize: '0.5rem',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      {modalCountdown.days === 1 ? 'DAY' : 'DAYS'}
+                    </Typography>
+                  </Box>
+                )}
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold',
+                      color: '#000',
+                    }}
+                  >
+                    {String(modalCountdown.hours).padStart(2, '0')}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.5rem',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    {modalCountdown.hours === 1 ? 'HOUR' : 'HOURS'}
+                  </Typography>
+                </Box>
                 <Typography
-                  variant="h6"
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '0.9rem',
+                    fontSize: '1.5rem',
                     fontWeight: 'bold',
                     color: '#000',
-                    marginBottom: getTimeUntilRanking()?.lessThan24Hours ? 2 : 1,
+                    alignSelf: 'flex-start',
                   }}
                 >
-                  {getTimeUntilRanking()?.text}
+                  :
                 </Typography>
-              )}
-              {(!getTimeUntilRanking()?.lessThan24Hours) && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold',
+                      color: '#000',
+                    }}
+                  >
+                    {String(modalCountdown.minutes).padStart(2, '0')}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.5rem',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    {modalCountdown.minutes === 1 ? 'MIN' : 'MINS'}
+                  </Typography>
+                </Box>
                 <Typography
-                  variant="body1"
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '0.85rem',
-                    marginBottom: 2,
-                    color: getTimeUntilRanking() ? 'text.secondary' : 'text.primary',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold',
+                    color: '#000',
+                    alignSelf: 'flex-start',
                   }}
                 >
-                  {formatDateWithOrdinal(new Date(nextStageTimestamp))}
+                  :
                 </Typography>
-              )}
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '1.5rem',
+                      fontWeight: 'bold',
+                      color: '#000',
+                    }}
+                  >
+                    {String(modalCountdown.seconds).padStart(2, '0')}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: '"Press Start 2P", sans-serif',
+                      fontSize: '0.5rem',
+                      color: 'text.secondary',
+                    }}
+                  >
+                    {modalCountdown.seconds === 1 ? 'SEC' : 'SECS'}
+                  </Typography>
+                </Box>
+              </Box>
               <Button
                 startIcon={<CalendarTodayIcon />}
                 onClick={handleAddToCalendar}
