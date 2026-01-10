@@ -27,7 +27,6 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
-  TouchSensor,
   useSensor,
   useSensors,
   DragEndEvent,
@@ -70,11 +69,8 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition: transition || 'transform 200ms ease',
-    opacity: isDragging ? 0.8 : 1,
-    scale: isDragging ? 1.02 : 1,
-    boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.2)' : undefined,
-    zIndex: isDragging ? 1000 : 1,
+    transition,
+    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
@@ -325,17 +321,7 @@ export default function RankingSubmission({
   }, [groupMembers]);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // 8px movement required before drag starts
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 200, // 200ms hold before drag starts
-        tolerance: 5, // 5px movement tolerance during delay
-      },
-    }),
+    useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
