@@ -202,3 +202,4 @@ const HordeApe = ({ delay, speed, jumpHeight, jumpSpeed, size, willScream, screa
 
 export default GorillaAnimation;
 
+

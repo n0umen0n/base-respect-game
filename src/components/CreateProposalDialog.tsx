@@ -15,6 +15,8 @@ import {
   Alert,
   ToggleButtonGroup,
   ToggleButton,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { ethers } from 'ethers';
 
@@ -59,6 +61,9 @@ export default function CreateProposalDialog({
   onCreateProposal,
   isTopMember,
 }: CreateProposalDialogProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   // Character limits
   const CHAR_LIMITS = {
     description: 1000,
@@ -184,11 +189,18 @@ export default function CreateProposalDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="sm" 
+      fullWidth
+      fullScreen={isMobile}
+    >
       <DialogTitle
         sx={{
           fontFamily: '"Press Start 2P", sans-serif',
-          fontSize: '0.9rem',
+          fontSize: { xs: '0.7rem', sm: '0.9rem' },
+          padding: { xs: 2, sm: 3 },
         }}
       >
         CREATE PROPOSAL

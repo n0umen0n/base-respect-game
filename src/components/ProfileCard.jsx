@@ -65,6 +65,7 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
       <img
         src={profileUrl || defaultApe}
         alt={name}
+        className="profile-card-image"
         style={{
           width: '90px',
           height: '90px',

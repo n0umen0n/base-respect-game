@@ -10,8 +10,22 @@
   position: relative;
   transition: transform 0.2s ease-in-out;
   cursor: pointer;
-  width: 380px;
+  width: 100%;
+  max-width: 380px;
   min-height: 130px;
+}
+
+@media (max-width: 768px) {
+  .profile-card-wrapper {
+    max-width: 100%;
+    min-height: auto;
+    width: 100%;
+    margin: 0 auto;
+  }
+  
+  .profile-card-container {
+    width: 100%;
+  }
 }
 
 .profile-card-wrapper:hover {
@@ -42,6 +56,67 @@
   white-space: nowrap;
   display: inline-block;
   vertical-align: bottom;
+}
+
+@media (max-width: 640px) {
+  .profile-card-name {
+    max-width: 120px;
+  }
+  
+  .profile-card-image {
+    width: 70px !important;
+    height: 70px !important;
+  }
+  
+  .profile-card-container p {
+    font-size: 0.7rem !important;
+  }
+  
+  .profile-card-container {
+    padding: 0.75rem !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Reduce leaf decoration on mobile */
+  .leaf {
+    width: 8px;
+    height: 8px;
+    opacity: 0.7;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-card-name {
+    max-width: 90px;
+  }
+  
+  .profile-card-image {
+    width: 55px !important;
+    height: 55px !important;
+  }
+  
+  .profile-card-container p {
+    font-size: 0.6rem !important;
+  }
+  
+  .profile-card-container {
+    padding: 0.65rem !important;
+    gap: 0.5rem !important;
+  }
+  
+  .leaf {
+    width: 6px;
+    height: 6px;
+    opacity: 0.6;
+  }
+  
+  /* Hide some leaves on very small screens for cleaner look */
+  .leaf-t2, .leaf-t4, .leaf-t6, .leaf-t8, .leaf-t10, .leaf-t12, .leaf-t14,
+  .leaf-b2, .leaf-b4, .leaf-b6, .leaf-b8, .leaf-b10, .leaf-b12, .leaf-b14,
+  .leaf-r2, .leaf-r4, .leaf-r6, .leaf-r8,
+  .leaf-l2, .leaf-l4, .leaf-l6, .leaf-l8 {
+    display: none;
+  }
 }
 
 /* Decorative leaves */

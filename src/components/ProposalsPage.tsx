@@ -146,10 +146,11 @@ function ProposalCard({
               variant="h6"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '0.9rem',
+                fontSize: { xs: '0.65rem', sm: '0.8rem', md: '0.9rem' },
                 marginBottom: 1.5,
                 color: colors.text,
                 textAlign: 'left',
+                wordBreak: 'break-word',
               }}
             >
               {isTransferProposal
@@ -559,17 +560,17 @@ export default function ProposalsPage({
       <Box
         sx={{
           minHeight: '100vh',
-          padding: 3,
+          padding: { xs: 1.5, sm: 2, md: 3 },
         }}
       >
-        <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+        <Box sx={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: { xs: 2, md: 4 }, flexWrap: 'wrap', gap: 2 }}>
             <Typography
               variant="h4"
               component="h1"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1.8rem',
+                fontSize: { xs: '1rem', sm: '1.4rem', md: '1.8rem' },
               }}
             >
               PROPOSALS
@@ -584,8 +585,9 @@ export default function ProposalsPage({
                 }}
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.7rem',
+                  fontSize: { xs: '0.55rem', sm: '0.65rem', md: '0.7rem' },
                   backgroundColor: '#4caf50',
+                  padding: { xs: '6px 12px', sm: '8px 16px' },
                   '&:hover': {
                     backgroundColor: '#45a049',
                   },
@@ -637,22 +639,27 @@ export default function ProposalsPage({
             <Tabs
               value={tabValue}
               onChange={(_, newValue) => setTabValue(newValue)}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
               sx={{
                 borderBottom: 1,
                 borderColor: 'divider',
                 '& .MuiTab-root': {
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.7rem',
+                  fontSize: { xs: '0.5rem', sm: '0.6rem', md: '0.7rem' },
+                  minWidth: { xs: 'auto', sm: 120 },
+                  padding: { xs: '12px 8px', sm: '12px 16px' },
                 },
               }}
             >
               <Tab label={`LIVE (${liveProposals.length})`} />
-              <Tab label={`HISTORICAL (${historicalProposals.length})`} />
+              <Tab label={`PAST (${historicalProposals.length})`} />
             </Tabs>
 
             {/* Live Proposals Tab */}
             {tabValue === 0 && (
-              <Box sx={{ padding: 3 }}>
+              <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
                 {liveProposals.length > 0 ? (
                   liveProposals.map((proposal) => (
                     <ProposalCard
@@ -681,7 +688,7 @@ export default function ProposalsPage({
 
             {/* Historical Proposals Tab */}
             {tabValue === 1 && (
-              <Box sx={{ padding: 3 }}>
+              <Box sx={{ padding: { xs: 1.5, sm: 2, md: 3 } }}>
                 {historicalProposals.length > 0 ? (
                   historicalProposals.map((proposal) => (
                     <ProposalCard
@@ -714,8 +721,8 @@ export default function ProposalsPage({
             elevation={3}
             sx={{
               marginTop: 3,
-              padding: 3,
-              borderRadius: 4,
+              padding: { xs: 2, sm: 3 },
+              borderRadius: { xs: 2, md: 4 },
               backgroundColor: '#ffffff',
               border: '2px solid #e0e0e0',
             }}
@@ -727,7 +734,7 @@ export default function ProposalsPage({
                   variant="h6"
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '0.9rem',
+                    fontSize: { xs: '0.6rem', sm: '0.75rem', md: '0.9rem' },
                     color: '#333',
                     animation: treasuryLoading ? 'blink 1.5s ease-in-out infinite' : 'none',
                     '@keyframes blink': {
@@ -740,7 +747,7 @@ export default function ProposalsPage({
                     },
                   }}
                 >
-                  {treasuryLoading ? 'FETCHING TREASURY' : 'TREASURY'}
+                  {treasuryLoading ? 'LOADING...' : 'TREASURY'}
                 </Typography>
               </Box>
               <Tooltip title="Copy Treasury Address" arrow>
@@ -977,86 +984,89 @@ export default function ProposalsPage({
             elevation={3}
             sx={{
               marginTop: 3,
-              padding: 3,
-              borderRadius: 4,
+              padding: { xs: 2, sm: 3 },
+              borderRadius: { xs: 2, md: 4 },
             }}
           >
             <Typography
               variant="h6"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '0.9rem',
+                fontSize: { xs: '0.6rem', sm: '0.75rem', md: '0.9rem' },
                 marginBottom: 2,
               }}
             >
               PROPOSAL TYPES
             </Typography>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 1.5, sm: 2 } }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: { xs: 24, sm: 40 },
+                    height: { xs: 24, sm: 40 },
                     backgroundColor: PROPOSAL_COLORS.ApproveApe.bg,
                     border: `2px solid ${PROPOSAL_COLORS.ApproveApe.border}`,
                     borderRadius: 1,
+                    flexShrink: 0,
                   }}
                 />
                 <Box>
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.7rem',
+                      fontSize: { xs: '0.45rem', sm: '0.6rem', md: '0.7rem' },
                       color: PROPOSAL_COLORS.ApproveApe.text,
                     }}
                   >
-                    APPROVE APE (2 votes needed)
+                    APPROVE APE (2 votes)
                   </Typography>
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: { xs: 24, sm: 40 },
+                    height: { xs: 24, sm: 40 },
                     backgroundColor: PROPOSAL_COLORS.BanApe.bg,
                     border: `2px solid ${PROPOSAL_COLORS.BanApe.border}`,
                     borderRadius: 1,
+                    flexShrink: 0,
                   }}
                 />
                 <Box>
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.7rem',
+                      fontSize: { xs: '0.45rem', sm: '0.6rem', md: '0.7rem' },
                       color: PROPOSAL_COLORS.BanApe.text,
                     }}
                   >
-                    BAN APE (3 votes needed)
+                    BAN APE (3 votes)
                   </Typography>
                 </Box>
               </Box>
 
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
                 <Box
                   sx={{
-                    width: 40,
-                    height: 40,
+                    width: { xs: 24, sm: 40 },
+                    height: { xs: 24, sm: 40 },
                     backgroundColor: PROPOSAL_COLORS.ExecuteTransactions.bg,
                     border: `2px solid ${PROPOSAL_COLORS.ExecuteTransactions.border}`,
                     borderRadius: 1,
+                    flexShrink: 0,
                   }}
                 />
                 <Box>
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.7rem',
+                      fontSize: { xs: '0.45rem', sm: '0.6rem', md: '0.7rem' },
                       color: PROPOSAL_COLORS.ExecuteTransactions.text,
                     }}
                   >
-                    FUND TRANSFER PROPOSAL (4 votes needed)
+                    FUND TRANSFER (4 votes)
                   </Typography>
                 </Box>
               </Box>
@@ -1071,27 +1081,37 @@ export default function ProposalsPage({
         onClose={() =>
           !voting && setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveApe: false, targetMemberAddress: undefined })
         }
+        maxWidth="sm"
+        fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            margin: { xs: '16px', sm: '32px' },
+            width: { xs: 'calc(100% - 32px)', sm: 'auto' },
+          },
+        }}
       >
         <DialogTitle
           sx={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '0.9rem',
+            fontSize: { xs: '0.7rem', sm: '0.9rem' },
+            padding: { xs: '12px 16px', sm: '16px 24px' },
           }}
         >
           CONFIRM VOTE
         </DialogTitle>
-        <DialogContent>
-          <Typography>
+        <DialogContent sx={{ padding: { xs: '12px 16px', sm: '16px 24px' } }}>
+          <Typography sx={{ fontSize: { xs: '0.85rem', sm: '1rem' } }}>
             Are you sure you want to {voteDialog.isTransfer ? 'approve' : voteDialog.isApproveApe ? 'approve' : 'vote'}{' '}
             <strong>{voteDialog.isTransfer ? (voteDialog.voteFor ? 'APPROVE' : '') : voteDialog.isApproveApe ? 'this ape' : (voteDialog.voteFor ? 'FOR' : 'AGAINST')}</strong> {voteDialog.isApproveApe ? '' : 'this proposal'}?
           </Typography>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ padding: { xs: '8px 16px 16px', sm: '16px 24px' } }}>
           <Button
             onClick={() =>
               setVoteDialog({ open: false, proposalId: null, voteFor: false, isTransfer: false, isApproveApe: false, targetMemberAddress: undefined })
             }
             disabled={voting}
+            sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}
           >
             Cancel
           </Button>
@@ -1101,7 +1121,8 @@ export default function ProposalsPage({
             disabled={voting}
             sx={{
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '0.7rem',
+              fontSize: { xs: '0.6rem', sm: '0.7rem' },
+              padding: { xs: '8px 16px', sm: '10px 20px' },
             }}
           >
             {voting ? <LoadingSpinner size={24} /> : 'CONFIRM'}

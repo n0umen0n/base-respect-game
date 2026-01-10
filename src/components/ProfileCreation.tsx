@@ -350,16 +350,16 @@ export default function ProfileCreation({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 3,
+          padding: { xs: 1.5, sm: 2, md: 3 },
         }}
       >
         <Paper
           elevation={3}
           sx={{
-            padding: 4,
+            padding: { xs: 2, sm: 3, md: 4 },
             maxWidth: 600,
             width: '100%',
-            borderRadius: 4,
+            borderRadius: { xs: 2, md: 4 },
           }}
         >
           <Typography
@@ -368,9 +368,9 @@ export default function ProfileCreation({
             gutterBottom
             sx={{
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '1.5rem',
+              fontSize: { xs: '0.9rem', sm: '1.2rem', md: '1.5rem' },
               textAlign: 'center',
-              marginBottom: 3,
+              marginBottom: { xs: 2, md: 3 },
             }}
           >
             PROFILE CREATION
@@ -380,9 +380,9 @@ export default function ProfileCreation({
             variant="body1"
             sx={{
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '0.7rem',
+              fontSize: { xs: '0.5rem', sm: '0.6rem', md: '0.7rem' },
               textAlign: 'center',
-              marginBottom: 4,
+              marginBottom: { xs: 2, md: 4 },
               lineHeight: 1.8,
             }}
           >
@@ -517,44 +517,46 @@ export default function ProfileCreation({
                 <Box
                   sx={{
                     display: 'flex',
-                    alignItems: 'center',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { xs: 'stretch', sm: 'center' },
                     justifyContent: 'space-between',
-                    gap: 2,
-                    padding: 2.5,
+                    gap: { xs: 1.5, sm: 2 },
+                    padding: { xs: 2, sm: 2.5 },
                     backgroundColor: '#f5f5f5',
                     borderRadius: 2,
                     border: '2px solid #4CAF50',
                   }}
                 >
                   {/* Left side: X icon and username */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <XIcon sx={{ fontSize: 36, color: '#000' }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: { xs: 'center', sm: 'flex-start' } }}>
+                    <XIcon sx={{ fontSize: { xs: 28, sm: 36 }, color: '#000' }} />
                     
                     <Typography
                       sx={{
                         fontFamily: '"Press Start 2P", sans-serif',
-                        fontSize: '0.85rem',
+                        fontSize: { xs: '0.7rem', sm: '0.85rem' },
                         color: '#000',
+                        wordBreak: 'break-all',
                       }}
                     >
                       {twitterAccount}
                     </Typography>
                     
                     {twitterVerified && (
-                      <CheckCircleIcon sx={{ fontSize: 20, color: '#1da1f2' }} />
+                      <CheckCircleIcon sx={{ fontSize: { xs: 16, sm: 20 }, color: '#1da1f2' }} />
                     )}
                   </Box>
                   
                   {/* Right side: AUTHENTICATED chip and disconnect icon */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, justifyContent: { xs: 'center', sm: 'flex-end' } }}>
                     <Chip
                       label="AUTHENTICATED"
                       size="small"
                       color="success"
                       sx={{
                         fontFamily: '"Press Start 2P", sans-serif',
-                        fontSize: '0.6rem',
-                        height: 26,
+                        fontSize: { xs: '0.5rem', sm: '0.6rem' },
+                        height: { xs: 22, sm: 26 },
                       }}
                     />
                     
@@ -571,14 +573,14 @@ export default function ProfileCreation({
                       sx={{
                         backgroundColor: '#ffebee',
                         color: '#d32f2f',
-                        width: 32,
-                        height: 32,
+                        width: { xs: 28, sm: 32 },
+                        height: { xs: 28, sm: 32 },
                         '&:hover': {
                           backgroundColor: '#ffcdd2',
                         },
                       }}
                     >
-                      <CancelIcon sx={{ fontSize: 20 }} />
+                      <CancelIcon sx={{ fontSize: { xs: 16, sm: 20 } }} />
                     </IconButton>
                   </Box>
                 </Box>
@@ -641,17 +643,18 @@ export default function ProfileCreation({
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: 500 },
+              width: { xs: 'calc(100% - 32px)', sm: 500 },
+              maxWidth: 500,
               bgcolor: 'background.paper',
-              borderRadius: 4,
+              borderRadius: { xs: 2, sm: 4 },
               boxShadow: 24,
-              p: 4,
+              p: { xs: 2.5, sm: 4 },
               textAlign: 'center',
             }}
           >
             <CheckCircleIcon
               sx={{
-                fontSize: 80,
+                fontSize: { xs: 60, sm: 80 },
                 color: 'success.main',
                 marginBottom: 2,
               }}
@@ -662,8 +665,9 @@ export default function ProfileCreation({
               gutterBottom
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1.2rem',
+                fontSize: { xs: '0.9rem', sm: '1.2rem' },
                 marginBottom: 3,
+                lineHeight: 1.4,
               }}
             >
               PROFILE CREATED!

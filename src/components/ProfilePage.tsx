@@ -106,48 +106,50 @@ function GameHistoryRow({ game, memberName }: { game: GameResult; memberName?: s
   return (
     <>
       <TableRow>
-        <TableCell>
+        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
           {hasDetails && (
             <IconButton
               aria-label="expand row"
               size="small"
               onClick={() => setOpen(!open)}
+              sx={{ padding: { xs: '4px', sm: '8px' } }}
             >
-              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+              {open ? <KeyboardArrowUpIcon sx={{ fontSize: { xs: 18, sm: 24 } }} /> : <KeyboardArrowDownIcon sx={{ fontSize: { xs: 18, sm: 24 } }} />}
             </IconButton>
           )}
         </TableCell>
-        <TableCell>
+        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
           <Chip
             label={`#${game.game_number}`}
             size="small"
             sx={{
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '0.6rem',
+              fontSize: { xs: '0.45rem', sm: '0.6rem' },
+              height: { xs: '20px', sm: '24px' },
             }}
           />
         </TableCell>
-        <TableCell>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1 } }}>
             {game.rank === 1 && (
               <EmojiEventsIcon
-                sx={{ fontSize: 20, color: '#FFD700' }}
+                sx={{ fontSize: { xs: 16, sm: 20 }, color: '#FFD700' }}
               />
             )}
             {game.rank === 2 && (
               <EmojiEventsIcon
-                sx={{ fontSize: 20, color: '#C0C0C0' }}
+                sx={{ fontSize: { xs: 16, sm: 20 }, color: '#C0C0C0' }}
               />
             )}
             {game.rank === 3 && (
               <EmojiEventsIcon
-                sx={{ fontSize: 20, color: '#CD7F32' }}
+                sx={{ fontSize: { xs: 16, sm: 20 }, color: '#CD7F32' }}
               />
             )}
             <Typography 
               sx={{ 
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '0.7rem',
+                fontSize: { xs: '0.5rem', sm: '0.7rem' },
                 fontWeight: 'bold' 
               }}
             >
@@ -155,23 +157,23 @@ function GameHistoryRow({ game, memberName }: { game: GameResult; memberName?: s
             </Typography>
           </Box>
         </TableCell>
-        <TableCell>
+        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
             <Typography 
             sx={{ 
               color: '#0052FF', 
               fontWeight: 'bold',
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '0.7rem',
+              fontSize: { xs: '0.5rem', sm: '0.7rem' },
             }}
           >
             {formatRespectEarned(game.respect_earned)}
           </Typography>
         </TableCell>
-        <TableCell>
+        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
           <Typography 
             sx={{
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '0.6rem',
+              fontSize: { xs: '0.45rem', sm: '0.6rem' },
             }}
           >
             {new Date(game.created_at).toLocaleDateString()}
@@ -504,19 +506,18 @@ export default function ProfilePage({
     <Box
       sx={{
         minHeight: '100vh',
-        padding: '1px 3rem',
+        padding: { xs: '1px 1rem', sm: '1px 2rem', md: '1px 3rem' },
       }}
     >
-      <Box sx={{ width: 960, margin: '-45px auto 0' }}>
+      <Box sx={{ width: '100%', maxWidth: 960, margin: { xs: '0 auto 0', md: '-45px auto 0' } }}>
         {/* Profile Header */}
         <Paper
           elevation={3}
           sx={{
-            padding: 4,
+            padding: { xs: 2, sm: 3, md: 4 },
             marginBottom: 3,
-            borderRadius: 4,
-            width: 960,
-            minWidth: 960,
+            borderRadius: { xs: 2, md: 4 },
+            width: '100%',
             maxWidth: 960,
             boxSizing: 'border-box',
           }}
@@ -533,9 +534,9 @@ export default function ProfilePage({
               src={member.profile_url || defaultApe}
               alt={member.name}
               sx={{
-                width: 150,
-                height: 150,
-                borderRadius: 4,
+                width: { xs: 80, sm: 120, md: 150 },
+                height: { xs: 80, sm: 120, md: 150 },
+                borderRadius: { xs: 2, md: 4 },
                 flexShrink: 0,
               }}
             />
@@ -567,8 +568,9 @@ export default function ProfilePage({
                 variant="h4"
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '1.5rem',
+                  fontSize: { xs: '0.9rem', sm: '1.2rem', md: '1.5rem' },
                   marginBottom: 1,
+                  wordBreak: 'break-word',
                 }}
               >
                 {member.name}
@@ -729,20 +731,23 @@ export default function ProfilePage({
             {/* Stats Cards - Right column */}
             <Box
               sx={{
-                display: { xs: 'flex', md: 'flex' },
+                display: 'flex',
                 flexDirection: { xs: 'row', md: 'column' },
                 gap: 1,
                 flexShrink: 0,
                 justifyContent: { xs: 'center', md: 'flex-start' },
+                flexWrap: { xs: 'wrap', md: 'nowrap' },
+                width: { xs: '100%', md: 'auto' },
+                marginTop: { xs: 2, md: 0 },
               }}
             >
-              <Card sx={{ minWidth: 180, width: 180, boxShadow: 2 }}>
-                <CardContent sx={{ textAlign: 'center', padding: '12px 10px !important' }}>
+              <Card sx={{ minWidth: { xs: 100, sm: 150, md: 180 }, flex: { xs: '1 1 calc(33% - 8px)', md: 'none' }, maxWidth: { xs: 'calc(33% - 8px)', md: 180 }, boxShadow: 2 }}>
+                <CardContent sx={{ textAlign: 'center', padding: { xs: '8px 6px !important', sm: '12px 10px !important' } }}>
                   <Typography
                     variant="body2"
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.6rem',
+                      fontSize: { xs: '0.4rem', sm: '0.5rem', md: '0.6rem' },
                       marginBottom: 0.5,
                       lineHeight: 1.4,
                     }}
@@ -753,7 +758,7 @@ export default function ProfilePage({
                     variant="h6"
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.65rem', sm: '0.8rem', md: '1rem' },
                       color: '#0052FF',
                     }}
                   >
@@ -762,24 +767,24 @@ export default function ProfilePage({
                 </CardContent>
               </Card>
 
-              <Card sx={{ minWidth: 180, width: 180, boxShadow: 2 }}>
-                <CardContent sx={{ textAlign: 'center', padding: '12px 10px !important' }}>
+              <Card sx={{ minWidth: { xs: 100, sm: 150, md: 180 }, flex: { xs: '1 1 calc(33% - 8px)', md: 'none' }, maxWidth: { xs: 'calc(33% - 8px)', md: 180 }, boxShadow: 2 }}>
+                <CardContent sx={{ textAlign: 'center', padding: { xs: '8px 6px !important', sm: '12px 10px !important' } }}>
                   <Typography
                     variant="body2"
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.6rem',
+                      fontSize: { xs: '0.4rem', sm: '0.5rem', md: '0.6rem' },
                       marginBottom: 0.5,
                       lineHeight: 1.4,
                     }}
                   >
-                    $RESPECT BALANCE
+                    $RESPECT
                   </Typography>
                   <Typography
                     variant="h6"
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.65rem', sm: '0.8rem', md: '1rem' },
                       color: '#FFD700',
                     }}
                   >
@@ -788,24 +793,24 @@ export default function ProfilePage({
                 </CardContent>
               </Card>
 
-              <Card sx={{ minWidth: 180, width: 180, boxShadow: 2 }}>
-                <CardContent sx={{ textAlign: 'center', padding: '12px 10px !important' }}>
+              <Card sx={{ minWidth: { xs: 100, sm: 150, md: 180 }, flex: { xs: '1 1 calc(33% - 8px)', md: 'none' }, maxWidth: { xs: 'calc(33% - 8px)', md: 180 }, boxShadow: 2 }}>
+                <CardContent sx={{ textAlign: 'center', padding: { xs: '8px 6px !important', sm: '12px 10px !important' } }}>
                   <Typography
                     variant="body2"
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.6rem',
+                      fontSize: { xs: '0.4rem', sm: '0.5rem', md: '0.6rem' },
                       marginBottom: 0.5,
                       lineHeight: 1.4,
                     }}
                   >
-                    GAMES COMPLETED
+                    GAMES
                   </Typography>
                   <Typography
                     variant="h6"
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.65rem', sm: '0.8rem', md: '1rem' },
                       color: '#4CAF50',
                     }}
                   >
@@ -821,12 +826,12 @@ export default function ProfilePage({
         <Paper
           elevation={3}
           sx={{
-            borderRadius: 4,
+            borderRadius: { xs: 2, md: 4 },
             display: 'grid',
             gridTemplateRows: 'auto 1fr',
-            height: 550,
-            width: 960,
-            minWidth: 960,
+            height: { xs: 'auto', md: 550 },
+            minHeight: { xs: 400, md: 550 },
+            width: '100%',
             maxWidth: 960,
             boxSizing: 'border-box',
             overflow: 'hidden',
@@ -835,25 +840,30 @@ export default function ProfilePage({
           <Tabs
             value={tabValue}
             onChange={(_, newValue) => setTabValue(newValue)}
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
             sx={{
               borderBottom: 1,
               borderColor: 'divider',
               gridRow: 1,
               '& .MuiTab-root': {
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '0.7rem',
+                fontSize: { xs: '0.5rem', sm: '0.6rem', md: '0.7rem' },
+                minWidth: { xs: 'auto', sm: 120 },
+                padding: { xs: '12px 8px', sm: '12px 16px' },
               },
             }}
           >
-              <Tab label="CURRENT GAME" />
-              <Tab label="GAME HISTORY" />
-              <Tab label="VOUCHED FOR" />
+              <Tab label="CURRENT" />
+              <Tab label="HISTORY" />
+              <Tab label="VOUCHED" />
             </Tabs>
 
           {/* Current Game Tab */}
           {tabValue === 0 && (
             <Box sx={{ 
-              padding: 3, 
+              padding: { xs: 2, sm: 3 }, 
               gridRow: 2, 
               overflow: 'auto', 
               minHeight: 0,
@@ -867,7 +877,7 @@ export default function ProfilePage({
                 variant="h6"
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' },
                   marginBottom: 3,
                 }}
               >
@@ -1254,7 +1264,7 @@ export default function ProfilePage({
           {/* Game History Tab */}
           {tabValue === 1 && (
             <Box sx={{ 
-              padding: 3, 
+              padding: { xs: 2, sm: 3 }, 
               gridRow: 2, 
               overflow: 'auto', 
               minHeight: 0,
@@ -1268,28 +1278,30 @@ export default function ProfilePage({
                 variant="h6"
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' },
                   marginBottom: 3,
                 }}
               >
-                HISTORICAL GAME DATA
+                GAME HISTORY
               </Typography>
 
               {gameHistory.length > 0 ? (
-                <TableContainer>
-                  <Table>
+                <TableContainer sx={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                  <Table sx={{ minWidth: { xs: 450, sm: 'auto' } }}>
                     <TableHead>
                       <TableRow>
                         <TableCell
                           sx={{
                             fontFamily: '"Press Start 2P", sans-serif',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.5rem', sm: '0.7rem' },
+                            padding: { xs: '8px 4px', sm: '16px' },
                           }}
                         />
                         <TableCell
                           sx={{
                             fontFamily: '"Press Start 2P", sans-serif',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.5rem', sm: '0.7rem' },
+                            padding: { xs: '8px 4px', sm: '16px' },
                           }}
                         >
                           GAME #
@@ -1297,7 +1309,8 @@ export default function ProfilePage({
                         <TableCell
                           sx={{
                             fontFamily: '"Press Start 2P", sans-serif',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.5rem', sm: '0.7rem' },
+                            padding: { xs: '8px 4px', sm: '16px' },
                           }}
                         >
                           RANK
@@ -1305,15 +1318,17 @@ export default function ProfilePage({
                         <TableCell
                           sx={{
                             fontFamily: '"Press Start 2P", sans-serif',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.5rem', sm: '0.7rem' },
+                            padding: { xs: '8px 4px', sm: '16px' },
                           }}
                         >
-                          RESPECT EARNED
+                          EARNED
                         </TableCell>
                         <TableCell
                           sx={{
                             fontFamily: '"Press Start 2P", sans-serif',
-                            fontSize: '0.7rem',
+                            fontSize: { xs: '0.5rem', sm: '0.7rem' },
+                            padding: { xs: '8px 4px', sm: '16px' },
                           }}
                         >
                           DATE
@@ -1352,7 +1367,7 @@ export default function ProfilePage({
           {/* Vouched For Tab */}
           {tabValue === 2 && (
             <Box sx={{ 
-              padding: 3, 
+              padding: { xs: 2, sm: 3 }, 
               gridRow: 2, 
               overflow: 'auto', 
               minHeight: 0,
@@ -1366,11 +1381,11 @@ export default function ProfilePage({
                 variant="h6"
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.7rem', sm: '0.85rem', md: '1rem' },
                   marginBottom: 3,
                 }}
               >
-                APES VOUCHED FOR
+                VOUCHED FOR
               </Typography>
 
               {vouchedFor.length > 0 ? (

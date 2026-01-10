@@ -8,7 +8,132 @@ body,
   background-color: transparent;
 }
 
+/* Ensure proper mobile viewport behavior */
+html {
+  -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+  min-width: 320px;
+}
+
 .blurred {
   filter: blur(4px);
   transition: filter 0.3s ease-out;
+}
+
+/* Mobile responsive utilities */
+@media (max-width: 768px) {
+  /* Reduce padding on mobile */
+  .mobile-padding {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Ensure text doesn't overflow */
+  body {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  /* Scale down Press Start 2P font on mobile */
+  .font-press-start {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Make tables scrollable horizontally on mobile */
+  .MuiTableContainer-root {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Prevent MUI dialogs from being too wide */
+  .MuiDialog-paper {
+    margin: 16px !important;
+    max-height: calc(100% - 32px) !important;
+    width: calc(100% - 32px) !important;
+  }
+  
+  /* Improve touch targets */
+  .MuiButton-root {
+    min-height: 44px;
+  }
+  
+  .MuiIconButton-root {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .font-press-start {
+    font-size: 0.65rem !important;
+  }
+  
+  /* Even smaller dialog margins */
+  .MuiDialog-paper {
+    margin: 8px !important;
+    max-height: calc(100% - 16px) !important;
+    width: calc(100% - 16px) !important;
+  }
+}
+
+/* Responsive logout button positioning */
+@media (max-width: 768px) {
+  .logout-btn-header {
+    right: calc(0.5em + 80px) !important;
+    font-size: 0.45rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .logout-btn-header {
+    right: calc(0.5em + 70px) !important;
+    font-size: 0.4rem !important;
+  }
+}
+
+/* Mobile modal improvements */
+@media (max-width: 600px) {
+  .MuiModal-root .MuiBox-root {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Profile cards grid - responsive */
+.profile-cards-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(280px, 380px));
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .profile-cards-grid {
+    grid-template-columns: 1fr !important;
+    padding: 0.75rem !important;
+  }
+  
+  .profile-cards-grid > * {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Member name in table cells */
+.member-name-cell {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+@media (max-width: 480px) {
+  .member-name-cell {
+    max-width: 80px;
+  }
 }

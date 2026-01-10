@@ -98,14 +98,14 @@ export default function ProfilePictureUpload({
           <Avatar
             src={preview || undefined}
             sx={{
-              width: 150,
-              height: 150,
-              borderRadius: 4,
+              width: { xs: 120, sm: 150 },
+              height: { xs: 120, sm: 150 },
+              borderRadius: { xs: 3, sm: 4 },
               border: '3px solid #e0e0e0',
               backgroundColor: preview ? 'transparent' : '#f5f5f5',
             }}
           >
-            {!preview && <PhotoCameraIcon sx={{ fontSize: 60, color: '#bdbdbd' }} />}
+            {!preview && <PhotoCameraIcon sx={{ fontSize: { xs: 48, sm: 60 }, color: '#bdbdbd' }} />}
           </Avatar>
 
           {preview && (

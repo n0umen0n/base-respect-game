@@ -133,10 +133,11 @@ const HomePage = () => {
       {user && (
         <button
           onClick={handleLogout}
+          className="logout-btn-header"
           style={{
             position: 'fixed',
-            top: '2em',
-            right: 'calc(2em + 140px)',
+            top: '1em',
+            right: 'calc(1em + 60px)',
             zIndex: 9999,
             pointerEvents: showHeader ? 'auto' : 'none',
             background: 'transparent',
@@ -144,7 +145,7 @@ const HomePage = () => {
             border: 'none',
             padding: 0,
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '1rem',
+            fontSize: 'clamp(0.5rem, 1.5vw, 0.9rem)',
             cursor: 'pointer',
             transition: 'opacity 0.3s ease, transform 0.3s ease',
             fontWeight: '500',
@@ -169,10 +170,13 @@ const HomePage = () => {
         tag="div"
         style={{
           fontFamily: '"Press Start 2P", sans-serif',
-          fontSize: '3.5rem',
-          lineHeight: 1,
+          fontSize: 'clamp(0.9rem, 5vw, 3.5rem)',
+          lineHeight: 1.3,
           color: 'black',
-          marginBottom: '1.5rem'
+          marginBottom: '1.5rem',
+          padding: '0 0.5rem',
+          maxWidth: '100%',
+          wordBreak: 'break-word'
         }}
         shuffleDirection="right"
         duration={0.35}
@@ -201,14 +205,18 @@ const HomePage = () => {
           maxWidth: '700px',
           margin: '0 auto 2rem',
           textAlign: 'center',
-          padding: '0 1rem'
+          padding: '0 1rem',
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
           <p style={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '1.5rem',
+            fontSize: 'clamp(0.55rem, 2.5vw, 1.5rem)',
             lineHeight: 1.8,
             color: '#333',
-            marginBottom: '3.5rem'
+            marginBottom: '3.5rem',
+            padding: '0 0.5rem',
+            wordBreak: 'break-word'
           }}>
             Play Respect Game to PUMP $RESOURCE price
           </p>
@@ -251,23 +259,29 @@ const HomePage = () => {
           <h2
             style={{
               fontFamily: '"Press Start 2P", sans-serif',
-              fontSize: '2rem',
+              fontSize: 'clamp(0.75rem, 3.5vw, 2rem)',
               color: '#000000',
               textAlign: 'center',
-              margin: '2rem 0 1rem 0'
+              margin: '2rem 0 1rem 0',
+              padding: '0 0.5rem',
+              wordBreak: 'break-word'
             }}
           >
             APE LEADERBOARD
           </h2>
           <p style={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '0.85rem',
-            lineHeight: 1.6,
+            fontSize: 'clamp(0.45rem, 1.8vw, 0.85rem)',
+            lineHeight: 1.8,
             color: '#000',
-            padding: '0.75rem 1.5rem',
+            padding: '0.75rem 0.75rem',
             backgroundColor: '#f5f5f5',
             border: '3px solid #000',
-            display: 'inline-block'
+            display: 'inline-block',
+            margin: '0 0.5rem',
+            maxWidth: 'calc(100% - 1rem)',
+            boxSizing: 'border-box',
+            wordBreak: 'break-word'
           }}>
             10% of $RESOURCEs controlled by top 6 Alpha Apes
           </p>
@@ -286,16 +300,20 @@ const HomePage = () => {
         >
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(2, 380px)',
-              gap: '2rem',
-              padding: '2rem',
-              width: 'fit-content',
-              margin: '0 auto'
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1rem',
+              padding: '1rem',
+              width: '100%',
+              maxWidth: '850px',
+              margin: '0 auto',
+              boxSizing: 'border-box'
             }}
+            className="profile-cards-grid"
           >
             {loading ? (
-              <div style={{ paddingTop: '2rem', gridColumn: 'span 2', textAlign: 'center' }}>
+              <div style={{ paddingTop: '2rem', gridColumn: '1 / -1', textAlign: 'center' }}>
                 <LoadingSpinner size={60} />
               </div>
             ) : topMembers.length > 0 ? (
@@ -312,7 +330,7 @@ const HomePage = () => {
                 />
               ))
             ) : (
-              <p style={{ fontFamily: '"Press Start 2P", sans-serif', fontSize: '0.8rem', gridColumn: 'span 2' }}>
+              <p style={{ fontFamily: '"Press Start 2P", sans-serif', fontSize: '0.8rem', gridColumn: '1 / -1' }}>
                 No apes yet. Be the first to join!
               </p>
             )}
@@ -335,7 +353,9 @@ const HomePage = () => {
             sx={{
               maxWidth: '1200px',
               margin: '0.5rem auto 0.75rem',
-              padding: '0 2rem'
+              padding: { xs: '0 0.5rem', sm: '0 2rem' },
+              width: '100%',
+              boxSizing: 'border-box'
             }}
           >
             <TextField
@@ -385,18 +405,21 @@ const HomePage = () => {
             component={Paper}
             sx={{
               maxWidth: '1200px',
-              margin: '0 auto 2rem',
+              margin: { xs: '0 0.5rem 2rem', sm: '0 auto 2rem' },
+              width: { xs: 'calc(100% - 1rem)', sm: 'auto' },
               background: '#ffffff',
               borderRadius: '8px',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-              border: '4px solid #000',
-              overflow: 'hidden'
+              border: { xs: '2px solid #000', sm: '4px solid #000' },
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch'
             }}
           >
             <Table
               aria-label="leaderboard table"
               sx={{
-                fontFamily: '"Press Start 2P", sans-serif'
+                fontFamily: '"Press Start 2P", sans-serif',
+                minWidth: { xs: 320, sm: 'auto' }
               }}
             >
               <TableHead>
@@ -404,7 +427,7 @@ const HomePage = () => {
                   sx={{
                     backgroundColor: '#000',
                     '& th': {
-                      borderBottom: '4px solid #000'
+                      borderBottom: { xs: '2px solid #000', sm: '4px solid #000' }
                     }
                   }}
                 >
@@ -413,10 +436,12 @@ const HomePage = () => {
                     sx={{ 
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontWeight: 'bold',
-                      fontSize: '0.8rem',
+                      fontSize: { xs: '0.5rem', sm: '0.8rem' },
                       color: '#fff',
-                      py: 2.5,
-                      borderRight: '2px solid #333'
+                      py: { xs: 1.5, sm: 2.5 },
+                      px: { xs: 1, sm: 2 },
+                      borderRight: '2px solid #333',
+                      minWidth: { xs: '40px', sm: 'auto' }
                     }}
                   >
                     Rank
@@ -426,10 +451,10 @@ const HomePage = () => {
                     sx={{ 
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontWeight: 'bold',
-                      fontSize: '0.8rem',
+                      fontSize: { xs: '0.5rem', sm: '0.8rem' },
                       color: '#fff',
-                      py: 2.5,
-                      paddingLeft: '3rem',
+                      py: { xs: 1.5, sm: 2.5 },
+                      paddingLeft: { xs: '1rem', sm: '3rem' },
                       borderRight: '2px solid #333'
                     }}
                   >
@@ -440,10 +465,12 @@ const HomePage = () => {
                     sx={{ 
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontWeight: 'bold',
-                      fontSize: '0.8rem',
+                      fontSize: { xs: '0.5rem', sm: '0.8rem' },
                       color: '#fff',
-                      py: 2.5,
-                      borderRight: '2px solid #333'
+                      py: { xs: 1.5, sm: 2.5 },
+                      px: { xs: 1, sm: 2 },
+                      borderRight: '2px solid #333',
+                      display: { xs: 'none', md: 'table-cell' }
                     }}
                   >
                     X
@@ -453,12 +480,13 @@ const HomePage = () => {
                     sx={{ 
                       fontFamily: '"Press Start 2P", sans-serif',
                       fontWeight: 'bold',
-                      fontSize: '0.8rem',
+                      fontSize: { xs: '0.45rem', sm: '0.8rem' },
                       color: '#fff',
-                      py: 2.5
+                      py: { xs: 1.5, sm: 2.5 },
+                      px: { xs: 1, sm: 2 }
                     }}
                   >
-                    RESPECT SCORE
+                    SCORE
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -493,7 +521,7 @@ const HomePage = () => {
                         transition: 'all 0.2s',
                         '&:hover': {
                           backgroundColor: '#f0f0f0',
-                          transform: 'scale(1.01)'
+                          transform: { xs: 'none', sm: 'scale(1.01)' }
                         },
                         '&:nth-of-type(odd)': {
                           backgroundColor: '#fafafa'
@@ -511,9 +539,10 @@ const HomePage = () => {
                         align="center"
                         sx={{ 
                           fontFamily: '"Press Start 2P", sans-serif',
-                          fontSize: '0.9rem',
+                          fontSize: { xs: '0.6rem', sm: '0.9rem' },
                           fontWeight: 'bold',
-                          py: 2.5,
+                          py: { xs: 1.5, sm: 2.5 },
+                          px: { xs: 1, sm: 2 },
                           color: '#000'
                         }}
                       >
@@ -523,29 +552,25 @@ const HomePage = () => {
                         align="left"
                         sx={{ 
                           fontFamily: '"Press Start 2P", sans-serif',
-                          fontSize: '0.7rem',
-                          py: 2.5,
-                          paddingLeft: '3rem'
+                          fontSize: { xs: '0.5rem', sm: '0.7rem' },
+                          py: { xs: 1.5, sm: 2.5 },
+                          paddingLeft: { xs: '0.75rem', sm: '3rem' }
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'flex-start' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-start' }}>
                           <Avatar
                             src={member.profile_url || defaultApe}
                             alt={member.name}
                             sx={{
-                              width: 48,
-                              height: 48,
-                              border: '3px solid #000',
+                              width: { xs: 32, sm: 48 },
+                              height: { xs: 32, sm: 48 },
+                              border: { xs: '2px solid #000', sm: '3px solid #000' },
                               imageRendering: 'pixelated',
-                              boxShadow: '4px 4px 0 rgba(0,0,0,0.1)'
+                              boxShadow: { xs: '2px 2px 0 rgba(0,0,0,0.1)', sm: '4px 4px 0 rgba(0,0,0,0.1)' },
+                              flexShrink: 0
                             }}
                           />
-                          <span style={{ 
-                            maxWidth: '300px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
+                          <span className="member-name-cell">
                             {member.name}
                           </span>
                         </div>
@@ -555,7 +580,8 @@ const HomePage = () => {
                         sx={{ 
                           fontFamily: '"Press Start 2P", sans-serif',
                           fontSize: '0.65rem',
-                          py: 2.5
+                          py: 2.5,
+                          display: { xs: 'none', md: 'table-cell' }
                         }}
                       >
                         {member.x_account ? (
@@ -590,9 +616,10 @@ const HomePage = () => {
                         align="center"
                         sx={{ 
                           fontFamily: '"Press Start 2P", sans-serif',
-                          fontSize: '1.1rem',
+                          fontSize: { xs: '0.6rem', sm: '1.1rem' },
                           fontWeight: 'bold',
-                          py: 2.5,
+                          py: { xs: 1.5, sm: 2.5 },
+                          px: { xs: 1, sm: 2 },
                           color: '#000'
                         }}
                       >

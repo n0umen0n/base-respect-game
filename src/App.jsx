@@ -92,8 +92,11 @@ function App() {
           position: 'relative',
           zIndex: 1,
           background: 'transparent',
-          paddingTop: '10rem',
-          paddingBottom: '4rem'
+          paddingTop: 'clamp(4rem, 12vw, 10rem)',
+          paddingBottom: '4rem',
+          overflowX: 'hidden',
+          width: '100%',
+          maxWidth: '100vw'
         }}
       >
         <Outlet />
@@ -103,10 +106,11 @@ function App() {
           {user && (
             <button
               onClick={handleLogout}
+              className="logout-btn-header"
               style={{
                 position: 'fixed',
-                top: '2em',
-                right: 'calc(2em + 140px)',
+                top: '1em',
+                right: 'calc(1em + 60px)',
                 zIndex: 9999,
                 pointerEvents: showHeader ? 'auto' : 'none',
                 background: 'transparent',
@@ -114,7 +118,7 @@ function App() {
                 border: 'none',
                 padding: 0,
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1rem',
+                fontSize: 'clamp(0.5rem, 1.5vw, 0.9rem)',
                 cursor: 'pointer',
                 transition: 'opacity 0.3s ease, transform 0.3s ease',
                 fontWeight: '500',
@@ -138,8 +142,8 @@ function App() {
             onClick={() => navigate('/')}
             style={{
               position: 'fixed',
-              top: '2em',
-              left: '2em',
+              top: '1em',
+              left: '1em',
               zIndex: 50,
               pointerEvents: showHeader ? 'auto' : 'none',
               cursor: 'pointer',
@@ -153,7 +157,7 @@ function App() {
               tag="div"
               style={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1rem',
+                fontSize: 'clamp(0.55rem, 2vw, 1rem)',
                 lineHeight: 1,
                 color: '#1a1a1a'
               }}

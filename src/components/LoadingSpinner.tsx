@@ -53,19 +53,22 @@ export function LoadingScreen({ message }: { message?: string }) {
         justifyContent: 'flex-start',
         alignItems: 'center',
         minHeight: '100vh',
-        paddingTop: '15vh',
-        gap: 3,
+        paddingTop: { xs: '20vh', sm: '15vh' },
+        paddingX: 2,
+        gap: { xs: 2, sm: 3 },
       }}
     >
-      <LoadingSpinner size={80} />
+      <LoadingSpinner size={60} />
       {message && (
         <Box
           sx={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: '0.8rem',
+            fontSize: { xs: '0.6rem', sm: '0.8rem' },
             color: '#000',
             textAlign: 'center',
             animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            maxWidth: '90%',
+            lineHeight: 1.6,
             '@keyframes pulse': {
               '0%, 100%': {
                 opacity: 1,

@@ -245,17 +245,17 @@ export default function ContributionSubmission({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: 3,
-          marginTop: '-100px',
+          padding: { xs: 1.5, sm: 2, md: 3 },
+          marginTop: { xs: '-50px', md: '-100px' },
         }}
       >
         <Paper
           elevation={3}
           sx={{
-            padding: 4,
+            padding: { xs: 2, sm: 3, md: 4 },
             maxWidth: 800,
             width: '100%',
-            borderRadius: 4,
+            borderRadius: { xs: 2, md: 4 },
           }}
         >
           <Box sx={{ textAlign: 'center', marginBottom: 4 }}>
@@ -276,8 +276,9 @@ export default function ContributionSubmission({
               gutterBottom
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1.5rem',
-                marginBottom: 4,
+                fontSize: { xs: '0.8rem', sm: '1.1rem', md: '1.5rem' },
+                marginBottom: { xs: 2, md: 4 },
+                lineHeight: 1.6,
               }}
             >
               What have you done to pump the $RESOURCE price?
@@ -480,17 +481,20 @@ export default function ContributionSubmission({
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              width: { xs: '90%', sm: 500 },
+              width: { xs: 'calc(100% - 32px)', sm: 500 },
+              maxWidth: 500,
+              maxHeight: { xs: 'calc(100vh - 32px)', sm: 'auto' },
               bgcolor: 'background.paper',
-              borderRadius: 4,
+              borderRadius: { xs: 2, sm: 4 },
               boxShadow: 24,
-              p: 4,
+              p: { xs: 2.5, sm: 4 },
               textAlign: 'center',
+              overflowY: 'auto',
             }}
           >
             <CheckCircleIcon
               sx={{
-                fontSize: 80,
+                fontSize: { xs: 60, sm: 80 },
                 color: 'success.main',
                 marginBottom: 2,
               }}
@@ -501,11 +505,12 @@ export default function ContributionSubmission({
               gutterBottom
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1.2rem',
+                fontSize: { xs: '0.9rem', sm: '1.2rem' },
                 marginBottom: 2,
+                lineHeight: 1.4,
               }}
             >
-              THANK YOU!
+              CONTRIBUTION SUBMITTED
             </Typography>
             <Box
               sx={{
@@ -524,7 +529,7 @@ export default function ContributionSubmission({
                   lineHeight: 1.8,
                 }}
               >
-                PLEASE COME BACK FOR THE RANKING STAGE IN:
+                RANKING STAGE STARTS IN:
               </Typography>
               <Box
                 sx={{
@@ -561,7 +566,7 @@ export default function ContributionSubmission({
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '1.5rem',
+                      fontSize: { xs: '1.1rem', sm: '1.5rem' },
                       fontWeight: 'bold',
                       color: '#000',
                     }}
@@ -571,7 +576,7 @@ export default function ContributionSubmission({
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.5rem',
+                      fontSize: { xs: '0.4rem', sm: '0.5rem' },
                       color: 'text.secondary',
                     }}
                   >
@@ -581,7 +586,7 @@ export default function ContributionSubmission({
                 <Typography
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '1.5rem',
+                    fontSize: { xs: '1.1rem', sm: '1.5rem' },
                     fontWeight: 'bold',
                     color: '#000',
                     alignSelf: 'flex-start',
@@ -593,7 +598,7 @@ export default function ContributionSubmission({
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '1.5rem',
+                      fontSize: { xs: '1.1rem', sm: '1.5rem' },
                       fontWeight: 'bold',
                       color: '#000',
                     }}
@@ -603,7 +608,7 @@ export default function ContributionSubmission({
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.5rem',
+                      fontSize: { xs: '0.4rem', sm: '0.5rem' },
                       color: 'text.secondary',
                     }}
                   >
@@ -613,7 +618,7 @@ export default function ContributionSubmission({
                 <Typography
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '1.5rem',
+                    fontSize: { xs: '1.1rem', sm: '1.5rem' },
                     fontWeight: 'bold',
                     color: '#000',
                     alignSelf: 'flex-start',
@@ -625,7 +630,7 @@ export default function ContributionSubmission({
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '1.5rem',
+                      fontSize: { xs: '1.1rem', sm: '1.5rem' },
                       fontWeight: 'bold',
                       color: '#000',
                     }}
@@ -635,7 +640,7 @@ export default function ContributionSubmission({
                   <Typography
                     sx={{
                       fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.5rem',
+                      fontSize: { xs: '0.4rem', sm: '0.5rem' },
                       color: 'text.secondary',
                     }}
                   >

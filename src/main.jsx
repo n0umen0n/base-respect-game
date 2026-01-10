@@ -36,6 +36,7 @@ root.render(
         createOnLogin: 'users-without-wallets',
         requireUserPasswordOnCreate: false,
         noPromptOnSignature: true,
+        showWalletRecoveryOnLogin: false,
       },
     }}
   >
