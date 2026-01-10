@@ -68,9 +68,10 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id: member.address });
 
+  // Use CSS.Translate instead of CSS.Transform to prevent scale jump
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: isDragging ? 'none' : transition, // No transition while dragging for instant feedback
+    transform: CSS.Translate.toString(transform),
+    transition,
     opacity: isDragging ? 0.8 : 1,
     zIndex: isDragging ? 1000 : 1,
     touchAction: 'none' as const,
@@ -90,8 +91,6 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
         width: '100%',
         maxWidth: '100%',
         overflow: 'hidden',
-        transform: isDragging ? 'scale(1.02)' : 'scale(1)',
-        transition: isDragging ? 'none' : 'all 0.2s ease',
         '&:hover': {
           backgroundColor: '#f5f5f5',
           border: '2px solid #bdbdbd',
