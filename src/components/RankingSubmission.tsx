@@ -70,8 +70,10 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDragging ? 'none' : transition, // No transition while dragging for instant feedback
+    opacity: isDragging ? 0.8 : 1,
+    zIndex: isDragging ? 1000 : 1,
+    touchAction: 'none' as const,
   };
 
   return (
@@ -82,13 +84,14 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
       sx={{
         marginBottom: 2,
         position: 'relative',
-        zIndex: 1,
-        backgroundColor: '#fafafa',
-        border: '2px solid #e0e0e0',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        backgroundColor: isDragging ? '#fff' : '#fafafa',
+        border: isDragging ? '2px solid #22C55E' : '2px solid #e0e0e0',
+        boxShadow: isDragging ? '0 8px 24px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.08)',
         width: '100%',
         maxWidth: '100%',
         overflow: 'hidden',
+        transform: isDragging ? 'scale(1.02)' : 'scale(1)',
+        transition: isDragging ? 'none' : 'all 0.2s ease',
         '&:hover': {
           backgroundColor: '#f5f5f5',
           border: '2px solid #bdbdbd',
@@ -98,7 +101,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
     >
       <CardContent sx={{ padding: { xs: '12px !important', sm: '16px !important', md: '20px !important' }, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 }, width: '100%', maxWidth: '100%', flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
-          <Box {...listeners} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1, md: 2 }, cursor: 'grab', '&:active': { cursor: 'grabbing' }, flexShrink: 0 }}>
+          <Box {...listeners} sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 1, md: 2 }, cursor: 'grab', '&:active': { cursor: 'grabbing' }, flexShrink: 0, touchAction: 'none' }}>
             <DragIndicatorIcon sx={{ color: '#757575', fontSize: { xs: 20, sm: 24, md: 28 } }} />
             
             <Typography
@@ -123,7 +126,7 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
             />
           </Box>
 
-          <Box {...listeners} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'center', cursor: 'grab', '&:active': { cursor: 'grabbing' }, minWidth: 0, overflow: 'hidden', flex: 1 }}>
+          <Box {...listeners} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: { xs: 'flex-start', md: 'center' }, justifyContent: 'center', cursor: 'grab', '&:active': { cursor: 'grabbing' }, minWidth: 0, overflow: 'hidden', flex: 1, touchAction: 'none' }}>
             <Typography
               variant="h6"
               sx={{
@@ -321,22 +324,25 @@ export default function RankingSubmission({
     setMembers(groupMembers);
   }, [groupMembers]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // Desktop: require 8px movement before drag starts
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 0, // Mobile: immediate response on touch
-        tolerance: 5, // Allow 5px movement before canceling
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
+  // Use both pointer and touch sensors for best cross-device support
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 5, // Desktop: small movement required
+    },
+  });
+  
+  const touchSensor = useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 50, // Very short delay - feels instant
+      tolerance: 8, // Allow small movement during delay
+    },
+  });
+  
+  const keyboardSensor = useSensor(KeyboardSensor, {
+    coordinateGetter: sortableKeyboardCoordinates,
+  });
+  
+  const sensors = useSensors(touchSensor, pointerSensor, keyboardSensor); // Touch first for mobile priority
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;

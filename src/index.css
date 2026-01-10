@@ -24,6 +24,26 @@ body {
   transition: filter 0.3s ease-out;
 }
 
+/* Improve touch responsiveness for drag and drop */
+[data-dnd-kit-disabled-globally] * {
+  touch-action: none !important;
+}
+
+.sortable-card {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Prevent pull-to-refresh and other browser gestures during drag */
+@media (pointer: coarse) {
+  body.dragging {
+    overscroll-behavior: none;
+    touch-action: none;
+  }
+}
+
 /* Mobile responsive utilities */
 @media (max-width: 768px) {
   /* Reduce padding on mobile */
