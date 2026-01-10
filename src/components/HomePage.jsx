@@ -39,6 +39,14 @@ const HomePage = () => {
   const [showHeader, setShowHeader] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Detect mobile
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     loadTopMembers();
@@ -130,7 +138,8 @@ const HomePage = () => {
 
   return (
     <div>
-      {user && (
+      {/* Only show logout button on desktop - on mobile it's in the menu */}
+      {user && !isMobile && (
         <button
           onClick={handleLogout}
           className="logout-btn-header"
@@ -211,7 +220,7 @@ const HomePage = () => {
         }}>
           <p style={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: 'clamp(0.55rem, 2.5vw, 1.5rem)',
+            fontSize: 'clamp(0.7rem, 2.5vw, 1.5rem)',
             lineHeight: 1.8,
             color: '#333',
             marginBottom: '3.5rem',
@@ -226,12 +235,12 @@ const HomePage = () => {
               onClick={handleButtonClick}
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: '1rem',
+                fontSize: { xs: '0.7rem', sm: '1rem' },
                 textTransform: 'uppercase',
                 backgroundColor: 'black',
                 color: 'white',
                 borderRadius: '9999px',
-                padding: '1rem 2rem',
+                padding: { xs: '0.75rem 1.5rem', sm: '1rem 2rem' },
                 '&:hover': {
                   backgroundColor: '#333'
                 }
@@ -366,16 +375,16 @@ const HomePage = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon sx={{ color: '#000' }} />
+                    <SearchIcon sx={{ color: '#000', fontSize: { xs: 18, sm: 24 } }} />
                   </InputAdornment>
                 ),
               }}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.75rem',
+                  fontSize: { xs: '0.5rem', sm: '0.75rem' },
                   backgroundColor: '#ffffff',
-                  border: '4px solid #000',
+                  border: { xs: '2px solid #000', sm: '4px solid #000' },
                   borderRadius: '8px',
                   '& fieldset': {
                     border: 'none',
@@ -390,11 +399,11 @@ const HomePage = () => {
                 },
                 '& .MuiInputBase-input': {
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.75rem',
-                  padding: '1rem 1rem',
+                  fontSize: { xs: '0.5rem', sm: '0.75rem' },
+                  padding: { xs: '0.6rem 0.5rem', sm: '1rem 1rem' },
                   '&::placeholder': {
                     fontFamily: '"Press Start 2P", sans-serif',
-                    fontSize: '0.7rem',
+                    fontSize: { xs: '0.45rem', sm: '0.7rem' },
                     opacity: 0.6,
                   },
                 },

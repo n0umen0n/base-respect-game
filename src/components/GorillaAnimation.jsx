@@ -84,16 +84,22 @@ const GorillaAnimation = ({ show = true, delay = 1000 }) => {
   const startHorde = () => {
     setShowHorde(true);
     
-    // Create 100 apes with random properties
+    // Detect mobile and adjust ape count and size
+    const isMobile = window.innerWidth <= 768;
+    const apeCount = isMobile ? 25 : 100;
+    const baseSize = isMobile ? 40 : 80;
+    const sizeVariation = isMobile ? 25 : 60;
+    
+    // Create apes with random properties
     const apes = [];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < apeCount; i++) {
       apes.push({
         id: i,
-        delay: i * 150 + Math.random() * 200, // Staggered start
+        delay: i * (isMobile ? 200 : 150) + Math.random() * 200, // Staggered start
         speed: 2500 + Math.random() * 2000, // Random speed (2.5-4.5s)
-        jumpHeight: 15 + Math.random() * 50, // Random jump height (15-65px)
+        jumpHeight: (isMobile ? 10 : 15) + Math.random() * (isMobile ? 25 : 50), // Random jump height
         jumpSpeed: 0.2 + Math.random() * 0.15, // Random jump speed
-        size: 80 + Math.random() * 60, // Random size (80-140px)
+        size: baseSize + Math.random() * sizeVariation, // Random size
         willScream: Math.random() > 0.6, // 40% chance to scream
         screamDelay: 500 + Math.random() * 1500, // When to scream during run
       });
@@ -201,5 +207,6 @@ const HordeApe = ({ delay, speed, jumpHeight, jumpSpeed, size, willScream, screa
 };
 
 export default GorillaAnimation;
+
 
 

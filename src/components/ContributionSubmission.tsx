@@ -276,7 +276,7 @@ export default function ContributionSubmission({
               gutterBottom
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: { xs: '0.8rem', sm: '1.1rem', md: '1.5rem' },
+                fontSize: { xs: '1rem', sm: '1.1rem', md: '1.5rem' },
                 marginBottom: { xs: 2, md: 4 },
                 lineHeight: 1.6,
               }}
@@ -286,7 +286,7 @@ export default function ContributionSubmission({
 
             <Box
               sx={{
-                padding: 2,
+                padding: { xs: 1.5, sm: 2 },
                 backgroundColor: '#f5f5f5',
                 borderRadius: 2,
                 marginTop: 3,
@@ -296,7 +296,7 @@ export default function ContributionSubmission({
                 variant="body2"
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '0.7rem',
+                  fontSize: { xs: '0.5rem', sm: '0.7rem' },
                   marginBottom: 1,
                 }}
               >
@@ -306,7 +306,7 @@ export default function ContributionSubmission({
                 variant="h6"
                 sx={{
                   fontFamily: '"Press Start 2P", sans-serif',
-                  fontSize: '1rem',
+                  fontSize: { xs: '0.75rem', sm: '1rem' },
                   color: '#0052FF',
                   fontWeight: 'bold',
                 }}
@@ -363,7 +363,7 @@ export default function ContributionSubmission({
                 <TextField
                   fullWidth
                   multiline
-                  rows={3}
+                  rows={4}
                   value={item.contribution}
                   onChange={(e) =>
                     updateContribution(item.id, 'contribution', e.target.value)
@@ -371,9 +371,13 @@ export default function ContributionSubmission({
                   sx={{ 
                     marginBottom: 2,
                     '& .MuiInputBase-input::placeholder': {
-                      fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.6rem',
-                      opacity: 0.6,
+                      fontFamily: 'inherit',
+                      fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                      opacity: 0.5,
+                      lineHeight: 1.6,
+                    },
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     }
                   }}
                   disabled={isSubmitting}
@@ -406,9 +410,12 @@ export default function ContributionSubmission({
                   placeholder="https://..."
                   sx={{
                     '& .MuiInputBase-input::placeholder': {
-                      fontFamily: '"Press Start 2P", sans-serif',
-                      fontSize: '0.6rem',
-                      opacity: 0.6,
+                      fontFamily: 'inherit',
+                      fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                      opacity: 0.5,
+                    },
+                    '& .MuiInputBase-input': {
+                      fontSize: { xs: '0.75rem', sm: '0.875rem' },
                     }
                   }}
                   inputProps={{ maxLength: CHAR_LIMITS.link }}

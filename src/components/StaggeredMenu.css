@@ -372,7 +372,7 @@
 
 @media (max-width: 768px) {
   .staggered-menu-header {
-    padding: 1em;
+    padding: 1em 1em;
   }
   
   .sm-toggle {
@@ -427,7 +427,7 @@
 
 @media (max-width: 480px) {
   .staggered-menu-header {
-    padding: 0.75em;
+    padding: 1em;
   }
   
   .sm-toggle {
@@ -441,27 +441,37 @@
   }
   
   .sm-panel-item {
-    font-size: 1rem;
-    padding-right: 1.5em;
+    font-size: 0.9rem;
+    padding-right: 2.5em;
   }
   
   .sm-panel-item-secondary {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
   
   .sm-socials-link {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
   
   .staggered-menu-panel {
-    padding: 5em 1.25em 1.5em 1.25em;
+    padding: 5em 1em 1.5em 1em;
   }
   
   .sm-panel-list {
     gap: 1.25rem;
   }
   
+  /* Hide numbering on mobile */
   .sm-panel-list[data-numbering] .sm-panel-item::after {
-    font-size: 0.8rem;
+    display: none;
+  }
+  
+  /* Red logout button on mobile */
+  .sm-panel-item-logout {
+    color: #ef4444 !important;
+  }
+  
+  .sm-panel-item-logout:hover {
+    color: #dc2626 !important;
   }
 }

@@ -7,6 +7,19 @@ import Shuffle from './components/Shuffle';
 import { useSmartWallet } from './hooks/useSmartWallet';
 import MobileWarning from './components/MobileWarning';
 
+// Hook to detect mobile
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  
+  return isMobile;
+};
+
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showHeader, setShowHeader] = useState(true);
@@ -15,6 +28,7 @@ function App() {
   const { smartAccountAddress } = useSmartWallet();
   const location = useLocation();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const menuItems = useMemo(() => {
     const items = [];
@@ -43,8 +57,19 @@ function App() {
       secondary: true
     });
     
+    // Add Logout to menu on mobile
+    if (user && isMobile) {
+      items.push({
+        label: 'LOGOUT',
+        ariaLabel: 'Log out',
+        link: '#logout',
+        secondary: true,
+        isLogout: true
+      });
+    }
+    
     return items;
-  }, [user, smartAccountAddress]);
+  }, [user, smartAccountAddress, isMobile]);
   
   const isHomePage = location.pathname === '/';
   
@@ -82,7 +107,7 @@ function App() {
     <>
       <MobileWarning />
       <div className={isMenuOpen ? 'blurred' : ''}>
-        <PalmTrees count={28} />
+        <PalmTrees count={isMobile ? 6 : 28} />
       </div>
       <div
         className={`w-screen min-h-screen flex flex-col items-center text-center ${
@@ -103,7 +128,8 @@ function App() {
       </div>
       {!isHomePage && (
         <>
-          {user && (
+          {/* Only show logout button on desktop - on mobile it's in the menu */}
+          {user && !isMobile && (
             <button
               onClick={handleLogout}
               className="logout-btn-header"
@@ -204,6 +230,7 @@ function App() {
           accentColor="#22C55E"
           onMenuOpen={() => setIsMenuOpen(true)}
           onMenuClose={() => setIsMenuOpen(false)}
+          onLogout={handleLogout}
         />
       </div>
     </>

@@ -17,10 +17,11 @@
 
 @media (max-width: 768px) {
   .profile-card-wrapper {
-    max-width: 100%;
+    max-width: calc(100% - 1.5rem);
     min-height: auto;
-    width: 100%;
+    width: calc(100% - 1.5rem);
     margin: 0 auto;
+    padding: 0 0.25rem;
   }
   
   .profile-card-container {
@@ -60,39 +61,13 @@
 
 @media (max-width: 640px) {
   .profile-card-name {
-    max-width: 120px;
-  }
-  
-  .profile-card-image {
-    width: 70px !important;
-    height: 70px !important;
-  }
-  
-  .profile-card-container p {
-    font-size: 0.7rem !important;
-  }
-  
-  .profile-card-container {
-    padding: 0.75rem !important;
-    gap: 0.75rem !important;
-  }
-  
-  /* Reduce leaf decoration on mobile */
-  .leaf {
-    width: 8px;
-    height: 8px;
-    opacity: 0.7;
-  }
-}
-
-@media (max-width: 480px) {
-  .profile-card-name {
-    max-width: 90px;
+    max-width: 100px;
   }
   
   .profile-card-image {
     width: 55px !important;
     height: 55px !important;
+    border-radius: 50% !important;
   }
   
   .profile-card-container p {
@@ -100,22 +75,61 @@
   }
   
   .profile-card-container {
-    padding: 0.65rem !important;
-    gap: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+    gap: 0.75rem !important;
+    justify-content: center !important;
   }
   
+  .missing-x-text {
+    font-size: 0.45rem !important;
+  }
+  
+  .missing-x-icon {
+    font-size: 12px !important;
+  }
+  
+  /* Keep all leaves visible on mobile, just smaller */
   .leaf {
-    width: 6px;
-    height: 6px;
-    opacity: 0.6;
+    width: 8px;
+    height: 8px;
+    opacity: 0.8;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-card-name {
+    max-width: 80px;
   }
   
-  /* Hide some leaves on very small screens for cleaner look */
-  .leaf-t2, .leaf-t4, .leaf-t6, .leaf-t8, .leaf-t10, .leaf-t12, .leaf-t14,
-  .leaf-b2, .leaf-b4, .leaf-b6, .leaf-b8, .leaf-b10, .leaf-b12, .leaf-b14,
-  .leaf-r2, .leaf-r4, .leaf-r6, .leaf-r8,
-  .leaf-l2, .leaf-l4, .leaf-l6, .leaf-l8 {
-    display: none;
+  .profile-card-image {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+  }
+  
+  .profile-card-container p {
+    font-size: 0.5rem !important;
+  }
+  
+  .profile-card-container {
+    padding: 0.65rem 0.85rem !important;
+    gap: 0.5rem !important;
+    justify-content: center !important;
+  }
+  
+  .missing-x-text {
+    font-size: 0.4rem !important;
+  }
+  
+  .missing-x-icon {
+    font-size: 10px !important;
+  }
+  
+  /* Keep all leaves visible on very small screens, just smaller */
+  .leaf {
+    width: 7px;
+    height: 7px;
+    opacity: 0.75;
   }
 }
 
@@ -152,16 +166,23 @@
 .leaf-t15 { top: -3px; left: 86%; transform: rotate(-25deg); }
 .leaf-t16 { top: -4px; left: 92%; transform: rotate(15deg); }
 
-/* RIGHT EDGE leaves */
-.leaf-r1 { top: 5%; right: -3px; transform: rotate(70deg); }
-.leaf-r2 { top: 15%; right: -4px; transform: rotate(100deg); }
-.leaf-r3 { top: 25%; right: -3px; transform: rotate(75deg); }
-.leaf-r4 { top: 35%; right: -4px; transform: rotate(95deg); }
-.leaf-r5 { top: 45%; right: -3px; transform: rotate(80deg); }
-.leaf-r6 { top: 55%; right: -4px; transform: rotate(105deg); }
-.leaf-r7 { top: 65%; right: -3px; transform: rotate(70deg); }
-.leaf-r8 { top: 75%; right: -4px; transform: rotate(90deg); }
-.leaf-r9 { top: 85%; right: -3px; transform: rotate(85deg); }
+/* RIGHT EDGE leaves - 16 leaves for same density as top/bottom */
+.leaf-r1 { top: 2%; right: -3px; transform: rotate(70deg); }
+.leaf-r2 { top: 8%; right: -4px; transform: rotate(100deg); }
+.leaf-r3 { top: 14%; right: -3px; transform: rotate(75deg); }
+.leaf-r4 { top: 20%; right: -4px; transform: rotate(95deg); }
+.leaf-r5 { top: 26%; right: -3px; transform: rotate(80deg); }
+.leaf-r6 { top: 32%; right: -4px; transform: rotate(105deg); }
+.leaf-r7 { top: 38%; right: -3px; transform: rotate(70deg); }
+.leaf-r8 { top: 44%; right: -4px; transform: rotate(90deg); }
+.leaf-r9 { top: 50%; right: -3px; transform: rotate(85deg); }
+.leaf-r10 { top: 56%; right: -4px; transform: rotate(75deg); }
+.leaf-r11 { top: 62%; right: -3px; transform: rotate(100deg); }
+.leaf-r12 { top: 68%; right: -4px; transform: rotate(80deg); }
+.leaf-r13 { top: 74%; right: -3px; transform: rotate(95deg); }
+.leaf-r14 { top: 80%; right: -4px; transform: rotate(70deg); }
+.leaf-r15 { top: 86%; right: -3px; transform: rotate(90deg); }
+.leaf-r16 { top: 92%; right: -4px; transform: rotate(85deg); }
 
 /* BOTTOM EDGE leaves */
 .leaf-b1 { bottom: -3px; right: 2%; transform: rotate(155deg); }
@@ -181,35 +202,42 @@
 .leaf-b15 { bottom: -3px; right: 86%; transform: rotate(175deg); }
 .leaf-b16 { bottom: -4px; right: 92%; transform: rotate(-165deg); }
 
-/* LEFT EDGE leaves */
-.leaf-l1 { top: 5%; left: -3px; transform: rotate(-70deg); }
-.leaf-l2 { top: 15%; left: -4px; transform: rotate(-100deg); }
-.leaf-l3 { top: 25%; left: -3px; transform: rotate(-75deg); }
-.leaf-l4 { top: 35%; left: -4px; transform: rotate(-95deg); }
-.leaf-l5 { top: 45%; left: -3px; transform: rotate(-80deg); }
-.leaf-l6 { top: 55%; left: -4px; transform: rotate(-105deg); }
-.leaf-l7 { top: 65%; left: -3px; transform: rotate(-70deg); }
-.leaf-l8 { top: 75%; left: -4px; transform: rotate(-90deg); }
-.leaf-l9 { top: 85%; left: -3px; transform: rotate(-85deg); }
+/* LEFT EDGE leaves - 16 leaves for same density as top/bottom */
+.leaf-l1 { top: 2%; left: -3px; transform: rotate(-70deg); }
+.leaf-l2 { top: 8%; left: -4px; transform: rotate(-100deg); }
+.leaf-l3 { top: 14%; left: -3px; transform: rotate(-75deg); }
+.leaf-l4 { top: 20%; left: -4px; transform: rotate(-95deg); }
+.leaf-l5 { top: 26%; left: -3px; transform: rotate(-80deg); }
+.leaf-l6 { top: 32%; left: -4px; transform: rotate(-105deg); }
+.leaf-l7 { top: 38%; left: -3px; transform: rotate(-70deg); }
+.leaf-l8 { top: 44%; left: -4px; transform: rotate(-90deg); }
+.leaf-l9 { top: 50%; left: -3px; transform: rotate(-85deg); }
+.leaf-l10 { top: 56%; left: -4px; transform: rotate(-75deg); }
+.leaf-l11 { top: 62%; left: -3px; transform: rotate(-100deg); }
+.leaf-l12 { top: 68%; left: -4px; transform: rotate(-80deg); }
+.leaf-l13 { top: 74%; left: -3px; transform: rotate(-95deg); }
+.leaf-l14 { top: 80%; left: -4px; transform: rotate(-70deg); }
+.leaf-l15 { top: 86%; left: -3px; transform: rotate(-90deg); }
+.leaf-l16 { top: 92%; left: -4px; transform: rotate(-85deg); }
 
 /* Varied leaf colors for natural look */
 .leaf-t1 svg, .leaf-t4 svg, .leaf-t7 svg, .leaf-t10 svg, .leaf-t13 svg, .leaf-t16 svg,
-.leaf-r2 svg, .leaf-r5 svg, .leaf-r8 svg,
+.leaf-r2 svg, .leaf-r5 svg, .leaf-r8 svg, .leaf-r11 svg, .leaf-r14 svg,
 .leaf-b1 svg, .leaf-b4 svg, .leaf-b7 svg, .leaf-b10 svg, .leaf-b13 svg, .leaf-b16 svg,
-.leaf-l2 svg, .leaf-l5 svg, .leaf-l8 svg {
+.leaf-l2 svg, .leaf-l5 svg, .leaf-l8 svg, .leaf-l11 svg, .leaf-l14 svg {
   fill: #4ade80;
 }
 
 .leaf-t2 svg, .leaf-t5 svg, .leaf-t8 svg, .leaf-t11 svg, .leaf-t14 svg,
-.leaf-r1 svg, .leaf-r4 svg, .leaf-r7 svg,
+.leaf-r1 svg, .leaf-r4 svg, .leaf-r7 svg, .leaf-r10 svg, .leaf-r13 svg, .leaf-r16 svg,
 .leaf-b2 svg, .leaf-b5 svg, .leaf-b8 svg, .leaf-b11 svg, .leaf-b14 svg,
-.leaf-l1 svg, .leaf-l4 svg, .leaf-l7 svg {
+.leaf-l1 svg, .leaf-l4 svg, .leaf-l7 svg, .leaf-l10 svg, .leaf-l13 svg, .leaf-l16 svg {
   fill: #22c55e;
 }
 
 .leaf-t3 svg, .leaf-t6 svg, .leaf-t9 svg, .leaf-t12 svg, .leaf-t15 svg,
-.leaf-r3 svg, .leaf-r6 svg, .leaf-r9 svg,
+.leaf-r3 svg, .leaf-r6 svg, .leaf-r9 svg, .leaf-r12 svg, .leaf-r15 svg,
 .leaf-b3 svg, .leaf-b6 svg, .leaf-b9 svg, .leaf-b12 svg, .leaf-b15 svg,
-.leaf-l3 svg, .leaf-l6 svg, .leaf-l9 svg {
+.leaf-l3 svg, .leaf-l6 svg, .leaf-l9 svg, .leaf-l12 svg, .leaf-l15 svg {
   fill: #16a34a;
 }

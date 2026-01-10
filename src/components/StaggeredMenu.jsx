@@ -18,6 +18,7 @@ export const StaggeredMenu = ({
   isFixed = false,
   onMenuOpen,
   onMenuClose,
+  onLogout,
   socialsTitle = 'Socials'
 }) => {
   const [open, setOpen] = useState(false);
@@ -381,6 +382,38 @@ export const StaggeredMenu = ({
               items.map((it, idx) => {
                 const isExternal = it.link.startsWith('http://') || it.link.startsWith('https://');
                 const isSecondary = it.secondary || false;
+                const isLogout = it.isLogout || false;
+                
+                if (isLogout) {
+                  return (
+                    <li className="sm-panel-itemWrap" key={it.label + idx}>
+                      <button 
+                        className={`sm-panel-item sm-panel-item-logout ${isSecondary ? 'sm-panel-item-secondary' : ''}`}
+                        aria-label={it.ariaLabel}
+                        onClick={() => {
+                          if (onLogout) onLogout();
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          width: '100%',
+                          textAlign: 'left',
+                          padding: 0,
+                          font: 'inherit',
+                          fontFamily: 'inherit',
+                          fontSize: 'inherit',
+                          fontWeight: 'inherit',
+                          letterSpacing: 'inherit',
+                          textTransform: 'inherit'
+                        }}
+                      >
+                        <span className="sm-panel-itemLabel">{it.label}</span>
+                      </button>
+                    </li>
+                  );
+                }
+                
                 return (
                   <li className="sm-panel-itemWrap" key={it.label + idx}>
                     <a 

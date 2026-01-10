@@ -33,11 +33,11 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
 
   const hasXAccount = x && x.trim() !== '';
 
-  // Generate leaf elements for each edge
+  // Generate leaf elements for each edge (16 leaves per edge for uniform density)
   const topLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`t${i+1}`} className={`leaf-t${i+1}`} />);
-  const rightLeaves = Array.from({ length: 9 }, (_, i) => <Leaf key={`r${i+1}`} className={`leaf-r${i+1}`} />);
+  const rightLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`r${i+1}`} className={`leaf-r${i+1}`} />);
   const bottomLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`b${i+1}`} className={`leaf-b${i+1}`} />);
-  const leftLeaves = Array.from({ length: 9 }, (_, i) => <Leaf key={`l${i+1}`} className={`leaf-l${i+1}`} />);
+  const leftLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`l${i+1}`} className={`leaf-l${i+1}`} />);
 
   return (
     <div className="profile-card-wrapper">
@@ -67,8 +67,8 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
         alt={name}
         className="profile-card-image"
         style={{
-          width: '90px',
-          height: '90px',
+          width: '80px',
+          height: '80px',
           objectFit: 'cover',
           borderRadius: '8px',
           flexShrink: 0
@@ -100,8 +100,8 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
             </>
           ) : (
             <>
-              <span style={{ color: '#9e9e9e', fontSize: '0.7rem' }}>missing</span>
-              <CancelIcon sx={{ fontSize: 18, color: '#f44336' }} />
+              <span className="missing-x-text" style={{ color: '#9e9e9e', fontSize: '0.7rem' }}>missing</span>
+              <CancelIcon className="missing-x-icon" sx={{ fontSize: 18, color: '#f44336' }} />
             </>
           )}
         </p>
