@@ -36,17 +36,7 @@ const HomePage = () => {
   const [allMembers, setAllMembers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
-  const [showHeader, setShowHeader] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-
-  // Detect mobile
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     loadTopMembers();
@@ -88,11 +78,6 @@ const HomePage = () => {
     }
   };
 
-  const handleLogout = async () => {
-    sessionStorage.removeItem('navigateToGameAfterLogin');
-    await logout();
-  };
-
   const handleButtonClick = () => {
     if (user) {
       navigate('/game');
@@ -102,28 +87,6 @@ const HomePage = () => {
       login();
     }
   };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY < 50) {
-        setShowHeader(true);
-      } else if (currentScrollY > lastScrollY) {
-        setShowHeader(false);
-      } else {
-        setShowHeader(true);
-      }
-      
-      setLastScrollY(currentScrollY);
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, [lastScrollY]);
 
   // Filter members based on search query (from rank 7 onwards)
   const filteredMembers = allMembers.slice(6).filter(member => 
@@ -138,42 +101,6 @@ const HomePage = () => {
 
   return (
     <div>
-      {/* Only show logout button on desktop - on mobile it's in the menu */}
-      {user && !isMobile && (
-        <button
-          onClick={handleLogout}
-          className="logout-btn-header"
-          style={{
-            position: 'fixed',
-            top: '1em',
-            right: 'calc(1em + 60px)',
-            zIndex: 9999,
-            pointerEvents: showHeader ? 'auto' : 'none',
-            background: 'transparent',
-            color: '#1a1a1a',
-            border: 'none',
-            padding: 0,
-            fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: 'clamp(0.5rem, 1.5vw, 0.9rem)',
-            cursor: 'pointer',
-            transition: 'opacity 0.3s ease, transform 0.3s ease',
-            fontWeight: '500',
-            lineHeight: 1,
-            display: 'flex',
-            alignItems: 'center',
-            transform: showHeader ? 'translateY(0)' : 'translateY(-150%)',
-            opacity: showHeader ? 1 : 0
-          }}
-          onMouseEnter={(e) => {
-            if (showHeader) e.currentTarget.style.opacity = '0.7';
-          }}
-          onMouseLeave={(e) => {
-            if (showHeader) e.currentTarget.style.opacity = '1';
-          }}
-        >
-          Logout
-        </button>
-      )}
       <Shuffle
         text="DAO OF THE APES"
         tag="div"

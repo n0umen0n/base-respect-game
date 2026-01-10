@@ -134,6 +134,6 @@ body {
 
 @media (max-width: 480px) {
   .member-name-cell {
-    max-width: 80px;
+    max-width: 160px;
   }
 }

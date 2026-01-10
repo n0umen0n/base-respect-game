@@ -1010,12 +1010,14 @@ export default function ProfilePage({
                         The ranking stage will end in{' '}
                         {nextStageTimestamp ? (
                           (() => {
-                            const timeDiff = new Date(nextStageTimestamp).getTime() - Date.now();
+                            const timeDiff = Math.max(0, new Date(nextStageTimestamp).getTime() - Date.now());
                             const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
                             const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                             const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
                             
-                            if (days > 0) {
+                            if (timeDiff === 0) {
+                              return <strong>0 minutes</strong>;
+                            } else if (days > 0) {
                               return <strong>{days} {days === 1 ? 'day' : 'days'} {hours} {hours === 1 ? 'hour' : 'hours'}</strong>;
                             } else if (hours > 0) {
                               return <strong>{hours} {hours === 1 ? 'hour' : 'hours'} {minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
@@ -1174,12 +1176,14 @@ export default function ProfilePage({
                           Waiting for contribution submission stage to complete. Game resumes with contribution rankings in{' '}
                           {nextStageTimestamp ? (
                             (() => {
-                              const timeDiff = new Date(nextStageTimestamp).getTime() - Date.now();
+                              const timeDiff = Math.max(0, new Date(nextStageTimestamp).getTime() - Date.now());
                               const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
                               const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                               const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
                               
-                              if (days > 0) {
+                              if (timeDiff === 0) {
+                                return <strong>0 minutes</strong>;
+                              } else if (days > 0) {
                                 return <strong>{days} {days === 1 ? 'day' : 'days'} {hours} {hours === 1 ? 'hour' : 'hours'}</strong>;
                               } else if (hours > 0) {
                                 return <strong>{hours} {hours === 1 ? 'hour' : 'hours'} {minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;
@@ -1239,12 +1243,14 @@ export default function ProfilePage({
                         </Box>
                         {' '}Come back to play in{' '}
                         {(() => {
-                          const timeDiff = new Date(nextStageTimestamp).getTime() - Date.now();
+                          const timeDiff = Math.max(0, new Date(nextStageTimestamp).getTime() - Date.now());
                           const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
                           const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                           const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
                           
-                          if (days > 0) {
+                          if (timeDiff === 0) {
+                            return <strong>0 minutes</strong>;
+                          } else if (days > 0) {
                             return <strong>{days} {days === 1 ? 'day' : 'days'} {hours} {hours === 1 ? 'hour' : 'hours'}</strong>;
                           } else if (hours > 0) {
                             return <strong>{hours} {hours === 1 ? 'hour' : 'hours'} {minutes} {minutes === 1 ? 'minute' : 'minutes'}</strong>;

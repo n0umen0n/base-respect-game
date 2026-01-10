@@ -17,9 +17,9 @@
 
 @media (max-width: 768px) {
   .profile-card-wrapper {
-    max-width: calc(100% - 1.5rem);
+    max-width: 340px;
     min-height: auto;
-    width: calc(100% - 1.5rem);
+    width: calc(100% - 2rem);
     margin: 0 auto;
     padding: 0 0.25rem;
   }
@@ -61,7 +61,7 @@
 
 @media (max-width: 640px) {
   .profile-card-name {
-    max-width: 100px;
+    max-width: 140px;
   }
   
   .profile-card-image {
@@ -71,17 +71,17 @@
   }
   
   .profile-card-container p {
-    font-size: 0.6rem !important;
+    font-size: 0.55rem !important;
   }
   
   .profile-card-container {
-    padding: 0.75rem 1rem !important;
-    gap: 0.75rem !important;
+    padding: 0.6rem 0.75rem !important;
+    gap: 0.6rem !important;
     justify-content: center !important;
   }
   
   .missing-x-text {
-    font-size: 0.45rem !important;
+    font-size: 0.4rem !important;
   }
   
   .missing-x-icon {
@@ -98,7 +98,7 @@
 
 @media (max-width: 480px) {
   .profile-card-name {
-    max-width: 80px;
+    max-width: 120px;
   }
   
   .profile-card-image {
@@ -112,13 +112,13 @@
   }
   
   .profile-card-container {
-    padding: 0.65rem 0.85rem !important;
-    gap: 0.5rem !important;
+    padding: 0.5rem 0.6rem !important;
+    gap: 0.4rem !important;
     justify-content: center !important;
   }
   
   .missing-x-text {
-    font-size: 0.4rem !important;
+    font-size: 0.35rem !important;
   }
   
   .missing-x-icon {

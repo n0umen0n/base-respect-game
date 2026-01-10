@@ -302,6 +302,16 @@
   color: var(--sm-accent, #0052FF);
 }
 
+/* Logout button styling */
+.sm-panel-item-logout {
+  color: #ef4444 !important;
+  font-size: 1.5rem !important;
+}
+
+.sm-panel-item-logout:hover {
+  color: #dc2626 !important;
+}
+
 .staggered-menu-panel .sm-socials-list .sm-socials-link {
   opacity: 1;
   transition: opacity 0.3s ease;
@@ -466,12 +476,7 @@
     display: none;
   }
   
-  /* Red logout button on mobile */
   .sm-panel-item-logout {
-    color: #ef4444 !important;
-  }
-  
-  .sm-panel-item-logout:hover {
-    color: #dc2626 !important;
+    font-size: 1rem !important;
   }
 }

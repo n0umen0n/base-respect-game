@@ -57,8 +57,8 @@ function App() {
       secondary: true
     });
     
-    // Add Logout to menu on mobile
-    if (user && isMobile) {
+    // Add Logout to menu
+    if (user) {
       items.push({
         label: 'LOGOUT',
         ariaLabel: 'Log out',
@@ -128,48 +128,12 @@ function App() {
       </div>
       {!isHomePage && (
         <>
-          {/* Only show logout button on desktop - on mobile it's in the menu */}
-          {user && !isMobile && (
-            <button
-              onClick={handleLogout}
-              className="logout-btn-header"
-              style={{
-                position: 'fixed',
-                top: '1em',
-                right: 'calc(1em + 60px)',
-                zIndex: 9999,
-                pointerEvents: showHeader ? 'auto' : 'none',
-                background: 'transparent',
-                color: '#1a1a1a',
-                border: 'none',
-                padding: 0,
-                fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: 'clamp(0.5rem, 1.5vw, 0.9rem)',
-                cursor: 'pointer',
-                transition: 'opacity 0.3s ease, transform 0.3s ease',
-                fontWeight: '500',
-                lineHeight: 1,
-                display: 'flex',
-                alignItems: 'center',
-                transform: showHeader ? 'translateY(0)' : 'translateY(-150%)',
-                opacity: showHeader ? 1 : 0
-              }}
-              onMouseEnter={(e) => {
-                if (showHeader) e.currentTarget.style.opacity = '0.7';
-              }}
-              onMouseLeave={(e) => {
-                if (showHeader) e.currentTarget.style.opacity = '1';
-              }}
-            >
-              Logout
-            </button>
-          )}
           <div
             onClick={() => navigate('/')}
             style={{
               position: 'fixed',
-              top: '1em',
-              left: '1em',
+              top: isMobile ? '1em' : '2em',
+              left: isMobile ? '1em' : '2em',
               zIndex: 50,
               pointerEvents: showHeader ? 'auto' : 'none',
               cursor: 'pointer',
