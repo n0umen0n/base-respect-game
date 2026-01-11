@@ -382,7 +382,9 @@
 
 @media (max-width: 768px) {
   .staggered-menu-header {
-    padding: 1em 1em;
+    top: max(1.5em, calc(env(safe-area-inset-top, 0px) + 0.75em));
+    padding: 0 1em;
+    align-items: flex-start;
   }
   
   .sm-toggle {
