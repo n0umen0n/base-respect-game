@@ -139,7 +139,7 @@ function App() {
             onClick={() => navigate('/')}
             style={{
               position: 'fixed',
-              top: isMobile ? 'max(2.5em, env(safe-area-inset-top, 0px) + 1em)' : '2em',
+              top: isMobile ? '1em' : '2em',
               left: isMobile ? '1em' : '2em',
               zIndex: 50,
               pointerEvents: showHeader ? 'auto' : 'none',
@@ -154,8 +154,9 @@ function App() {
               tag="div"
               style={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: 'clamp(0.55rem, 2vw, 1rem)',
-                lineHeight: 1,
+                fontSize: 'clamp(0.75rem, 2.5vw, 1rem)',
+                lineHeight: 1.4,
+                paddingTop: '0.15em',
                 color: '#1a1a1a'
               }}
               shuffleDirection="right"
