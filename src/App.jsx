@@ -139,7 +139,7 @@ function App() {
             onClick={() => navigate('/')}
             style={{
               position: 'fixed',
-              top: isMobile ? 'max(1.5em, env(safe-area-inset-top, 0px) + 0.75em)' : '2em',
+              top: isMobile ? 'max(2.5em, env(safe-area-inset-top, 0px) + 1em)' : '2em',
               left: isMobile ? '1em' : '2em',
               zIndex: 50,
               pointerEvents: showHeader ? 'auto' : 'none',
