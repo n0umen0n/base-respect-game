@@ -509,7 +509,7 @@ export default function ProfilePage({
         padding: { xs: '1px 1rem', sm: '1px 2rem', md: '1px 3rem' },
       }}
     >
-      <Box sx={{ width: '100%', maxWidth: 960, margin: { xs: '0 auto 0', md: '-45px auto 0' } }}>
+      <Box sx={{ width: { xs: '100%', md: 960 }, maxWidth: 960, margin: { xs: '0 auto 0', md: '-45px auto 0' } }}>
         {/* Profile Header */}
         <Paper
           elevation={3}
@@ -517,7 +517,8 @@ export default function ProfilePage({
             padding: { xs: 2, sm: 3, md: 4 },
             marginBottom: 3,
             borderRadius: { xs: 2, md: 4 },
-            width: '100%',
+            width: { xs: '100%', md: 960 },
+            minWidth: { md: 960 },
             maxWidth: 960,
             boxSizing: 'border-box',
           }}
@@ -831,7 +832,8 @@ export default function ProfilePage({
             gridTemplateRows: 'auto 1fr',
             height: { xs: 'auto', md: 550 },
             minHeight: { xs: 400, md: 550 },
-            width: '100%',
+            width: { xs: '100%', md: 960 },
+            minWidth: { md: 960 },
             maxWidth: 960,
             boxSizing: 'border-box',
             overflow: 'hidden',

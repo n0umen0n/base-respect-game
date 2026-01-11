@@ -57,6 +57,13 @@ function App() {
       secondary: true
     });
     
+    items.push({ 
+      label: 'GITHUB', 
+      ariaLabel: 'View GitHub repository', 
+      link: 'https://github.com/n0umen0n/base-respect-game',
+      secondary: true
+    });
+    
     // Add Logout to menu
     if (user) {
       items.push({

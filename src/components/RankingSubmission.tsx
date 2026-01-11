@@ -227,16 +227,17 @@ function SortableCard({ member, rank }: { member: Member; rank: number }) {
             </Typography>
             {member.contributions.length > 0 ? (
               member.contributions.map((contribution, index) => (
-                <Box key={index} sx={{ marginBottom: 2, padding: 1.5, backgroundColor: '#fff', borderRadius: 1, border: '1px solid #e0e0e0', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+                <Box key={index} sx={{ marginBottom: 2, padding: 1.5, backgroundColor: '#fff', borderRadius: 1, border: '1px solid #e0e0e0', width: '100%', maxWidth: '100%', boxSizing: 'border-box', overflow: 'hidden', maxHeight: { xs: '200px', sm: '250px', md: '300px' }, overflowY: 'auto' }}>
                   <Typography
                     variant="body2"
                     sx={{ 
                       marginBottom: 1, 
-                      fontSize: '1rem',
+                      fontSize: { xs: '0.85rem', sm: '0.95rem', md: '1rem' },
                       lineHeight: 1.6,
                       color: '#333',
                       wordWrap: 'break-word',
                       overflowWrap: 'break-word',
+                      wordBreak: 'break-word',
                     }}
                   >
                     {contribution}
@@ -489,7 +490,7 @@ export default function RankingSubmission({
               variant="body1"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: { xs: '0.5rem', sm: '0.6rem', md: '0.7rem' },
+                fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
                 marginBottom: 1,
                 lineHeight: 1.8,
               }}
@@ -503,7 +504,7 @@ export default function RankingSubmission({
               variant="body1"
               sx={{
                 fontFamily: '"Press Start 2P", sans-serif',
-                fontSize: { xs: '0.5rem', sm: '0.6rem', md: '0.7rem' },
+                fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
                 marginBottom: { xs: 2, md: 3 },
                 lineHeight: 1.8,
               }}
