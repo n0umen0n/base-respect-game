@@ -84,6 +84,7 @@
   
   .profile-card-container p {
     font-size: 0.55rem !important;
+    margin: 0.4rem 0 !important;
   }
   
   .profile-card-container {
@@ -93,10 +94,14 @@
   }
   
   .missing-x-text {
-    font-size: 0.4rem !important;
+    font-size: 0.55rem !important;
   }
   
   .missing-x-icon {
+    font-size: 12px !important;
+  }
+  
+  .verified-icon {
     font-size: 12px !important;
   }
   
@@ -121,6 +126,7 @@
   
   .profile-card-container p {
     font-size: 0.5rem !important;
+    margin: 0.35rem 0 !important;
   }
   
   .profile-card-container {
@@ -130,10 +136,14 @@
   }
   
   .missing-x-text {
-    font-size: 0.35rem !important;
+    font-size: 0.5rem !important;
   }
   
   .missing-x-icon {
+    font-size: 10px !important;
+  }
+  
+  .verified-icon {
     font-size: 10px !important;
   }
   
@@ -160,23 +170,39 @@
   height: 100%;
 }
 
-/* TOP EDGE leaves */
+/* TOP EDGE leaves - 32 leaves for full coverage */
 .leaf-t1 { top: -3px; left: 2%; transform: rotate(-35deg); }
-.leaf-t2 { top: -4px; left: 8%; transform: rotate(20deg); }
-.leaf-t3 { top: -3px; left: 14%; transform: rotate(-15deg); }
-.leaf-t4 { top: -4px; left: 20%; transform: rotate(30deg); }
-.leaf-t5 { top: -3px; left: 26%; transform: rotate(-25deg); }
-.leaf-t6 { top: -4px; left: 32%; transform: rotate(15deg); }
-.leaf-t7 { top: -3px; left: 38%; transform: rotate(-10deg); }
-.leaf-t8 { top: -4px; left: 44%; transform: rotate(25deg); }
-.leaf-t9 { top: -3px; left: 50%; transform: rotate(-20deg); }
-.leaf-t10 { top: -4px; left: 56%; transform: rotate(10deg); }
-.leaf-t11 { top: -3px; left: 62%; transform: rotate(-30deg); }
-.leaf-t12 { top: -4px; left: 68%; transform: rotate(20deg); }
-.leaf-t13 { top: -3px; left: 74%; transform: rotate(-15deg); }
-.leaf-t14 { top: -4px; left: 80%; transform: rotate(25deg); }
-.leaf-t15 { top: -3px; left: 86%; transform: rotate(-25deg); }
-.leaf-t16 { top: -4px; left: 92%; transform: rotate(15deg); }
+.leaf-t2 { top: -4px; left: 5%; transform: rotate(20deg); }
+.leaf-t3 { top: -3px; left: 8%; transform: rotate(-15deg); }
+.leaf-t4 { top: -4px; left: 11%; transform: rotate(30deg); }
+.leaf-t5 { top: -3px; left: 14%; transform: rotate(-25deg); }
+.leaf-t6 { top: -4px; left: 17%; transform: rotate(15deg); }
+.leaf-t7 { top: -3px; left: 20%; transform: rotate(-10deg); }
+.leaf-t8 { top: -4px; left: 23%; transform: rotate(25deg); }
+.leaf-t9 { top: -3px; left: 26%; transform: rotate(-20deg); }
+.leaf-t10 { top: -4px; left: 29%; transform: rotate(10deg); }
+.leaf-t11 { top: -3px; left: 32%; transform: rotate(-30deg); }
+.leaf-t12 { top: -4px; left: 35%; transform: rotate(20deg); }
+.leaf-t13 { top: -3px; left: 38%; transform: rotate(-15deg); }
+.leaf-t14 { top: -4px; left: 41%; transform: rotate(25deg); }
+.leaf-t15 { top: -3px; left: 44%; transform: rotate(-25deg); }
+.leaf-t16 { top: -4px; left: 47%; transform: rotate(15deg); }
+.leaf-t17 { top: -3px; left: 50%; transform: rotate(-35deg); }
+.leaf-t18 { top: -4px; left: 53%; transform: rotate(20deg); }
+.leaf-t19 { top: -3px; left: 56%; transform: rotate(-15deg); }
+.leaf-t20 { top: -4px; left: 59%; transform: rotate(30deg); }
+.leaf-t21 { top: -3px; left: 62%; transform: rotate(-25deg); }
+.leaf-t22 { top: -4px; left: 65%; transform: rotate(15deg); }
+.leaf-t23 { top: -3px; left: 68%; transform: rotate(-10deg); }
+.leaf-t24 { top: -4px; left: 71%; transform: rotate(25deg); }
+.leaf-t25 { top: -3px; left: 74%; transform: rotate(-20deg); }
+.leaf-t26 { top: -4px; left: 77%; transform: rotate(10deg); }
+.leaf-t27 { top: -3px; left: 80%; transform: rotate(-30deg); }
+.leaf-t28 { top: -4px; left: 83%; transform: rotate(20deg); }
+.leaf-t29 { top: -3px; left: 86%; transform: rotate(-15deg); }
+.leaf-t30 { top: -4px; left: 89%; transform: rotate(25deg); }
+.leaf-t31 { top: -3px; left: 92%; transform: rotate(-25deg); }
+.leaf-t32 { top: -4px; left: 95%; transform: rotate(15deg); }
 
 /* RIGHT EDGE leaves - 16 leaves for same density as top/bottom */
 .leaf-r1 { top: 2%; right: -3px; transform: rotate(70deg); }
@@ -196,23 +222,39 @@
 .leaf-r15 { top: 86%; right: -3px; transform: rotate(90deg); }
 .leaf-r16 { top: 92%; right: -4px; transform: rotate(85deg); }
 
-/* BOTTOM EDGE leaves */
+/* BOTTOM EDGE leaves - 32 leaves for full coverage */
 .leaf-b1 { bottom: -3px; right: 2%; transform: rotate(155deg); }
-.leaf-b2 { bottom: -4px; right: 8%; transform: rotate(-170deg); }
-.leaf-b3 { bottom: -3px; right: 14%; transform: rotate(165deg); }
-.leaf-b4 { bottom: -4px; right: 20%; transform: rotate(-155deg); }
-.leaf-b5 { bottom: -3px; right: 26%; transform: rotate(175deg); }
-.leaf-b6 { bottom: -4px; right: 32%; transform: rotate(-165deg); }
-.leaf-b7 { bottom: -3px; right: 38%; transform: rotate(160deg); }
-.leaf-b8 { bottom: -4px; right: 44%; transform: rotate(-175deg); }
-.leaf-b9 { bottom: -3px; right: 50%; transform: rotate(170deg); }
-.leaf-b10 { bottom: -4px; right: 56%; transform: rotate(-160deg); }
-.leaf-b11 { bottom: -3px; right: 62%; transform: rotate(155deg); }
-.leaf-b12 { bottom: -4px; right: 68%; transform: rotate(-170deg); }
-.leaf-b13 { bottom: -3px; right: 74%; transform: rotate(165deg); }
-.leaf-b14 { bottom: -4px; right: 80%; transform: rotate(-155deg); }
-.leaf-b15 { bottom: -3px; right: 86%; transform: rotate(175deg); }
-.leaf-b16 { bottom: -4px; right: 92%; transform: rotate(-165deg); }
+.leaf-b2 { bottom: -4px; right: 5%; transform: rotate(-170deg); }
+.leaf-b3 { bottom: -3px; right: 8%; transform: rotate(165deg); }
+.leaf-b4 { bottom: -4px; right: 11%; transform: rotate(-155deg); }
+.leaf-b5 { bottom: -3px; right: 14%; transform: rotate(175deg); }
+.leaf-b6 { bottom: -4px; right: 17%; transform: rotate(-165deg); }
+.leaf-b7 { bottom: -3px; right: 20%; transform: rotate(160deg); }
+.leaf-b8 { bottom: -4px; right: 23%; transform: rotate(-175deg); }
+.leaf-b9 { bottom: -3px; right: 26%; transform: rotate(170deg); }
+.leaf-b10 { bottom: -4px; right: 29%; transform: rotate(-160deg); }
+.leaf-b11 { bottom: -3px; right: 32%; transform: rotate(155deg); }
+.leaf-b12 { bottom: -4px; right: 35%; transform: rotate(-170deg); }
+.leaf-b13 { bottom: -3px; right: 38%; transform: rotate(165deg); }
+.leaf-b14 { bottom: -4px; right: 41%; transform: rotate(-155deg); }
+.leaf-b15 { bottom: -3px; right: 44%; transform: rotate(175deg); }
+.leaf-b16 { bottom: -4px; right: 47%; transform: rotate(-165deg); }
+.leaf-b17 { bottom: -3px; right: 50%; transform: rotate(155deg); }
+.leaf-b18 { bottom: -4px; right: 53%; transform: rotate(-170deg); }
+.leaf-b19 { bottom: -3px; right: 56%; transform: rotate(165deg); }
+.leaf-b20 { bottom: -4px; right: 59%; transform: rotate(-155deg); }
+.leaf-b21 { bottom: -3px; right: 62%; transform: rotate(175deg); }
+.leaf-b22 { bottom: -4px; right: 65%; transform: rotate(-165deg); }
+.leaf-b23 { bottom: -3px; right: 68%; transform: rotate(160deg); }
+.leaf-b24 { bottom: -4px; right: 71%; transform: rotate(-175deg); }
+.leaf-b25 { bottom: -3px; right: 74%; transform: rotate(170deg); }
+.leaf-b26 { bottom: -4px; right: 77%; transform: rotate(-160deg); }
+.leaf-b27 { bottom: -3px; right: 80%; transform: rotate(155deg); }
+.leaf-b28 { bottom: -4px; right: 83%; transform: rotate(-170deg); }
+.leaf-b29 { bottom: -3px; right: 86%; transform: rotate(165deg); }
+.leaf-b30 { bottom: -4px; right: 89%; transform: rotate(-155deg); }
+.leaf-b31 { bottom: -3px; right: 92%; transform: rotate(175deg); }
+.leaf-b32 { bottom: -4px; right: 95%; transform: rotate(-165deg); }
 
 /* LEFT EDGE leaves - 16 leaves for same density as top/bottom */
 .leaf-l1 { top: 2%; left: -3px; transform: rotate(-70deg); }
@@ -234,22 +276,28 @@
 
 /* Varied leaf colors for natural look */
 .leaf-t1 svg, .leaf-t4 svg, .leaf-t7 svg, .leaf-t10 svg, .leaf-t13 svg, .leaf-t16 svg,
+.leaf-t19 svg, .leaf-t22 svg, .leaf-t25 svg, .leaf-t28 svg, .leaf-t31 svg,
 .leaf-r2 svg, .leaf-r5 svg, .leaf-r8 svg, .leaf-r11 svg, .leaf-r14 svg,
 .leaf-b1 svg, .leaf-b4 svg, .leaf-b7 svg, .leaf-b10 svg, .leaf-b13 svg, .leaf-b16 svg,
+.leaf-b19 svg, .leaf-b22 svg, .leaf-b25 svg, .leaf-b28 svg, .leaf-b31 svg,
 .leaf-l2 svg, .leaf-l5 svg, .leaf-l8 svg, .leaf-l11 svg, .leaf-l14 svg {
   fill: #4ade80;
 }
 
 .leaf-t2 svg, .leaf-t5 svg, .leaf-t8 svg, .leaf-t11 svg, .leaf-t14 svg,
+.leaf-t17 svg, .leaf-t20 svg, .leaf-t23 svg, .leaf-t26 svg, .leaf-t29 svg, .leaf-t32 svg,
 .leaf-r1 svg, .leaf-r4 svg, .leaf-r7 svg, .leaf-r10 svg, .leaf-r13 svg, .leaf-r16 svg,
 .leaf-b2 svg, .leaf-b5 svg, .leaf-b8 svg, .leaf-b11 svg, .leaf-b14 svg,
+.leaf-b17 svg, .leaf-b20 svg, .leaf-b23 svg, .leaf-b26 svg, .leaf-b29 svg, .leaf-b32 svg,
 .leaf-l1 svg, .leaf-l4 svg, .leaf-l7 svg, .leaf-l10 svg, .leaf-l13 svg, .leaf-l16 svg {
   fill: #22c55e;
 }
 
 .leaf-t3 svg, .leaf-t6 svg, .leaf-t9 svg, .leaf-t12 svg, .leaf-t15 svg,
+.leaf-t18 svg, .leaf-t21 svg, .leaf-t24 svg, .leaf-t27 svg, .leaf-t30 svg,
 .leaf-r3 svg, .leaf-r6 svg, .leaf-r9 svg, .leaf-r12 svg, .leaf-r15 svg,
 .leaf-b3 svg, .leaf-b6 svg, .leaf-b9 svg, .leaf-b12 svg, .leaf-b15 svg,
+.leaf-b18 svg, .leaf-b21 svg, .leaf-b24 svg, .leaf-b27 svg, .leaf-b30 svg,
 .leaf-l3 svg, .leaf-l6 svg, .leaf-l9 svg, .leaf-l12 svg, .leaf-l15 svg {
   fill: #16a34a;
 }

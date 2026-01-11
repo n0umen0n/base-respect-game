@@ -22,6 +22,15 @@
   will-change: opacity, transform;
 }
 
+/* Mobile: Show palm trees immediately */
+@media (max-width: 768px) {
+  .palm-tree {
+    opacity: 0.3;
+    animation: sway var(--sway-duration, 3s) ease-in-out infinite alternate;
+    animation-delay: 0s;
+  }
+}
+
 @keyframes sway {
   0% {
     transform: rotate(-3deg);

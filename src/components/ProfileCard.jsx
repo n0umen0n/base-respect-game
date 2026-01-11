@@ -33,10 +33,11 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
 
   const hasXAccount = x && x.trim() !== '';
 
-  // Generate leaf elements for each edge (16 leaves per edge for uniform density)
-  const topLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`t${i+1}`} className={`leaf-t${i+1}`} />);
+  // Generate leaf elements for each edge
+  // Top/bottom have 32 leaves for density on wider edges, sides have 16
+  const topLeaves = Array.from({ length: 32 }, (_, i) => <Leaf key={`t${i+1}`} className={`leaf-t${i+1}`} />);
   const rightLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`r${i+1}`} className={`leaf-r${i+1}`} />);
-  const bottomLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`b${i+1}`} className={`leaf-b${i+1}`} />);
+  const bottomLeaves = Array.from({ length: 32 }, (_, i) => <Leaf key={`b${i+1}`} className={`leaf-b${i+1}`} />);
   const leftLeaves = Array.from({ length: 16 }, (_, i) => <Leaf key={`l${i+1}`} className={`leaf-l${i+1}`} />);
 
   return (
@@ -96,11 +97,11 @@ const ProfileCard = ({ rank, name, x, score, profileUrl, xVerified, style, walle
               >
                 {x}
               </a>
-              <VerifiedIcon sx={{ fontSize: 18, color: '#4CAF50' }} />
+              <VerifiedIcon className="verified-icon" sx={{ fontSize: 18, color: '#4CAF50' }} />
             </>
           ) : (
             <>
-              <span className="missing-x-text" style={{ color: '#9e9e9e', fontSize: '0.7rem' }}>missing</span>
+              <span className="missing-x-text" style={{ color: '#9e9e9e' }}>missing</span>
               <CancelIcon className="missing-x-icon" sx={{ fontSize: 18, color: '#f44336' }} />
             </>
           )}

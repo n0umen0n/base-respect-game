@@ -106,7 +106,7 @@ const HomePage = () => {
         tag="div"
         style={{
           fontFamily: '"Press Start 2P", sans-serif',
-          fontSize: 'clamp(0.9rem, 5vw, 3.5rem)',
+          fontSize: 'clamp(1.1rem, 5vw, 3.5rem)',
           lineHeight: 1.3,
           color: 'black',
           marginBottom: '1.5rem',
@@ -147,7 +147,7 @@ const HomePage = () => {
         }}>
           <p style={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: 'clamp(0.7rem, 2.5vw, 1.5rem)',
+            fontSize: 'clamp(0.85rem, 2.5vw, 1.5rem)',
             lineHeight: 1.8,
             color: '#333',
             marginBottom: '3.5rem',
@@ -207,7 +207,7 @@ const HomePage = () => {
           </h2>
           <p style={{
             fontFamily: '"Press Start 2P", sans-serif',
-            fontSize: 'clamp(0.45rem, 1.8vw, 0.85rem)',
+            fontSize: 'clamp(0.55rem, 1.8vw, 0.85rem)',
             lineHeight: 1.8,
             color: '#000',
             padding: '0.75rem 0.75rem',
@@ -219,7 +219,7 @@ const HomePage = () => {
             boxSizing: 'border-box',
             wordBreak: 'break-word'
           }}>
-            10% of $RESOURCEs controlled by top 6 Alpha Apes
+            10% of $RESOURCEs controlled by top 6 Apes
           </p>
         </AnimatedContent>
         <AnimatedContent

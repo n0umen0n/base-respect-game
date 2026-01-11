@@ -382,7 +382,7 @@
 
 @media (max-width: 768px) {
   .staggered-menu-header {
-    padding: 1em 1em;
+    padding: 1.5em 1em;
   }
   
   .sm-toggle {
@@ -437,7 +437,7 @@
 
 @media (max-width: 480px) {
   .staggered-menu-header {
-    padding: 1em;
+    padding: 1.5em 1em;
   }
   
   .sm-toggle {
