@@ -404,8 +404,13 @@ export default function RankingSubmission({
     const target = new Date(nextSubmissionStageDate).getTime();
     const difference = target - now;
 
+    // If time is in the past, return 0 minutes
     if (difference <= 0) {
-      return null;
+      return {
+        text: '0 MINUTES',
+        lessThan24Hours: true,
+        isPast: true
+      };
     }
 
     const totalHours = Math.floor(difference / (1000 * 60 * 60));
@@ -416,17 +421,20 @@ export default function RankingSubmission({
     if (days > 0) {
       return {
         text: `${days} ${days === 1 ? 'DAY' : 'DAYS'} ${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
-        lessThan24Hours: false
+        lessThan24Hours: false,
+        isPast: false
       };
     } else if (hours > 0) {
       return {
         text: `${hours} ${hours === 1 ? 'HOUR' : 'HOURS'} ${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
-        lessThan24Hours: true
+        lessThan24Hours: true,
+        isPast: false
       };
     } else {
       return {
         text: `${minutes} ${minutes === 1 ? 'MINUTE' : 'MINUTES'}`,
-        lessThan24Hours: true
+        lessThan24Hours: true,
+        isPast: false
       };
     }
   };
@@ -631,9 +639,9 @@ export default function RankingSubmission({
                   lineHeight: 1.8,
                 }}
               >
-                KEEP PUMPING, NEXT GAME STARTS{getTimeUntilNextContribution() ? ' IN:' : ' ON:'}
+                NEXT GAME STARTS{getTimeUntilNextContribution()?.lessThan24Hours ? ' IN:' : ' ON:'}
               </Typography>
-              {getTimeUntilNextContribution() && (
+              {getTimeUntilNextContribution()?.lessThan24Hours && (
                 <Typography
                   variant="h6"
                   sx={{
@@ -641,19 +649,19 @@ export default function RankingSubmission({
                     fontSize: '0.9rem',
                     color: '#000',
                     fontWeight: 'bold',
-                    marginBottom: getTimeUntilNextContribution()?.lessThan24Hours ? 2 : 1,
+                    marginBottom: 2,
                   }}
                 >
                   {getTimeUntilNextContribution()?.text}
                 </Typography>
               )}
-              {(!getTimeUntilNextContribution()?.lessThan24Hours) && (
+              {!getTimeUntilNextContribution()?.lessThan24Hours && (
                 <Typography
                   variant="h6"
                   sx={{
                     fontFamily: '"Press Start 2P", sans-serif',
                     fontSize: '0.9rem',
-                    color: getTimeUntilNextContribution() ? 'text.secondary' : '#000',
+                    color: '#000',
                     marginBottom: 2,
                   }}
                 >

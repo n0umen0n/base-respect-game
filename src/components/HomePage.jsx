@@ -88,10 +88,20 @@ const HomePage = () => {
     }
   };
 
-  // Filter members based on search query (from rank 7 onwards)
-  const filteredMembers = allMembers.slice(6).filter(member => 
-    member.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Get wallet addresses of top members to exclude them from the table
+  const topMemberAddresses = new Set(topMembers.map(m => m.wallet_address.toLowerCase()));
+  
+  // Filter members based on search query, excluding those already shown in top cards
+  // Re-rank the remaining members starting from rank 7
+  const filteredMembers = allMembers
+    .filter(member => !topMemberAddresses.has(member.wallet_address.toLowerCase()))
+    .map((member, index) => ({
+      ...member,
+      rank: topMembers.length + index + 1 // Rank starts at 7 (after top 6)
+    }))
+    .filter(member => 
+      member.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   // Show loading spinner if Privy is not ready OR if navigating to game
   // Use LoadingScreen for consistent positioning across the app

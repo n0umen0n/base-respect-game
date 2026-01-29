@@ -22,7 +22,7 @@ async function main() {
 
   console.log("Current State:");
   console.log(`  Game: ${currentGameNumber}`);
-  console.log(`  Stage: ${currentStage === 0 ? "Submission" : "Ranking"}`);
+  console.log(`  Stage: ${currentStage === 0n ? "Submission" : "Ranking"}`);
   console.log(`  Total Groups: ${totalGroups}`);
   console.log(`  Is Processing: ${isProcessing}`);
   console.log(`  Next Stage Timestamp: ${nextStageTimestamp}`);
@@ -104,7 +104,7 @@ async function main() {
     console.log("\n✅✅✅ SUCCESS!");
     console.log("\nNew State:");
     console.log(`  Game: ${newGameNumber}`);
-    console.log(`  Stage: ${newStage === 0 ? "Submission" : "Ranking"}`);
+    console.log(`  Stage: ${newStage === 0n ? "Submission" : "Ranking"}`);
     console.log(
       `  Next Stage: ${new Date(
         Number(newNextStageTimestamp) * 1000

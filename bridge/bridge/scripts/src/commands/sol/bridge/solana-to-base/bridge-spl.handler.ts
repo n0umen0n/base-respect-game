@@ -9,7 +9,6 @@ import {
   type Instruction,
 } from "@solana/kit";
 import {
-  TOKEN_PROGRAM_ADDRESS,
   findAssociatedTokenPda,
   ASSOCIATED_TOKEN_PROGRAM_ADDRESS,
   fetchMaybeToken,
@@ -143,6 +142,9 @@ export async function handleBridgeSpl(args: Args): Promise<void> {
     );
     logger.info(`From Token Account: ${fromTokenAccountAddress}`);
 
+    const tokenProgram = maybeMint.programAddress;
+    logger.info(`Token Program: ${tokenProgram}`);
+
     const ixs: Instruction[] = [
       getBridgeSplInstruction(
         {
@@ -155,7 +157,7 @@ export async function handleBridgeSpl(args: Args): Promise<void> {
           tokenVault: tokenVaultAddress,
           bridge: bridgeAccountAddress,
           outgoingMessage,
-          tokenProgram: TOKEN_PROGRAM_ADDRESS,
+          tokenProgram,
           systemProgram: SYSTEM_PROGRAM_ADDRESS,
 
           // Arguments

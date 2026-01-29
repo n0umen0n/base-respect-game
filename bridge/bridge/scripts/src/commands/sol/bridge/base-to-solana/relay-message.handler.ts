@@ -10,6 +10,8 @@ import {
 } from "@solana/kit";
 import { SYSTEM_PROGRAM_ADDRESS } from "@solana-program/system";
 import { TOKEN_2022_PROGRAM_ADDRESS } from "@solana-program/token-2022";
+import { address } from "@solana/kit";
+import { fetchMaybeMint } from "@solana-program/token";
 import { toBytes, toHex } from "viem";
 
 import {
@@ -308,10 +310,10 @@ async function messageTransferSplAccounts(
     ],
   });
 
-  const mint = await rpc.getAccountInfo(localToken).send();
-  if (!mint.value) {
-    throw new Error("Mint not found");
-  }
+  // Determine which token program owns this mint (Tokenkeg vs Token-2022).
+  // Using the token program decoder avoids RPC encoding quirks and guarantees a correct program id.
+  const maybeMint = await fetchMaybeMint(rpc as any, address(localToken));
+  if (!maybeMint.exists) throw new Error("Mint not found");
 
   return [
     {
@@ -327,7 +329,7 @@ async function messageTransferSplAccounts(
       role: AccountRole.WRITABLE,
     },
     {
-      address: mint.value!.owner,
+      address: maybeMint.programAddress,
       role: AccountRole.READONLY,
     },
   ];

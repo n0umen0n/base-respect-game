@@ -8,6 +8,7 @@ import {
   bridgeSolWithBcCommand,
   bridgeSplCommand,
   bridgeWrappedTokenCommand,
+  deployCrossChainErc20Command,
   wrapTokenCommand,
 } from "./solana-to-base";
 import { relayMessageCommand, proveMessageCommand } from "./base-to-solana";
@@ -24,6 +25,7 @@ bridgeCommand.addCommand(bridgeSolCommand);
 bridgeCommand.addCommand(bridgeSolWithBcCommand);
 bridgeCommand.addCommand(bridgeSplCommand);
 bridgeCommand.addCommand(bridgeWrappedTokenCommand);
+bridgeCommand.addCommand(deployCrossChainErc20Command);
 bridgeCommand.addCommand(wrapTokenCommand);
 
 bridgeCommand.addCommand(proveMessageCommand);

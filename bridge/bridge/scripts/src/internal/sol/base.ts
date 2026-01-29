@@ -53,7 +53,7 @@ export async function relayMessageToBase(
   }) as PublicClient;
 
   const walletClient = createWalletClient({
-    account: privateKeyToAccount(process.env.EVM_PRIVATE_KEY as Hex),
+    account: privateKeyToAccount(normalizeEvmPrivateKey(process.env.EVM_PRIVATE_KEY)),
     chain: config.base.chain,
     transport: http(),
   });
@@ -335,4 +335,22 @@ async function waitForApproval(
 
 function sanitizeHex(h: string): string {
   return h.toLowerCase();
+}
+
+function normalizeEvmPrivateKey(value: string | undefined): Hex {
+  if (!value) {
+    throw new Error(
+      "Missing EVM_PRIVATE_KEY in environment. This is required to send Base transactions."
+    );
+  }
+  let v = value.trim().replace(/^["']|["']$/g, "").trim();
+  v = v.replace(/\s+/g, "");
+  if (/^[0-9a-fA-F]{64}$/.test(v)) v = `0x${v}`;
+  if (/^0X[0-9a-fA-F]{64}$/.test(v)) v = `0x${v.slice(2)}`;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(v)) {
+    throw new Error(
+      "Invalid EVM_PRIVATE_KEY format. Expected 64 hex chars (optionally prefixed with 0x/0X), with no spaces/newlines."
+    );
+  }
+  return v as Hex;
 }

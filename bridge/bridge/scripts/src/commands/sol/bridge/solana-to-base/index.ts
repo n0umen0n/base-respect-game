@@ -3,4 +3,5 @@ export * from "./bridge-sol.command";
 export * from "./bridge-sol-with-bc.command";
 export * from "./bridge-spl.command";
 export * from "./bridge-wrapped-token.command";
+export * from "./deploy-crosschain-erc20.command";
 export * from "./wrap-token.command";
