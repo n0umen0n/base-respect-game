@@ -36,7 +36,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
 // @ts-ignore - image import
-import defaultApe from '../assets/default-ape.svg';
+import defaultApe from '../assets/default-ape.png';
 import {
   getMember,
   getMembers,

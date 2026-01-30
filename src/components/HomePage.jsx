@@ -8,7 +8,7 @@ import ProfileCard from './ProfileCard';
 import GorillaAnimation from './GorillaAnimation';
 import { getTopSixMembers, getAllMembers } from '../lib/supabase-respect';
 import { formatRespectDisplay } from '../lib/formatTokens';
-import defaultApe from '../assets/default-ape.svg';
+import defaultApe from '../assets/default-ape.png';
 
 import {
   Table,

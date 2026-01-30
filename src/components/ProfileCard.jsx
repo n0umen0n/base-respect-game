@@ -4,7 +4,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { Tooltip } from '@mui/material';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import CancelIcon from '@mui/icons-material/Cancel';
-import defaultApe from '../assets/default-ape.svg';
+import defaultApe from '../assets/default-ape.png';
 import { formatRespectDisplay } from '../lib/formatTokens';
 import './ProfileCard.css';
 

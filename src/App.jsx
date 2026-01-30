@@ -58,6 +58,13 @@ function App() {
     });
     
     items.push({ 
+      label: 'X', 
+      ariaLabel: 'Follow on X', 
+      link: 'https://x.com/DAOOFTHEAPES',
+      secondary: true
+    });
+    
+    items.push({ 
       label: 'GITHUB', 
       ariaLabel: 'View GitHub repository', 
       link: 'https://github.com/n0umen0n/base-respect-game',

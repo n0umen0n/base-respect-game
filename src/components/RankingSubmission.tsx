@@ -43,7 +43,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { useSmartWallet } from '../hooks/useSmartWallet';
 import { useRespectGame } from '../hooks/useRespectGame';
 // @ts-ignore - image import
-import defaultApe from '../assets/default-ape.svg';
+import defaultApe from '../assets/default-ape.png';
 
 interface Member {
   address: string;
