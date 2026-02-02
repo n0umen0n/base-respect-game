@@ -51,6 +51,13 @@ function App() {
     
     // Add external links (marked as secondary for different styling)
     items.push({ 
+      label: 'PUMP.FUN', 
+      ariaLabel: 'View on Pump.fun', 
+      link: 'https://pump.fun/coin/9JiQ7QadBqegBAmK4HNWke8LCmV3M6vnooSbzWsrpump?startLivestream=true',
+      secondary: true
+    });
+    
+    items.push({ 
       label: 'TELEGRAM', 
       ariaLabel: 'Join Telegram community', 
       link: 'https://t.me/daooftheapes',
