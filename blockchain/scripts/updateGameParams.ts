@@ -1,8 +1,65 @@
 import { ethers } from "hardhat";
 import { RespectGameCore } from "../typechain-types";
+import { createClient } from "@supabase/supabase-js";
+import * as dotenv from "dotenv";
+import * as path from "path";
+
+// Load env from root .env file (for Supabase credentials)
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 // The address of your deployed RespectGame contract
 const contractAddress = "0x8a8dbE61A0368855a455eeC806bCFC40C9e95c29";
+
+// Initialize Supabase client
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+
+async function syncSupabase(
+  gameNumber: number,
+  stage: number,
+  nextStageTimestamp: number
+) {
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.warn(
+      "\n⚠️ Supabase credentials not found. Skipping database sync."
+    );
+    console.warn(
+      "   Set VITE_SUPABASE_URL and SUPABASE_SERVICE_KEY in root .env file."
+    );
+    return false;
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  const stageName =
+    stage === 0 ? "ContributionSubmission" : "ContributionRanking";
+  const nextStageDate = new Date(nextStageTimestamp * 1000).toISOString();
+
+  console.log("\n💾 Syncing Supabase database...");
+
+  const { error } = await supabase
+    .from("game_stages")
+    .update({
+      current_game_number: gameNumber,
+      current_stage: stageName,
+      next_stage_timestamp: nextStageDate,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", 1);
+
+  if (error) {
+    console.error("❌ Failed to sync Supabase:", error.message);
+    return false;
+  }
+
+  console.log("✅ Supabase synced successfully!");
+  console.log(`   Game: ${gameNumber}`);
+  console.log(`   Stage: ${stageName}`);
+  console.log(
+    `   Next stage: ${new Date(nextStageTimestamp * 1000).toLocaleString()}`
+  );
+  return true;
+}
 
 async function main() {
   const [signer] = await ethers.getSigners();
@@ -16,7 +73,7 @@ async function main() {
   )) as unknown as RespectGameCore;
 
   // New parameter values
-  const membersWithoutApproval = 100;
+  const membersWithoutApproval = 101;
   const submissionLength = 1 * 60 * 60; // 1 hour in seconds
   const rankingLength = 20 * 60; // 20 minutes in seconds
   const nextStageTimestamp = Math.floor(Date.now() / 1000) + 1 * 60; // Current time + 1 minute
@@ -83,6 +140,17 @@ async function main() {
         Number(newNextStageTimestamp) * 1000
       ).toISOString()})`
     );
+
+    // Sync Supabase database with the new values
+    const currentStage = await contract.getCurrentStage();
+    const currentGameNumber = await contract.currentGameNumber();
+    await syncSupabase(
+      Number(currentGameNumber),
+      Number(currentStage),
+      Number(newNextStageTimestamp)
+    );
+
+    console.log("\n🎉 All done! Blockchain and database are now in sync.");
   } catch (error: any) {
     console.error("\n❌ Transaction failed!");
     console.error("Error:", error.message);

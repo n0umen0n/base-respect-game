@@ -19,6 +19,7 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
-    "@openzeppelin/contracts-upgradeable": "^5.4.0"
+    "@openzeppelin/contracts-upgradeable": "^5.4.0",
+    "@supabase/supabase-js": "^2.45.0"
   }
 }

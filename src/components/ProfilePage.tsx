@@ -26,6 +26,8 @@ import {
   Button,
   Collapse,
   IconButton,
+  Modal,
+  Fade,
 } from '@mui/material';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -35,6 +37,8 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import LinkIcon from '@mui/icons-material/Link';
 import XIcon from '@mui/icons-material/X';
 import CancelIcon from '@mui/icons-material/Cancel';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import SyncAltIcon from '@mui/icons-material/SyncAlt';
 // @ts-ignore - image import
 import defaultApe from '../assets/default-ape.png';
 import {
@@ -53,6 +57,8 @@ import {
 // Removed secureUpdateProfile - using simple API for X account linking
 import { formatRespectDisplay, formatRespectEarned } from '../lib/formatTokens';
 import { LoadingScreen, default as LoadingSpinner } from './LoadingSpinner';
+import { useSmartWallet } from '../hooks/useSmartWallet';
+import { useRespectGame } from '../hooks/useRespectGame';
 
 interface ProfilePageProps {
   walletAddress: string;
@@ -323,6 +329,12 @@ export default function ProfilePage({
 }: ProfilePageProps) {
   const { user, linkTwitter } = usePrivy();
   const navigate = useNavigate();
+  const { smartAccountClient, smartAccountAddress } = useSmartWallet();
+  const { switchStage } = useRespectGame({ 
+    smartAccountClient, 
+    userAddress: smartAccountAddress || null,
+    minimalMode: true 
+  });
   const [member, setMember] = useState<Member | null>(null);
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
   const [vouchedFor, setVouchedFor] = useState<Member[]>([]);
@@ -336,6 +348,8 @@ export default function ProfilePage({
   const [tabValue, setTabValue] = useState(0);
   const [linkingTwitter, setLinkingTwitter] = useState(false);
   const [rankedMembers, setRankedMembers] = useState<Member[]>([]);
+  const [switchingStage, setSwitchingStage] = useState(false);
+  const [showSwitchStageModal, setShowSwitchStageModal] = useState(false);
   // Persist justLinkedTwitter flag across OAuth redirect using sessionStorage
   const [justLinkedTwitter, setJustLinkedTwitter] = useState(() => {
     // Check if we're returning from X OAuth flow
@@ -531,16 +545,68 @@ export default function ProfilePage({
               alignItems: { xs: 'center', md: 'flex-start' },
             }}
           >
-            <Avatar
-              src={member.profile_url || defaultApe}
-              alt={member.name}
-              sx={{
-                width: { xs: 80, sm: 120, md: 150 },
-                height: { xs: 80, sm: 120, md: 150 },
-                borderRadius: { xs: 2, md: 4 },
-                flexShrink: 0,
-              }}
-            />
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1.5 }}>
+              <Avatar
+                src={member.profile_url || defaultApe}
+                alt={member.name}
+                sx={{
+                  width: { xs: 80, sm: 120, md: 150 },
+                  height: { xs: 80, sm: 120, md: 150 },
+                  borderRadius: { xs: 2, md: 4 },
+                  flexShrink: 0,
+                }}
+              />
+              
+              {/* Switch Stage Button - appears when stage has ended */}
+              {nextStageTimestamp && new Date(nextStageTimestamp).getTime() < Date.now() && (
+                <Button
+                  variant="contained"
+                  onClick={async () => {
+                    try {
+                      setSwitchingStage(true);
+                      setError(null);
+                      console.log('🔄 Switching stage...');
+                      await switchStage();
+                      console.log('✅ Stage switch transaction sent');
+                      // Wait a bit for the transaction to be processed
+                      await new Promise(resolve => setTimeout(resolve, 3000));
+                      // Show success modal instead of reloading
+                      setShowSwitchStageModal(true);
+                    } catch (err: any) {
+                      console.error('❌ Failed to switch stage:', err);
+                      setError(err.message || 'Failed to switch stage. Please try again.');
+                    } finally {
+                      setSwitchingStage(false);
+                    }
+                  }}
+                  disabled={switchingStage}
+                  startIcon={!switchingStage ? <SwapHorizIcon /> : undefined}
+                  sx={{
+                    fontFamily: '"Press Start 2P", sans-serif',
+                    fontSize: { xs: '0.5rem', sm: '0.6rem' },
+                    padding: { xs: '8px 12px', sm: '10px 16px' },
+                    backgroundColor: '#dc2626',
+                    color: '#fff',
+                    '&:hover': {
+                      backgroundColor: '#b91c1c',
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#dc2626',
+                      color: '#fff',
+                    },
+                  }}
+                >
+                  {switchingStage ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <LoadingSpinner size={16} color="#ffffff" />
+                      <span>SWITCHING...</span>
+                    </Box>
+                  ) : (
+                    'SWITCH STAGE'
+                  )}
+                </Button>
+              )}
+            </Box>
 
             <Box sx={{ flex: 1, textAlign: { xs: 'center', md: 'left' }, minWidth: 0 }}>
               {member.is_approved && (
@@ -1478,6 +1544,107 @@ export default function ProfilePage({
           )}
         </Paper>
       </Box>
+
+      {/* Switch Stage Success Modal */}
+      <Modal
+        open={showSwitchStageModal}
+        onClose={() => {
+          setShowSwitchStageModal(false);
+          window.location.reload();
+        }}
+        closeAfterTransition
+      >
+        <Fade in={showSwitchStageModal}>
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: { xs: 'calc(100% - 32px)', sm: 500 },
+              maxWidth: 500,
+              maxHeight: { xs: 'calc(100vh - 32px)', sm: 'auto' },
+              bgcolor: 'background.paper',
+              borderRadius: { xs: 2, sm: 4 },
+              boxShadow: 24,
+              p: { xs: 2.5, sm: 4 },
+              textAlign: 'center',
+              overflowY: 'auto',
+            }}
+          >
+            <SyncAltIcon
+              sx={{
+                fontSize: { xs: 60, sm: 80 },
+                color: 'success.main',
+                marginBottom: 2,
+              }}
+            />
+            <Typography
+              variant="h5"
+              component="h2"
+              gutterBottom
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: { xs: '0.9rem', sm: '1.2rem' },
+                marginBottom: 2,
+                lineHeight: 1.4,
+              }}
+            >
+              STAGE SWITCHED!
+            </Typography>
+            <Box
+              sx={{
+                padding: 2,
+                backgroundColor: '#f5f5f5',
+                borderRadius: 2,
+                marginBottom: 3,
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  fontFamily: '"Press Start 2P", sans-serif',
+                  fontSize: '0.65rem',
+                  marginBottom: 1,
+                  lineHeight: 1.8,
+                }}
+              >
+                You have successfully switched the stage of the game.
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: '0.75rem',
+                  color: 'text.secondary',
+                  lineHeight: 1.6,
+                }}
+              >
+                {currentGameStage === 'ContributionSubmission' 
+                  ? 'The game is now in the Ranking Stage. Players can submit their rankings.'
+                  : 'A new game has started! The game is now in the Contribution Submission Stage.'}
+              </Typography>
+            </Box>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setShowSwitchStageModal(false);
+                window.location.reload();
+              }}
+              sx={{
+                fontFamily: '"Press Start 2P", sans-serif',
+                fontSize: '0.875rem',
+                padding: '0.75rem 2rem',
+                backgroundColor: '#000',
+                '&:hover': {
+                  backgroundColor: '#333',
+                },
+              }}
+            >
+              NEXT
+            </Button>
+          </Box>
+        </Fade>
+      </Modal>
     </Box>
   );
 }

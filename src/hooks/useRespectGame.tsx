@@ -117,6 +117,13 @@ const RESPECT_GAME_CORE_ABI = [
     outputs: [],
     stateMutability: 'nonpayable',
   },
+  {
+    name: 'switchStage',
+    type: 'function',
+    inputs: [],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
 ] as const;
 
 const RESPECT_TOKEN_ABI = [
@@ -454,6 +461,20 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
     return hash;
   };
 
+  const switchStage = async () => {
+    if (!smartAccountClient) throw new Error('Wallet not connected');
+
+    const hash = await smartAccountClient.writeContract({
+      address: RESPECT_GAME_CORE_ADDRESS,
+      abi: RESPECT_GAME_CORE_ABI,
+      functionName: 'switchStage',
+      args: [],
+    });
+
+    console.log('Switch stage transaction hash:', hash);
+    return hash;
+  };
+
   return {
     gameState,
     memberInfo,
@@ -469,6 +490,7 @@ export function useRespectGame({ smartAccountClient, userAddress, minimalMode = 
     createTransferProposal,
     getMyGroup,
     getContribution,
+    switchStage,
     refreshData: loadGameData,
   };
 }
