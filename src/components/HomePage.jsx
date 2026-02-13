@@ -24,6 +24,7 @@ import {
   InputAdornment,
   Box,
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -582,6 +583,44 @@ const HomePage = () => {
 
       {/* Animated gorilla that appears after content loads */}
       <GorillaAnimation show={!loading} delay={1500} />
+
+      {/* Footer links */}
+      <div style={{
+        marginTop: '2rem',
+        paddingBottom: '1rem',
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '1.5rem'
+      }}>
+        <RouterLink
+          to="/terms"
+          style={{
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '0.5rem',
+            color: '#666',
+            textDecoration: 'none',
+            transition: 'color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.color = '#000'}
+          onMouseOut={(e) => e.target.style.color = '#666'}
+        >
+          Terms of Service
+        </RouterLink>
+        <RouterLink
+          to="/privacy"
+          style={{
+            fontFamily: '"Press Start 2P", sans-serif',
+            fontSize: '0.5rem',
+            color: '#666',
+            textDecoration: 'none',
+            transition: 'color 0.2s'
+          }}
+          onMouseOver={(e) => e.target.style.color = '#000'}
+          onMouseOut={(e) => e.target.style.color = '#666'}
+        >
+          Privacy Policy
+        </RouterLink>
+      </div>
     </div>
   );
 };

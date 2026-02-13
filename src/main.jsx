@@ -9,6 +9,8 @@ import RespectGameContainer from './components/RespectGameContainer';
 import ProfilePageWrapper from './components/ProfilePageWrapper';
 import ProposalsPageWrapper from './components/ProposalsPageWrapper';
 import ProtectedRoute from './components/ProtectedRoute';
+import TermsOfService from './components/TermsOfService';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import './index.css';
 import { base } from 'viem/chains';
 
@@ -46,6 +48,8 @@ root.render(
           <Route index element={<HomePage />} />
           <Route path="profile/:address" element={<ProfilePageWrapper />} />
           <Route path="proposals" element={<ProposalsPageWrapper />} />
+          <Route path="terms" element={<TermsOfService />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
           <Route element={<ProtectedRoute />}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="game" element={<RespectGameContainer />} />
